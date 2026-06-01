@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Week 3 Logbook</title>
+</head>
+<body>
+  <h1>Week 3 Logbook</h1>
+
+  <h2>Overview</h2>
+  <p>This week I worked on implementing a structure with the group</p>
+
+  <h2>Tasks Completed</h2>
+  <ul>
+    <li>Task 1</li>
+    <li>Task 2</li>
+    <li>Task 3</li>
+  </ul>
+
+  <h2>Challenges</h2>
+  <p>One challenge I faced was trying setup a workspace via a virtual machine</p>
+
+  <h2>What I Learned</h2>
+  <p>This week I learned how to push files and make changes on a repo from a terminal</p>
+
+  <h2>Next Steps</h2>
+  <ul>
+    <li>Continue working on repo changes and logbook</li>
+    <li>Improve personal profile</li>
+  </ul>
+</body>
+</html>
