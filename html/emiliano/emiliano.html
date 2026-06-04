@@ -6,18 +6,34 @@
 -->
 <!-- !--==== HTML SCRIPT ===== -->
 <html lang = "en">
-    <head> 
         <!-- === Head section === -->
     <head>
         <!-- === Include Special Character, Get out of ASCII default -->
         <meta charset="UTF-8">
         <!-- === Title ==== -->
         <title>Emiliano's Main Page</title>
+        <meta name="description" content="This is the main page for Emiliano" />
+        <meta name="robots" content="noindex nofollow"/>   <!-- Do not want page or any of its links to be indexed-->
+        <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
+        <meta http-equiv="pragma" content="no-cache"/> 
     </head>
     <!-- === Body section === -->
     <body>
         <!--=== Main Description ===-->
-        <h1>Emiliano Main Page</h1>
+        <h1 id="top"> Emiliano Main Page</h1>
+
+        <!-- Add Image of Emi  -->
+         <figure>
+            <img src="/ese_project_vi/assets/images/emiliano/Emiliano.jpeg" alt="Image of Emiliano"
+              title="Emiliano" width="150"  height="100"/>
+
+            <figcaption><b>Emiliano Perez:</b>Electronic Systems Engineering Student, 
+                Passioned about embedded software and hardware. 
+                Emiliano's key role in the project will be the development of .........
+            </figcaption>
+         </figure>
+         
+        
         <p>Welcome to <b>Emiliano's</b> Main Page!<br />
            Under this Page you will be able to access links such as my <b>Github Account</b> and <b>Logbooks</b> Tab.
         </p>
@@ -38,7 +54,8 @@
         </ul>
         
         <!-- === Send Back to Home === -->
-        <a href="/index.html">Back to Home</a>
+        <p>Copyright &copy Emiliano Perez Pellicer</p>
+        <a href="/ese_project_vi/index.html">Back to Home</a>
     </body>
     </head>
 </html>
