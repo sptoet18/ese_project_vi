@@ -1,0 +1,83 @@
+body{
+    font-family: Georgia, sans-serif;
+
+    /* Adding the Border Details, CW TOP,RIGHT, BUTTOM, LEFT*/
+    border-width:  2px 2px 2px 2px;  
+    border-style: solid solid solid solid ;
+    border-color: black;
+    border-radius: 10px;
+
+   
+    /* Adding the Box Width  & Padding */
+    width: 950px;
+    /* Center Content  */
+    margin: 1px auto 1px auto;
+    padding: 0px 10px 0px 10px;
+
+
+}
+
+p,ul,ol{
+    font-size: 100%;
+    line-height: 20px;
+    text-align: justify;
+}
+
+p{text-indent: 15px;}
+
+h1{
+    font-size: 160%;
+}
+
+h2{
+    font-size: 125%;
+}
+
+figure{
+    /* Adding the border details  */
+    margin: 1px auto 1px auto;
+    border-style: solid;
+    border-width: 1px 1px 1px 1px;
+    border-color: chartreuse;
+    border-radius: 25px;
+
+}
+img{
+
+    /* Adding the Border Details, CW TOP,RIGHT, BUTTOM, LEFT*/
+    height: 300px;
+    /* Center Image  */
+    display: block;
+    justify-self: center;
+    margin: 1px auto 1px auto;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px 1px 1px 1px;
+    /* Box Shadow: Horizontal offset, vertical offset, blur distance color  */
+    box-shadow: 10px 10px 5px blue;    
+}
+
+figcaption{
+    
+    text-align: center;
+    font-style: italic;
+    font-size: 90%;
+}
+
+.mkbold{
+    font-weight: bold;
+    color: crimson;
+}
+
+.mkunderlined{
+    text-decoration: underline;
+    color: darkgreen;
+}
+
+#hcs12{
+    color: aqua;
+}
+
+#can{
+    color: blueviolet;
+}

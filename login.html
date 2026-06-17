@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<!--AUTHOR: Emiliano Perez Pellicer
+    DATE: 12-06-2026
+    COMMENTS: This page will be dealing with the login page  
+    VERSION: 1.0 
+-->
+<!-- !--==== HTML SCRIPT ===== -->
+<html lang = "en">
+    <!-- === Head Section ====  -->
+    <head>
+        <!-- === Include Special Character, Get out of ASCII default -->
+        <meta charset="UTF-8">
+        <!-- === Title ==== -->
+        <title id="title">Teams Login page</title>
+        <meta name="description" content="This is the login page " />
+        <meta name="robots" content="noindex nofollow"/>   <!-- Do not want page or any of its links to be indexed-->
+        <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
+        <meta http-equiv="pragma" content="no-cache"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    </head>
+    <!-- ===Body Section ===  -->
+    <body>
+        <h1>Please Log In</h1>
+        <form action="php/login.php" method="post" id="login">
+            <!-- Add Username  -->
+            <p>Username: 
+                <input type="text" name="username"/>
+            </p>
+            <!-- Add Password -->
+            <p>Password:
+                <input type="password" name="password"/>
+            </p>
+            <!-- Generate Log in button -->
+            <input type="submit" value="Log in"/>
+            <p><a href="./access/request_access.html">Request Access</a></p> 
+        </form>
+
+        <footer>
+            <!-- Add Copy Right  -->
+            <p id = "copyright">Copyright &copy Emiliano Perez Pellicer</p>
+        </footer>
+
+    </body>
+</html>
