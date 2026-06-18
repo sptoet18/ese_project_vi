@@ -32,6 +32,11 @@ h1 {
     gap: 32px;
 }
 
+image{
+    height: auto;
+    width: auto;
+}
+
 a.top-bar:visited {
     color: #ffffff;
     text-decoration: none;
@@ -83,3 +88,7 @@ figcaption {
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
 }
+
+#copyright{
+    display: flex;
+} 
