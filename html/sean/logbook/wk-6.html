@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sean's Week 6 Logbook">
+    <meta name="robots" content="noindex nofollow"/>
+    <meta http-equiv="author" content="Sean Toet">
+    <meta http-equiv="pragma" content="no-cache"/> 
+    <title>Sean's Logbook - Week 6</title>
+</head>
+<body>
+    <hgroup>
+        <h1>Sean's Logbook</h1>
+        <p>Week 6</p>
+    </hgroup>
+
+    <h2>Tasks Completed</h2>
+
+    <h3>Wired Buttons and LEDs on Elevator</h3>
+    <p>Along with Emiliano and Besart I wired up the read buttons to the STM32.</p>
+    <p>The Floor Controllers have all of their LEDs wired the same. They all use PC8 as an output pin to light up the button. For the buttons themselves each STM32 is wired slightly differently. Floor 1 uses PB12, Floor 2 uses PB15, and Floor 3 uses PB14.</p>
+    <p>The Car Controller has 3 different buttons so it needs to be qired slightly differently. The actual buttons are the same: Floor 1 uses PB12, Floor 2 uses PB15, Floor 3 uses PB14. The LEDs will be different though. _____________________________________________________________________________</p>
+
+    <figure>
+        <img src="/ese_project_vi/assets/images/sean/car-controller-wiring.jpg" height="300">
+        <figcaption>Car Controller wiring.</figcaption>
+    </figure>
+
+    <figure>
+        <img src="/ese_project_vi/assets/images/sean/button-led-lit.jpg" height="300">
+        <figcaption>Elevator button is lit</figcaption>
+    </figure>
+
+    <h3>Programming the STM32</h3>
+    <p>I programmed the Floor Controllers to light up the LEDs when the button is pressed. When the button is depressed the light will stay on until the elevator reaches the requested floor</p>
+    <p>I programmed the Floor Controllers to use UART. Specifically the Floor Controllers use USART2 as virtual UART when debugging. The UART is set to print whenever a button is pressed. The UART will also print when there is a CAN message. This allows use to easily monitor the CAN bus and see what is being sent. The STM32 translates the CAN messages into natural language. (i.e. Elevator Controller sent Floor 1)</p>
+
+    <figure>
+        <img src="/ese_project_vi/assets/images/sean/ioc-2026-06-18.png" height="300">
+        <figcaption>The current pinout for the STM32</figcaption>
+    </figure>
+
+    <a href="/ese_project_vi/index.html">Back to Home</a>
+
+    <footer>
+        <p>Copyright &copy Sean Toet</p>
+    </footer>
+</body>
+</html>
