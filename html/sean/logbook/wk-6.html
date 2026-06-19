@@ -53,6 +53,13 @@
                     <figcaption>The current pinout for the STM32</figcaption>
                 </figure>
             </article>
+
+            <article>
+                <h3>CAN ID Issue</h3>
+
+                <p>I've been running into an issue with the CAN ID. Before I was using the STM32 with the ID 0x0100 (i.e. the supervisory controller) This was working perfectly. However, I'm now testing with the correct id (i.e. 0x0201 for Floor 1 Controller) This has presented an issue where the command that my STM32 is sending isn't moving the elevator. I've tried seting the message 0x01 and 0x05. Neither of these were working. I've tried changing the ID and that wasn't working either.</p>
+                <p>I just figured out that my STM32s aren't moving the eleator because the Raspberry Pi isn't set to sense the message and tell the elevator controller to move the elevator controller.</p>
+            </article>
         </section>
 
         <a href="/ese_project_vi/index.html">Back to Home</a>
