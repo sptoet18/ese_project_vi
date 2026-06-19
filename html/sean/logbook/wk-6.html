@@ -47,10 +47,25 @@
 
                 <p>I programmed the Floor Controllers to light up the LEDs when the button is pressed. When the button is depressed the light will stay on until the elevator reaches the requested floor</p>
                 <p>I programmed the Floor Controllers to use UART. Specifically the Floor Controllers use USART2 as virtual UART when debugging. The UART is set to print whenever a button is pressed. The UART will also print when there is a CAN message. This allows use to easily monitor the CAN bus and see what is being sent. The STM32 translates the CAN messages into natural language. (i.e. Elevator Controller sent Floor 1)</p>
+                <p>I programmed the Car Controller. This one is a bit different then the Floor Controllers. It will use three different buttons and three different LEDs.</p>
 
                 <figure>
                     <img src="/ese_project_vi/assets/images/sean/ioc-2026-06-18.png" height="300">
                     <figcaption>The current pinout for the STM32</figcaption>
+                </figure>
+
+                <figure>
+                    <video height="300" preload controls>
+                        <source src="/ese_project_vi/assets/videos/sean/stm32-displays-the-elevators-position.mp4"/>
+                    </video>
+                    <figcaption>The STM32s will display which floor the elevator is at.</figcaption>
+                </figure>
+
+                <figure>
+                    <video height="300" preload controls>
+                        <source src="/ese_project_vi/assets/videos/sean/stm32-receives-can-messages.mp4"/>
+                    </video>
+                    <figcaption>The STM32s will receive CAN messages and display them via UART.</figcaption>
                 </figure>
             </article>
 
@@ -59,6 +74,38 @@
 
                 <p>I've been running into an issue with the CAN ID. Before I was using the STM32 with the ID 0x0100 (i.e. the supervisory controller) This was working perfectly. However, I'm now testing with the correct id (i.e. 0x0201 for Floor 1 Controller) This has presented an issue where the command that my STM32 is sending isn't moving the elevator. I've tried seting the message 0x01 and 0x05. Neither of these were working. I've tried changing the ID and that wasn't working either.</p>
                 <p>I just figured out that my STM32s aren't moving the eleator because the Raspberry Pi isn't set to sense the message and tell the elevator controller to move the elevator controller.</p>
+            </article>
+
+            <article>
+                <h3>Raspberry Pi Programming</h3>
+
+                <p>Due to a group member traveling I did not have access to the Raspberry Pi code. This required me to create my own Raspberry Pi code. Using the pre-existing Raspberry Pi code on the Raspberry Pi I created an application to receive and transceive. It will also print what the CAN bus is communicating in natural language.</p>
+
+                <figure>
+                    <video height="300" preload controls>
+                        <source src="/ese_project_vi/assets/videos/sean/raspberry-pi-stm32-calling-floor-2.mp4"/>
+                    </video>
+                    <figcaption>Floor Controler 2 making a request, Supervisory Controller passing that on to the Elevator Controller, and the Elevator Controller reporting that the elevator is on floor 2</figcaption>
+                </figure>
+            </article>
+
+            <article>
+                <h3>Elevator Videos</h3>
+
+                <p>Besart and I took videos of the elevator working.</p>
+
+                <figure>
+                    <video height="300" preload controls>
+                        <source src="/ese_project_vi/assets/videos/raspberry-pi-stm32-communicate.mp4"/>
+                    </video>
+                    <figcaption>Both the Raspberry Pi and the STM32 will print the CAN messages.</figcaption>
+                </figure>
+                <figure>
+                    <video height="300" preload controls>
+                        <source src="/ese_project_vi/assets/videos/lcd-showing-floor-number.mp4"/>
+                    </video>
+                    <figcaption>The LCD will show the elevator's floor.</figcaption>
+                </figure>
             </article>
         </section>
 
