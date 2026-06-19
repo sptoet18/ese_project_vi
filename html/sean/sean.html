@@ -10,6 +10,9 @@
     <title>Sean</title>
 </head>
 <body>
+    <h1>About Me</h1>
+    <p>Hi my name is Sean I'm <span id="age"></span></p>
+
     <h1>GitHub</h1>
     <p><a href="https://github.com/sptoet18">sptoet18</a></p>
 
@@ -33,5 +36,9 @@
     <footer>
         <p>Copyright &copy Sean Toet</p>
     </footer>
+
+    <script>
+        document.getElementById("age").textContent = Math.floor((new Date() - new Date('2005-12-18')) / 31536000000);
+    </script>
 </body>
 </html>
