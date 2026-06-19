@@ -141,3 +141,27 @@ text-decoration: none;
 a {
 text-decoration: underline;
 }
+
+input[type="submit"] {
+    width: 500px;
+    height: 700px;
+    display: block;
+    margin: 20px auto;
+    border: none;
+    cursor: pointer;
+
+    color: transparent;      
+    font-size: 0;
+
+    background-image: url("../assets/images/static.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+input[type="submit"]:hover {
+    background-image: url("../assets/images/hover.jpg");
+}
+
+input[type="submit"]:active {
+    background-image: url("../assets/images/click.jpg");
+}
