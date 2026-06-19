@@ -1,0 +1,167 @@
+/* =====================================================
+Request Access Page Stylesheet
+Author: Besart Kalezic
+===================================================== */
+
+body {
+font-family: Arial, Verdana, sans-serif;
+background-color: #f4f6f9;
+color: #333333;
+margin: 20px;
+}
+
+h1 {
+color: #6388cb;
+text-align: center;
+}
+
+form {
+width: 600px;
+margin: 0 auto;
+}
+
+fieldset {
+background-color: white;
+border: 1px solid #cccccc;
+border-radius: 8px;
+padding: 20px;
+margin-bottom: 20px;
+}
+
+legend {
+background-color: #6388cb;
+color: white;
+padding: 5px 15px;
+border-radius: 5px;
+font-weight: bold;
+}
+
+p {
+margin-bottom: 15px;
+}
+
+p label {
+    display: grid;
+    grid-template-columns: 120px 250px;
+    align-items: center;
+    font-weight: bold;
+    gap: 10px;
+}
+
+/* Text Input Fields */
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="date"] {
+width: 250px;
+padding: 8px;
+margin-left: 15px;
+border: 1px solid #cccccc;
+border-radius: 4px;
+}
+
+/* Radio Buttons */
+input[type="radio"] {
+margin-right: 5px;
+}
+
+/* Checkboxes */
+input[type="checkbox"] {
+margin-right: 5px;
+}
+
+/* Dropdown Menu */
+select {
+width: 120px;
+padding: 5px;
+border-radius: 4px;
+}
+
+/* Text Area */
+textarea {
+width: 100%;
+height: 150px;
+padding: 10px;
+color: #707172;
+font-family: Arial, Verdana, sans-serif;
+border: 1px solid #cccccc;
+border-radius: 4px;
+
+background-image: url("../assets/images/Conestoga_logo.jpg");
+background-position: bottom left;
+background-size: 40%;
+background-repeat: no-repeat;
+
+}
+
+textarea {
+color: black;
+outline: 2px solid #6388cb;
+}
+
+/* Submit Button */
+input[type="submit"] {
+background-color: #6388cb;
+color: white;
+font-weight: bold;
+border: none;
+border-radius: 5px;
+padding: 10px 20px;
+cursor: pointer;
+}
+
+input[type="submit"] {
+background-color: white;
+color: #6388cb;
+border: 1px solid #6388cb;
+}
+
+input[type="submit"] {
+background-color: orange;
+color: white;
+}
+
+/* Footer */
+footer {
+margin-top: 20px;
+text-align: center;
+}
+
+#copyright {
+font-size: 0.9em;
+color: #666666;
+}
+
+/* Links */
+a {
+color: #6388cb;
+text-decoration: none;
+}
+
+a {
+text-decoration: underline;
+}
+
+input[type="submit"] {
+    width: 500px;
+    height: 700px;
+    display: block;
+    margin: 20px auto;
+    border: none;
+    cursor: pointer;
+
+    color: transparent;      
+    font-size: 0;
+
+    background-image: url("../assets/images/static.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+input[type="submit"]:hover {
+    background-image: url("../assets/images/hover.jpg");
+}
+
+input[type="submit"]:active {
+    background-image: url("../assets/images/click.jpg");
+}
