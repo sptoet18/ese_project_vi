@@ -8,112 +8,153 @@
     <meta http-equiv="author" content="Sean Toet">
     <meta http-equiv="pragma" content="no-cache"/> 
     <title>Sean's Logbook - Week 6</title>
-    <script src="/ese_project_vi/javascript/components/copyright.js" defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="/ese_project_vi/css/theme.css" rel="stylesheet"/>
+    <link href="/ese_project_vi/css/project-style.css" rel="stylesheet"/>
 </head>
 <body>
-    <header>
+    <div class="container">
+        <header>
+            <nav class="navbar">
+                <a class="nav-link" href="/ese_project_vi/index.html">Home</a>
+                <a class="nav-link" href="/ese_project_vi/html/about.html">About</a>
+                <a class="nav-link" href="/ese_project_vi/html/proj_details.html">Details</a>
+                <a class="nav-link" href="/ese_project_vi/html/proj_plan.html">Plan</a>
+                <a class="nav-link" href="/ese_project_vi/login.html">Login</a>
+                <a class="nav-link" href="/ese_project_vi/html/besart/besart.html">Besart</a>
+                <a class="nav-link" href="/ese_project_vi/html/emiliano/emiliano.html">Emilaino</a>
+                <a class="nav-link" href="/ese_project_vi/html/sean/sean.html">Sean</a>
+            </nav>
+        </header>
 
-    </header>
+        <main>
+            <section class="title">
+                <h1>Sean's Logbook</h1>
+                <p>Week 6</p>
+            </section>
+    
+            <section>
+                <h2>Tasks Completed</h2>
+    
+                <article>
+                    <h3>Wired Buttons and LEDs on Elevator</h3>
+    
+                    <p>Along with Emiliano and Besart I wired up the read buttons to the STM32.</p>
+                    <p>The Floor Controllers have all of their LEDs wired the same. They all use PC8 as an output pin to light up the button. For the buttons themselves each STM32 is wired slightly differently. Floor 1 uses PB12, Floor 2 uses PB15, and Floor 3 uses PB14.</p>
+                    <p>The Car Controller has 3 different buttons so it needs to be qired slightly differently. The actual buttons are the same: Floor 1 uses PB12, Floor 2 uses PB15, Floor 3 uses PB14. The LEDs will be different though. Floor 1 uses PC9, Floor 2 uses PC8, and Floor 3 uses PC6.</p>
+    
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-6">
+                                <figure>
+                                    <img src="/ese_project_vi/assets/images/sean/car-controller-wiring.jpg" height="300">
+                                    <figcaption>Car Controller wiring.</figcaption>
+                                </figure>
+                            </div>
+                            <div class="col-6">
+                                <figure>
+                                    <img src="/ese_project_vi/assets/images/sean/button-led-lit.jpg" height="300">
+                                    <figcaption>Elevator button is lit</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+    
+                <article>
+                    <h3>Programming the STM32</h3>
+    
+                    <p>I programmed the Floor Controllers to light up the LEDs when the button is pressed. When the button is depressed the light will stay on until the elevator reaches the requested floor</p>
+                    <p>I programmed the Floor Controllers to use UART. Specifically the Floor Controllers use USART2 as virtual UART when debugging. The UART is set to print whenever a button is pressed. The UART will also print when there is a CAN message. This allows use to easily monitor the CAN bus and see what is being sent. The STM32 translates the CAN messages into natural language. (i.e. Elevator Controller sent Floor 1)</p>
+                    <p>I programmed the Car Controller. This one is a bit different then the Floor Controllers. It will use three different buttons and three different LEDs.</p>
+    
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-4">
+                                <figure>
+                                    <img src="/ese_project_vi/assets/images/sean/ioc-2026-06-18.png" height="300">
+                                    <figcaption>The current pinout for the STM32</figcaption>
+                                </figure>
+                            </div>
+                            <div class="col-4">
+                                <figure>
+                                    <video height="300" preload controls>
+                                        <source src="/ese_project_vi/assets/videos/sean/stm32-displays-the-elevators-position.mp4"/>
+                                    </video>
+                                    <figcaption>The STM32s will display which floor the elevator is at.</figcaption>
+                                </figure>
+                            </div>
+                            <div class="col-4">
+                                <figure>
+                                <video height="300" preload controls>
+                                    <source src="/ese_project_vi/assets/videos/sean/stm32-receives-can-messages.mp4"/>
+                                </video>
+                                <figcaption>The STM32s will receive CAN messages and display them via UART.</figcaption>
+                            </figure>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+    
+                <article>
+                    <h3>CAN ID Issue</h3>
+    
+                    <p>I've been running into an issue with the CAN ID. Before I was using the STM32 with the ID 0x0100 (i.e. the supervisory controller) This was working perfectly. However, I'm now testing with the correct id (i.e. 0x0201 for Floor 1 Controller) This has presented an issue where the command that my STM32 is sending isn't moving the elevator. I've tried seting the message 0x01 and 0x05. Neither of these were working. I've tried changing the ID and that wasn't working either.</p>
+                    <p>I just figured out that my STM32s aren't moving the eleator because the Raspberry Pi isn't set to sense the message and tell the elevator controller to move the elevator controller.</p>
+                </article>
+    
+                <article>
+                    <h3>Raspberry Pi Programming</h3>
+    
+                    <p>Due to a group member traveling I did not have access to the Raspberry Pi code. This required me to create my own Raspberry Pi code. Using the pre-existing Raspberry Pi code on the Raspberry Pi I created an application to receive and transceive. It will also print what the CAN bus is communicating in natural language.</p>
+    
+                    <figure>
+                        <video height="300" preload controls>
+                            <source src="/ese_project_vi/assets/videos/sean/raspberry-pi-stm32-calling-floor-2.mp4"/>
+                        </video>
+                        <figcaption>Floor Controler 2 making a request, Supervisory Controller passing that on to the Elevator Controller, and the Elevator Controller reporting that the elevator is on floor 2</figcaption>
+                    </figure>
+                </article>
+    
+                <article>
+                    <h3>Elevator Videos</h3>
+    
+                    <p>Besart and I took videos of the elevator working.</p>
+    
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-6">
+                                <figure>
+                                    <video height="300" preload controls>
+                                        <source src="/ese_project_vi/assets/videos/raspberry-pi-stm32-communicate.mp4"/>
+                                    </video>
+                                    <figcaption>Both the Raspberry Pi and the STM32 will print the CAN messages.</figcaption>
+                                </figure>
+                            </div>
+                            <div class="col-6">
+                                <figure>
+                                    <video height="300" preload controls>
+                                        <source src="/ese_project_vi/assets/videos/lcd-showing-floor-number.mp4"/>
+                                    </video>
+                                    <figcaption>The LCD will show the elevator's floor.</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                </article>
+            </section>
+    
+            <a href="/ese_project_vi/index.html">Back to Home</a>
+        </main>
+        
+        <footer>
+            <copyright-text name="Sean Toet"></copyright-text>
+        </footer>
+    </div>
 
-    <main>
-        <section class="title">
-            <h1>Sean's Logbook</h1>
-            <p>Week 6</p>
-        </section>
-
-        <section>
-            <h2>Tasks Completed</h2>
-
-            <article>
-                <h3>Wired Buttons and LEDs on Elevator</h3>
-
-                <p>Along with Emiliano and Besart I wired up the read buttons to the STM32.</p>
-                <p>The Floor Controllers have all of their LEDs wired the same. They all use PC8 as an output pin to light up the button. For the buttons themselves each STM32 is wired slightly differently. Floor 1 uses PB12, Floor 2 uses PB15, and Floor 3 uses PB14.</p>
-                <p>The Car Controller has 3 different buttons so it needs to be qired slightly differently. The actual buttons are the same: Floor 1 uses PB12, Floor 2 uses PB15, Floor 3 uses PB14. The LEDs will be different though. Floor 1 uses PC9, Floor 2 uses PC8, and Floor 3 uses PC6.</p>
-
-                <figure>
-                    <img src="/ese_project_vi/assets/images/sean/car-controller-wiring.jpg" height="300">
-                    <figcaption>Car Controller wiring.</figcaption>
-                </figure>
-
-                <figure>
-                    <img src="/ese_project_vi/assets/images/sean/button-led-lit.jpg" height="300">
-                    <figcaption>Elevator button is lit</figcaption>
-                </figure>
-            </article>
-
-            <article>
-                <h3>Programming the STM32</h3>
-
-                <p>I programmed the Floor Controllers to light up the LEDs when the button is pressed. When the button is depressed the light will stay on until the elevator reaches the requested floor</p>
-                <p>I programmed the Floor Controllers to use UART. Specifically the Floor Controllers use USART2 as virtual UART when debugging. The UART is set to print whenever a button is pressed. The UART will also print when there is a CAN message. This allows use to easily monitor the CAN bus and see what is being sent. The STM32 translates the CAN messages into natural language. (i.e. Elevator Controller sent Floor 1)</p>
-                <p>I programmed the Car Controller. This one is a bit different then the Floor Controllers. It will use three different buttons and three different LEDs.</p>
-
-                <figure>
-                    <img src="/ese_project_vi/assets/images/sean/ioc-2026-06-18.png" height="300">
-                    <figcaption>The current pinout for the STM32</figcaption>
-                </figure>
-
-                <figure>
-                    <video height="300" preload controls>
-                        <source src="/ese_project_vi/assets/videos/sean/stm32-displays-the-elevators-position.mp4"/>
-                    </video>
-                    <figcaption>The STM32s will display which floor the elevator is at.</figcaption>
-                </figure>
-
-                <figure>
-                    <video height="300" preload controls>
-                        <source src="/ese_project_vi/assets/videos/sean/stm32-receives-can-messages.mp4"/>
-                    </video>
-                    <figcaption>The STM32s will receive CAN messages and display them via UART.</figcaption>
-                </figure>
-            </article>
-
-            <article>
-                <h3>CAN ID Issue</h3>
-
-                <p>I've been running into an issue with the CAN ID. Before I was using the STM32 with the ID 0x0100 (i.e. the supervisory controller) This was working perfectly. However, I'm now testing with the correct id (i.e. 0x0201 for Floor 1 Controller) This has presented an issue where the command that my STM32 is sending isn't moving the elevator. I've tried seting the message 0x01 and 0x05. Neither of these were working. I've tried changing the ID and that wasn't working either.</p>
-                <p>I just figured out that my STM32s aren't moving the eleator because the Raspberry Pi isn't set to sense the message and tell the elevator controller to move the elevator controller.</p>
-            </article>
-
-            <article>
-                <h3>Raspberry Pi Programming</h3>
-
-                <p>Due to a group member traveling I did not have access to the Raspberry Pi code. This required me to create my own Raspberry Pi code. Using the pre-existing Raspberry Pi code on the Raspberry Pi I created an application to receive and transceive. It will also print what the CAN bus is communicating in natural language.</p>
-
-                <figure>
-                    <video height="300" preload controls>
-                        <source src="/ese_project_vi/assets/videos/sean/raspberry-pi-stm32-calling-floor-2.mp4"/>
-                    </video>
-                    <figcaption>Floor Controler 2 making a request, Supervisory Controller passing that on to the Elevator Controller, and the Elevator Controller reporting that the elevator is on floor 2</figcaption>
-                </figure>
-            </article>
-
-            <article>
-                <h3>Elevator Videos</h3>
-
-                <p>Besart and I took videos of the elevator working.</p>
-
-                <figure>
-                    <video height="300" preload controls>
-                        <source src="/ese_project_vi/assets/videos/raspberry-pi-stm32-communicate.mp4"/>
-                    </video>
-                    <figcaption>Both the Raspberry Pi and the STM32 will print the CAN messages.</figcaption>
-                </figure>
-                <figure>
-                    <video height="300" preload controls>
-                        <source src="/ese_project_vi/assets/videos/lcd-showing-floor-number.mp4"/>
-                    </video>
-                    <figcaption>The LCD will show the elevator's floor.</figcaption>
-                </figure>
-            </article>
-        </section>
-
-        <a href="/ese_project_vi/index.html">Back to Home</a>
-    </main>
-
-    <footer>
-        <copyright-text name="Sean Toet"></copyright-text>
-    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="/ese_project_vi/javascript/components/copyright.js" defer></script>
 </body>
 </html>

@@ -17,30 +17,41 @@
         <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
         <meta http-equiv="pragma" content="no-cache"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <script src="/ese_project_vi/javascript/components/copyright.js" defer></script>
     </head>
     <!-- ===Body Section ===  -->
     <body>
-        <h1>Please Log In</h1>
-        <form action="php/login.php" method="post" id="login">
-            <!-- Add Username  -->
-            <p>Username: 
-                <input type="text" id="username" name="username"/>
-            </p>
-            <!-- Add Password -->
-            <p>Password:
-                <input type="password" id="password" name="password"/>
-            </p>
+        <header>
 
-            <p id="errorMessage"></p>
+        </header>
 
-            <!-- Generate Log in button -->
-            <input type="submit" value="Log in"/>
-            <p><a href="./access/request_access.html">Request Access</a></p> 
-        </form>
+        <main>
+            <section class="title">
+                <h1>Login</h1>
+            </section>
+
+            <section>
+                <form action="php/login.php" method="post" id="login">
+                    <!-- Add Username  -->
+                    <p>Username: 
+                        <input type="text" id="username" name="username"/>
+                    </p>
+                    <!-- Add Password -->
+                    <p>Password:
+                        <input type="password" id="password" name="password"/>
+                    </p>
+
+                    <p id="errorMessage"></p>
+
+                    <!-- Generate Log in button -->
+                    <input type="submit" value="Log in"/>
+                    <p><a href="./access/request_access.html">Request Access</a></p> 
+                </form>
+            </section>
+        </main>
 
         <footer>
-            <!-- Add Copy Right  -->
-            <p id = "copyright">Copyright &copy Emiliano Perez Pellicer</p>
+            <copyright-text name="Emiliano Perez Pellicer"></copyright-text>
         </footer>
 
         <script>
