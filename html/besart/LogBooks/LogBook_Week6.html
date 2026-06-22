@@ -1,61 +1,174 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Besart's Week 6 Logbook">
+    <meta name="robots" content="noindex nofollow"/>
+    <meta http-equiv="author" content="Besart Kalezic">
+    <meta http-equiv="pragma" content="no-cache"/> 
+    <title>Besart's Logbook - Week 6</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="/ese_project_vi/css/theme.css" rel="stylesheet"/>
+    <link href="/ese_project_vi/css/project-style.css" rel="stylesheet"/>
+</head>
+
+<body>
+<!DOCTYPE html>
 
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Week 6 Logbook</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Besart's Week 6 Logbook">
+    <meta name="robots" content="noindex nofollow"/>
+    <meta http-equiv="author" content="Besart Kalezic">
+    <meta http-equiv="pragma" content="no-cache"/>
+
+
+<title>Besart's Logbook - Week 6</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="/ese_project_vi/css/theme.css" rel="stylesheet"/>
+<link href="/ese_project_vi/css/project-style.css" rel="stylesheet"/>
+
+
 </head>
 
 <body>
+    <div class="container">
+    <header>
+        <nav class="navbar">
+            <a class="nav-link" href="../../../index.html">Home</a>
+            <a class="nav-link" href="../../about.html">About</a>
+            <a class="nav-link" href="../../../html/proj_details.html">Details</a>
+            <a class="nav-link" href="../../../html/proj-plan.html">Plan</a>
+            <a class="nav-link" href="../../../login.html">Login</a>
+            <a class="nav-link" href="../../besart/besart.html">Besart</a>
+            <a class="nav-link" href="../../emiliano/emiliano.html">Emiliano</a>
+            <a class="nav-link" href="../../sean/sean.html">Sean</a>
+        </nav>
+    </header>
 
-<h1>Week 6 Logbook</h1>
+    <main>
+        <section class="title">
+            <h1>Besart's Logbook</h1>
+            <p>Week 6</p>
+        </section>
 
-<h2>Overview</h2>
-<p>
-    This week focused on CAN bus communication testing, elevator system integration,
-    hardware assembly, and front-end web development. Work included validating CAN
-    communication using an oscilloscope, monitoring UART communications from STM32
-    microcontrollers, wiring floor station hardware, and designing the Request Access
-    webpage using CSS.
-</p>
+        <section>
+            <h2>Tasks Completed</h2>
 
-<h2>Tasks Completed</h2>
-<ul>
-    <li>Measured CAN High and CAN Low voltages using an oscilloscope.</li>
-    <li>Captured and analyzed CAN communication waveforms.</li>
-    <li>Tested elevator operation and monitored CAN traffic between controllers.</li>
-    <li>Captured UART messages transmitted from STM32 microcontrollers.</li>
-    <li>Developed and styled the Request Access webpage using CSS.</li>
-    <li>Wired floor station switches into the elevator control system.</li>
-    <li>Installed and tested floor station status LEDs.</li>
-    <li>Verified communication and functionality after hardware integration.</li>
-</ul>
+            <article>
+                <h3>CAN Bus Voltage Testing</h3>
 
-<h2>Challenges</h2>
-<p>
-    One challenge encountered was obtaining accurate oscilloscope measurements
-    of the CAN bus signals. Proper probe placement and grounding techniques
-    were required to successfully capture and analyze CAN High and CAN Low
-    communication activity.
-</p>
+                <p>
+                    This week I tested CAN High and CAN Low voltage levels on the elevator system.
+                    I used an oscilloscope to capture the CAN waveform and verify that communication
+                    activity was present on the bus during elevator operation.
+                </p>
 
-<h2>What I Learned</h2>
-<p>
-    This week I gained additional experience using oscilloscopes to analyze
-    CAN bus communication and UART data transmissions. I also learned how CSS
-    can be used to improve webpage appearance through styling, layout management,
-    hover effects, and custom button design.
-</p>
+                <p>
+                    The testing helped confirm that the CAN transceivers were producing measurable
+                    differential signals. I also used the oscilloscope captures to better understand
+                    how CAN communication appears electrically during system operation.
+                </p>
+            </article>
 
-<h2>Next Steps</h2>
-<ul>
-    <li>Incorporate a better FSM</li>
-    <li>Begin Elevator Communication with website</li>
-    <li>Improve webpage navigation and overall user interface design.</li>
-    <li>Perform additional testing on floor station hardware and software integration.</li>
-</ul>
+            <article>
+                <h3>Elevator Communication Testing</h3>
 
-<p>COPYRIGHT &copy; Besart Kalezic</p>
+                <p>
+                    I tested the elevator system while monitoring CAN communication between the
+                    controllers. This included observing messages transmitted during elevator calls,
+                    floor requests, and system responses.
+                </p>
+
+                <p>
+                    I also captured UART output from the STM32 microcontrollers. The UART messages
+                    made it easier to confirm what commands were being sent and received by the
+                    controllers during testing.
+                </p>
+            </article>
+
+            <article>
+                <h3>Floor Station Wiring</h3>
+
+                <p>
+                    I wired switches and LEDs into the elevator floor stations. The switches were
+                    connected to allow user input from the floor stations, while the LEDs were wired
+                    to provide visual feedback when buttons were pressed or when the system responded.
+                </p>
+
+                <p>
+                    After wiring the hardware, I verified that the floor stations were physically
+                    connected and ready for further testing with the STM32 controllers.
+                </p>
+            </article>
+
+            <article>
+                <h3>Request Access Page CSS Development</h3>
+
+                <p>
+                    I worked on the styling for the Request Access page using CSS. This involved
+                    improving the layout of the form, styling input fields, formatting fieldsets,
+                    and creating a more organized user interface.
+                </p>
+
+                <p>
+                    I also worked with hover and active states for button styling, which helped me
+                    understand how CSS can be used to create interactive visual feedback on a webpage.
+                </p>
+            </article>
+
+            <article>
+                <h3>Challenges</h3>
+
+                <p>
+                    A challenge this week was capturing reliable CAN signals using the oscilloscope.
+                    CAN communication uses differential signaling, so probe placement and grounding
+                    were important for getting useful measurements without affecting the circuit.
+                </p>
+
+                <p>
+                    Another challenge was making sure the hardware wiring, UART output, and CAN
+                    communication all matched the expected elevator behavior during testing.
+                </p>
+            </article>
+
+            <article>
+                <h3>What I Learned</h3>
+
+                <p>
+                    I learned how to use oscilloscope measurements to verify CAN bus activity and
+                    how UART output can support debugging by showing controller messages in a readable
+                    format. I also learned how CSS can improve a webpage through layout, spacing,
+                    input styling, and interactive button effects.
+                </p>
+            </article>
+
+            <article>
+                <h3>Next Steps</h3>
+
+                <ul>
+                    <li>Continue validating CAN communication between elevator controllers.</li>
+                    <li>Expand testing documentation for CAN and UART verification.</li>
+                    <li>Continue improving the Request Access page styling.</li>
+                    <li>Perform more integration testing with the wired switches and LEDs.</li>
+                </ul>
+            </article>
+        </section>
+
+        <a href="../../besart/besart.html">Back to Besart's Main Page</a>
+    </main>
+
+    <footer>
+        <p>COPYRIGHT &copy; Besart Kalezic</p>
+    </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
