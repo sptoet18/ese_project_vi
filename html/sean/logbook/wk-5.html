@@ -8,36 +8,63 @@
     <meta http-equiv="author" content="Sean Toet">
     <meta http-equiv="pragma" content="no-cache"/> 
     <title>Sean's Logbook - Week 5</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="/ese_project_vi/css/theme.css" rel="stylesheet"/>
+    <link href="/ese_project_vi/css/project-style.css" rel="stylesheet"/>
 </head>
 <body>
-    <header>
+    <div class="container">
+        <header>
+            <nav class="navbar">
+                <a class="nav-link" href="../../../index.html">Home</a>
+                <a class="nav-link" href="../../../html/about.html">About</a>
+                <a class="nav-link" href="../../../html/proj_details.html">Details</a>
+                <a class="nav-link" href="../../../html/project-plan.html">Plan</a>
+                <a class="nav-link" href="../../../login.html">Login</a>
+                <a class="nav-link" href="../../../html/besart/besart.html">Besart</a>
+                <a class="nav-link" href="../../../html/emiliano/emiliano.html">Emilaino</a>
+                <a class="nav-link" href="../../../html/sean/sean.html">Sean</a>
+            </nav>
+        </header>
 
-    </header>
-
-    <main>
-        <section class="title">
-            <h1>Sean's Logbook</h1>
-            <p>Week 5</p>
-        </section>
-
-        <section>
-            <h2>Tasks Completed</h2>
-
-            <article>
-                <ul>
-                    <li>Flashed STM32 to the elevator. Was able to call floor 1</li>
-                    <li>Added feature that uses the buttons to call to each floor</li>
-                    <li>Added feature that displays the floor called on the LEDs</li>
-                    <li>Added feature sets the floor 1 controller to be the floor one and controller and display that it belongs on floor one</li>
-                    <li>Added feature that displays where the elevator using the LEDs</li>
-                </ul>
-            </article>
-        </section>
-    </main>
+        <main>
+            <section class="title">
+                <h1>Sean's Logbook</h1>
+                <p>Week 5</p>
+            </section>
     
-    <footer>
-        <a href="/ese_project_vi/index.html">Back to Home</a>
-        <copyright-text name="Sean Toet"></copyright-text>
-    </footer>
+            <section>
+                <h2>Tasks Completed</h2>
+    
+                <article>
+                    <h3>STM32 Programming</h3>
+    
+                    <p>Using some basic STM32 code I was able to call the elevator to the first floor.</p>
+                    <p>I added floor calling for each floor using the blue shield.</p>
+                    <p>I added LEDs to display where the elevator car is.</p>
+                    <p>Allowed the floors to be set on start up. This meas that when the STM32 first boots up it wasits for one of the floor buttons to be pressed and then sets itself as that floor.</p>
+                    <p>LEDs will show where the elevator is.</p>
+    
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <figure>
+                                    <img src="../../../assets/images/sean/stm32-shield.jpg" height="300">
+                                    <figcaption>STM 32 Shield</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </main>
+        
+        <footer>
+            <copyright-text name="Sean Toet"></copyright-text>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="../../../javascript/components/copyright.js" defer></script>
 </body>
 </html>
