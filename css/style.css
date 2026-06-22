@@ -1,16 +1,14 @@
-body {
-    flex-direction: row;
+/* body {
     font-family: Arial, Helvetica, sans-serif;
     color: #3D405B;
-}
+} */
 
-/* Main Header */
-#main-header {
-    color: #ffffff;
-    background-color: #3D405B;
-    text-align: center;
-    border-radius: 12px;
-    padding: 10px;
+p {
+    color: green;
+    text-decoration: underline;
+    border-style: solid;
+    border-width: 3px;
+    border-color: green;
 }
 
 h1 {
@@ -19,40 +17,9 @@ h1 {
     padding: 12px;
 }
 
-#top-bar {
-    display: flex;
-    flex-direction: row;
-    color: #ffffff;
-    background-color: #3D405B;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    padding: 10px;
-    gap: 32px;
-}
-
 image{
     height: auto;
     width: auto;
-}
-
-a.top-bar:visited {
-    color: #ffffff;
-    text-decoration: none;
-}
-a.top-bar:hover {
-    color: #808080;
-    text-decoration: none;
-}
-
-.profile-picture {
-    display: flex;
-    justify-self: center;
-    border-style: solid;
-    border-width: 6px;
-    border-color: #3D405B;
-    border-radius: 12px;
 }
 
 figure {
@@ -68,27 +35,3 @@ figcaption {
     margin-top: 6px;
     padding: 6px;
 }
-
-.card {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    padding: 12px;
-}
-
-.button-link {
-    color: #ffffff;
-    background-color: #3D405B;
-    border-radius: 6px;
-    padding: 6px;
-}
-
-.button-matrix {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-#copyright{
-    display: flex;
-} 

@@ -3,25 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="sean's About Page">
+    <meta name="robots" content="noindex nofollow"/>
+    <meta http-equiv="author" content="Sean Toet">
+    <meta http-equiv="pragma" content="no-cache"/> 
     <title>Sean</title>
 </head>
 <body>
-    <h1>GitHub</h1>
-    <p><a href="https://github.com/sptoet18">sptoet18</a></p>
+    <header>
 
-    <h1>Logbooks</h1>
-    <ul>
-        <li><a href="logbook/wk-2.html">Week 2</a></li>
-        <li><a href="logbook/wk-3.html">Week 3</a></li>
-        <li><a href="logbook/wk-4.html">Week 4</a></li>
-    </ul>
+    </header>
 
-    <h1>Picture</h1>
-    <figure>
-        <img src="/ese_project_vi/assets/images/sean/profile_picture.jpg" alt="A picture of Sean" height="500">
-        <figcaption>That is Sean</figcaption>
-    </figure>
+    <main>
+        <section class="title">
+            <h1>Sean Toet</h1>
+        </section>
+
+        <section>
+            <article>
+                <p>Hi my name is Sean. I'm <span id="age"></span></p>
+            </article>
+
+            <article>
+                <h3>Github</h3>
+
+                <p><a href="https://github.com/sptoet18">sptoet18</a></p>
+            </article>
+
+            <article>
+                <h3>Logbooks</h3>
+
+                <ul>
+                    <li><a href="logbook/wk-2.html">Week 2</a></li>
+                    <li><a href="logbook/wk-3.html">Week 3</a></li>
+                    <li><a href="logbook/wk-4.html">Week 4</a></li>
+                    <li><a href="logbook/wk-5.html">Week 5</a></li>
+                    <li><a href="logbook/wk-6.html">Week 6</a></li>
+                </ul>
+            </article>
+
+            <article>
+                <figure>
+                    <img src="/ese_project_vi/assets/images/sean/profile_picture.jpg" alt="A picture of Sean" height="300">
+                    <figcaption>Sean Toet</figcaption>
+                </figure>
+            </article>
+        </section>
+    </main>
     
-    <a href="/ese_project_vi/index.html">Back to Home</a>
+    <footer>
+        <a href="/ese_project_vi/index.html">Back to Home</a>
+        <copyright-text name="Sean Toet"></copyright-text>
+    </footer>
+
+    <script>
+        document.getElementById("age").textContent = Math.floor((new Date() - new Date('2005-12-18')) / 31536000000);
+    </script>
 </body>
 </html>
