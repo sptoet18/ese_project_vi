@@ -81,6 +81,9 @@ int pcanRx(int num_msgs){
 				(int)Rxmsg.ID, 
 				(int)Rxmsg.LEN,
 				(int)Rxmsg.DATA[0]);
+
+
+				tis is only a test 
 		i++;
 		}
 	}
