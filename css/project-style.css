@@ -1,7 +1,9 @@
 
+/* ----------------------------- */
+
 section.title {
-    color: var(--title-color);
-    background-color: var(--title-background-color);
+    /* color: var(--title-color);
+    background-color: var(--title-background-color); */
     text-align: center;
     font-size: xx-large;
 }
