@@ -17,7 +17,8 @@ int menu(){
 		printf("2. Receive CAN message(s) using this program\n");
 		printf("3. Control elevator from website\n");
 		printf("4. Demo mode - loop\n");
-		printf("5. Exit program\n");
+		printf("5. Finite State Machine");
+		printf("6. Exit program\n");
 		printf("\nYour choice: ");
 		scanf("%d", &usrchoice);
 
