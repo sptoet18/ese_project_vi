@@ -48,8 +48,6 @@ const char* fsmStateName(ElevatorSate s){
 
 //Initial Condition 
 void fsmInit(ElevatorFSM *fsm){
-    int f; 
-
     fsm->state = STATE_FLOOR1; 
     //Add the queues 
     fsm->carQueue = std::queue<int>();
@@ -71,12 +69,12 @@ static bool queueContainsFloor(std::queue<int> q, int floor){
     while(!q.empty()){
         //Check if the current floor is a the head of the queue 
         if(q.front() == floor){
-            return true;
-            //If so, pop it to add the next one 
-            q.pop(); 
+            return true; 
         }
-        return false; 
+        //If so, pop it to add the next one 
+        q.pop();
     }
+    return false; 
 }
 
 static void purgeFloorFromQueue(std::queue<int> &q, int floor){

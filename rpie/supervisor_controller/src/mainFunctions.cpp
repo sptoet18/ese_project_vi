@@ -17,12 +17,12 @@ int menu(){
 		printf("2. Receive CAN message(s) using this program\n");
 		printf("3. Control elevator from website\n");
 		printf("4. Demo mode - loop\n");
-		printf("5. Finite State Machine");
+		printf("5. Finite State Machine\n");
 		printf("6. Exit program\n");
 		printf("\nYour choice: ");
 		scanf("%d", &usrchoice);
 
-		if (usrchoice >=1 && usrchoice <= 5) {	
+		if (usrchoice >=1 && usrchoice <= 6) {	
 			return usrchoice;
 		} else {
 			printf("\nPLEASE SELECT FROM CHOICES 1-5 ONLY!\n\n");
