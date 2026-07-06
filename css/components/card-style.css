@@ -1,0 +1,17 @@
+div.card {
+    color: var(--card-color);
+    background-color: var(--card-background-color);
+
+    padding: 24px;
+    border-radius: 20px;
+}
+
+div.card h1 {
+    color: var(--card-color);
+    text-align: center;
+}
+
+div.card a {
+    color: var(--card-color);
+    text-align: center;
+}

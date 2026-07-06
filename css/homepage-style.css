@@ -1,0 +1,77 @@
+main {
+    background-color: var(--background-color);
+
+    display: flex;
+    flex: 1;
+}
+
+main > div.container {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+section.title {
+    display: flex;
+    flex: 9;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+}
+
+section.title h1 {
+    color: var(--accent-color-3);
+
+    font-size: 80px;
+    font-weight: bolder;
+    text-align: center;
+}
+
+section.title h2 {
+    color: var(--accent-color-4);
+
+    border-top-style: solid;
+    border-top-color: var(--accent-color-4);
+    border-top-width: 1px;
+
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 100;
+}
+
+section.datetime {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+
+    max-height: 40px;
+
+    justify-content: space-between;
+
+    margin: 12px;
+}
+
+section.datetime span {
+    color: var(--white);
+    background-color: var(--accent-color-3);
+    text-align: center;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    width: 200px;
+    height: 100%;
+
+    padding: 12px;
+    border-radius: 20px;
+}
+
+footer div.container {
+    color: var(--white);
+    text-align: center;
+    
+    padding-top: 12px;
+}

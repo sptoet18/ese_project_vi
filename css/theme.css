@@ -1,10 +1,34 @@
 :root {
-    --title-color: #ffffff;
-    --title-background-color: #053C5E;
+    --text-color: #5a84ac;
+    --background-color: #f5e9e7;
 
-    --heading-color: #053C5E;
-    --heading-border-color: #053C5E;
+    --primary-color: #5a84ac;
+    --primary-color-text: #f5e9e7;
 
-    --figure-background-color: #053C5E;
-    --figure-border-color:  #053C5E;
+    --accent-color-1: #c1c0c2;
+    --accent-color-2: #f5e9e7;
+    --accent-color-3: #5a84ac;
+    --accent-color-4: #8a9db1;
+    --accent-color-5: #ecc5c6;
+
+    --white: #ffffff;
+
+    --border-color: var(--primary-color);
+
+    --heading-color: var(--primary-color);
+    --heading-border-color: var(--primary-color);
+
+    --figure-background-color: var(--primary-color);
+    --figure-border-color:  var(--primary-color);
+
+    --bar-color: var(--primary-color);
+
+    /* Top Bar Component */
+    --title-color: var(--white);
+    --title-background-color: var(--primary-color);
+
+    /* Card Component */
+    --card-color: var(--primary-color-text);
+    --card-background-color: var(--primary-color);
+    
 }
