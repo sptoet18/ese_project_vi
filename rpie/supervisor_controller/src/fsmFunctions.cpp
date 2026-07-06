@@ -51,38 +51,118 @@ void fsmInit(ElevatorFSM *fsm){
     int f; 
 
     fsm->state = STATE_FLOOR1; 
-    //Loocp Acrros the floors 
-    for(f = 0; f < 3; f++){
-        fsm->floorRequest[f] = 0; 
-        fsm->carRequest[f] =0; 
-    }
+    //Add the queues 
+    fsm->carQueue = std::queue<int>();
+    fsm->floorQueue = std::queue<int>();
+    fsm->websiteQueue = std::queue<int>();
+    
 
     fsm->doorClosed =0; //Door Starts Open
     fsm->previousFloor = 1; 
-    fsm->targetFloor = 1; 
+    fsm->targetFloor = 1;
+    fsm->lastDbfloor = 1;
+    fsm->lastWebsitePoll = time(NULL);  
     fsm->doorTimeStart = time(NULL); 
     fsm->movingTimeStart = 0; 
 }
 
-//Go to next floor once the door is closed (Passenger in car) first car request then floor class 
-static int fsmFindNextRequest(ElevatorFSM *fsm, int currentFloor){
-    int f; 
-
-    //Check for rhe Car Controller Request 
-    for (f = 1; f <= 3; f++){
-        if(f != currentFloor && fsm->carRequest[f - 1]){
-            return f; 
+//Queue Helpers 
+static bool queueContainsFloor(std::queue<int> q, int floor){
+    while(!q.empty()){
+        //Check if the current floor is a the head of the queue 
+        if(q.front() == floor){
+            return true;
+            //If so, pop it to add the next one 
+            q.pop(); 
         }
+        return false; 
     }
-
-    //Checl for the Current Floor and Floor Request 
-    for (f = 1; f <= 3; f++){
-        if(f != currentFloor && fsm->floorRequest[f -1]){
-            return f; 
-        }
-    }
-    return 0; 
 }
+
+static void purgeFloorFromQueue(std::queue<int> &q, int floor){
+    std::queue<int> kept; 
+    while(!q.empty()){
+        //if the front of the queue is a floor push it out 
+        int f = q.front(); 
+        q.pop(); 
+        if(f != floor){
+            kept.push(f); 
+        }
+    }  
+
+    q = kept; 
+}
+
+// A floor arrived or picked as the next mocing target 
+// satisfisies that floor request in all three queues at once 
+static void fsmConsumeRequestsForFloor(ElevatorFSM *fsm, int floor){
+    purgeFloorFromQueue(fsm->carQueue, floor);
+    purgeFloorFromQueue(fsm->floorQueue, floor);
+    purgeFloorFromQueue(fsm->websiteQueue, floor);
+}
+
+//Priotity queue 
+static int fsmPeekPriotity(ElevatorFSM *fsm, int currentFloor){
+    std::queue<int> tmp; 
+
+    tmp = fsm->carQueue; 
+    while(!tmp.empty()){
+        //Give a value to the current foor
+        int f = tmp.front(); 
+        //pop that floor 
+        tmp.pop(); 
+        if(f != currentFloor){
+            return f; 
+        }
+    }
+
+    tmp = fsm->floorQueue; 
+    while(!tmp.empty()){
+        //Give a value to the current foor
+        int f = tmp.front(); 
+        //pop that floor 
+        tmp.pop(); 
+        if(f != currentFloor){
+            return f; 
+        }
+    }
+
+    tmp = fsm->websiteQueue; 
+    while(!tmp.empty()){
+        //Give a value to the current foor
+        int f = tmp.front(); 
+        //pop that floor 
+        tmp.pop(); 
+        if(f != currentFloor){
+            return f; 
+        }
+    }
+
+    return 0; 
+
+}
+
+//Polls the DB for a website requedted floor at most once every Macro preivously define 
+static void fsmPollWebsite(ElevatorFSM *fsm){
+    double sinceLastPoll = difftime(time(NULL), fsm->lastWebsitePoll); 
+
+    if(sinceLastPoll < WEBSITE_POLL_SEC){
+        return; 
+    }
+    fsm->lastWebsitePoll = time(NULL); 
+
+    int dbFloor = db_getFloorNum();
+    if(dbFloor == fsm->lastDbfloor){
+        return; //No change since we last looked or is the same 
+    }
+    fsm->lastDbfloor = dbFloor; 
+
+    if(dbFloor >= 1 && dbFloor <= 3 && !queueContainsFloor(fsm->websiteQueue, dbFloor)){
+        fsm->websiteQueue.push(dbFloor);
+        printf("[FSM] Website request queued (Priority 3): FLOOR %d\n", dbFloor); 
+    }
+}
+
 
 //Whenever the elevator arrives at a floor 
 //EC_TO_ALL confirmaton, or from the MoVING fall back timeput 
@@ -90,10 +170,11 @@ static void fsmArrive(ElevatorFSM *fsm, int floor){
     fsm->state = (ElevatorSate)(floor - 1); //STATE FLOOR - 1 
     fsm->doorClosed  = 0; 
     fsm->doorTimeStart = time(NULL);
-    fsm->floorRequest[floor - 1] = 0; //This floor outstanding request are now satisfied 
-    fsm->carRequest[floor - 1] = 0; 
-
+    
+    fsmConsumeRequestsForFloor(fsm, floor); 
+    
     db_setFloorNum(floor); //Keep the website/Db in sync with the real  elevator position 
+    fsm->lastDbfloor = floor; //Next website poll doesn't re que our own update 
 
     printf("[FSM] Arrived at Floor %d - door OPEN(%ds Timer started)\n", floor, DOOR_OPEN_TIME_SEC);
 }
@@ -104,25 +185,45 @@ static void fsmProcessMessage(ElevatorFSM *fsm, int id, int data){
 
     switch (id){
     case ID_F1_TO_SC:
-        fsm->floorRequest[0] = 1; 
-        printf("[FSM] Floor-call request detected: FLOOR 1\n");
+        floor = ID_F1_TO_SC; 
+        if(!queueContainsFloor(fsm->floorQueue, floor)){
+            fsm->floorQueue.push(floor);
+            printf("[FSM] Floor-call request detected (Priority 2): FLOOR 1\n");
+        }
         break;
     
     case ID_F2_TO_SC:
-        fsm->floorRequest[1] = 1; 
-        printf("[FSM] Floor-call request detected: FLOOR 2\n");
+        floor = ID_F2_TO_SC;
+        if(!queueContainsFloor(fsm->floorQueue, floor)){
+           fsm->floorQueue.push(floor);
+           printf("[FSM] Floor-call request detected (Priotity 2): FLOOR 2\n"); 
+        }
         break;
     
     case ID_F3_TO_SC:
-        fsm->floorRequest[2] = 1; 
-        printf("[FSM] Floor-call request detected: FLOOR 3\n");
+        floor = ID_F3_TO_SC;
+        if(!queueContainsFloor(fsm->floorQueue, floor)){
+            fsm->floorQueue.push(floor);
+            printf("[FSM] Floor-call request detected (Priority 2): FLOOR 3\n");
+        } 
         break;
     
     case ID_CC_TO_SC:
-        floor = FloorFromHex(data); 
-        fsm->carRequest[floor - 1] = 1; 
-        printf("[FSM] Car Request Detected: FLOOR %d\n");
+        floor = FloorFromHex(data);
+        if(!queueContainsFloor(fsm->carQueue, floor)){
+            fsm->carQueue.push(floor);
+            printf("[FSM] Car Request Detected (Prioptity 1): FLOOR %d\n", floor); 
+        }  
         break;
+    
+    case ID_EC_TO_ALL:
+        if(fsm->state == STATE_MOVING){
+            floor = FloorFromHex(data);
+            if(floor == fsm->targetFloor){
+                fsmArrive(fsm, floor); 
+            }
+        }
+        break; 
 
     default:
     //do nothing 
@@ -132,6 +233,9 @@ static void fsmProcessMessage(ElevatorFSM *fsm, int id, int data){
 
 //Runs one FSM evaluation stem (door timer, request shcedueling, moving fallback )
 static void fsmStep(ElevatorFSM *fsm){
+    fsmPollWebsite(fsm); //Queues accumulate even while moving - Queed for larer 
+
+
     if(fsm->state != STATE_MOVING){
         //Register the current floor 
         int currentFloor = (int)fsm->state + 1; //State Floor1(0) -> 1
@@ -142,8 +246,7 @@ static void fsmStep(ElevatorFSM *fsm){
             double elapsed = difftime(time(NULL), fsm->doorTimeStart); 
             if(elapsed >= DOOR_OPEN_TIME_SEC){
                 fsm->doorClosed = 1; 
-                fsm->floorRequest[currentFloor - 1]=0; ///Request at this floor is now served 
-                fsm->carRequest[currentFloor - 1]=0; 
+                fsmConsumeRequestsForFloor(fsm, currentFloor); //Requesrts at this floor are now beind done 
                 printf("[FSM] Door CLOSED at Floor %d\n", currentFloor);
             
             }else{
@@ -152,8 +255,9 @@ static void fsmStep(ElevatorFSM *fsm){
         }
 
         //DOOR IS CLOSED 
-        int target = fsmFindNextRequest(fsm, currentFloor); 
+        int target = fsmPeekPriotity(fsm, currentFloor); 
         if(target != 0 && target != currentFloor){
+            fsmConsumeRequestsForFloor(fsm, target); //We got ro the destination and ot remove from queues 
             fsm->previousFloor = currentFloor; 
             fsm->targetFloor = target; 
             fsm->state = STATE_MOVING; 

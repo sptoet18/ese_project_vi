@@ -115,7 +115,7 @@ const char* decodeMsgType(int data){
 		break;
 	
 	default:
-		return "UNKNOWN"
+		return "UNKNOWN";
 		break;
 	}
 }
@@ -234,7 +234,7 @@ int pcanRx(int num_msgs){
 				(int)Rxmsg.DATA[0]);
 			
 			//RX Switch case: Print who sent it , the lenght, and the type of request it is 
-			printRxDecoded((int)Rxmsg.ID, (int)Rxmsg.LEN,, (int)Rxmsg.DATA[0]);
+			printRxDecoded((int)Rxmsg.ID, (int)Rxmsg.LEN,(int)Rxmsg.DATA[0]);
 
 		i++;
 		}
@@ -250,25 +250,25 @@ int pcanRx(int num_msgs){
 
 /// Persistent-handle, non-blocking CAN I/O for the FSM LOOP 
 int pcanFsmOpen(void){
-	hFsm = LINUX_CAN_Open("/dev/pcanusb32", O_RDWR);
-	if(!hFsm){
+	hfsm = LINUX_CAN_Open("/dev/pcanusb32", O_RDWR);
+	if(!hfsm){
 		printf("[FSM] ERROR: Could not open /dev/pcanusb32\n");
 		return -1; 
 	}
-	status = CAN_Init(hFsm, CAN_BAUD_125K, CAN_INIT_TYPE_ST);
-	status = CAN_Status(hFsm); //Clear Channel before use, as in pcanTx/Rx
+	status = CAN_Init(hfsm, CAN_BAUD_125K, CAN_INIT_TYPE_ST);
+	status = CAN_Status(hfsm); //Clear Channel before use, as in pcanTx/Rx
 	return 0;  
 }
 
 void pcanFsmClose(void){
-	if(hFsm){
-		CAN_Close(hFsm);
-		hFsm = NULL; 
+	if(hfsm){
+		CAN_Close(hfsm);
+		hfsm = NULL; 
 	}
 }
 
 int pcanFsmTx(int id, int data){
-	if(!hFsm){
+	if(!hfsm){
 		return -1; 
 	}
 
@@ -277,19 +277,19 @@ int pcanFsmTx(int id, int data){
 	TxmsgFsm.LEN = 1; 
 	TxmsgFsm.DATA[0] = data; 
 
-	status = CAN_Write(hFsm, &TxmsgFsm); 
+	status = CAN_Write(hfsm, &TxmsgFsm); 
 
 	printTxDecoded(id, (int)TxmsgFsm.LEN, data); //Same TX Csae 
 
 	return(status == PCAN_NO_ERROR) ? 0 : -1; 
 }
 
-int pcanFsmRxPoll(int *outId int *outData, int *outLen){
-	if (!hFsm){
+int pcanFsmRxPoll(int *outId, int *outData, int *outLen){
+	if (!hfsm){
 		return -1; 
 	}
 
-	status = CAN_Read(hFsm, &RxmsgFsm);
+	status = CAN_Read(hfsm, &RxmsgFsm);
 
 	if(status == PCAN_RECEIVE_QUEUE_EMPTY){
 		return 0; //Nothing wating, no error just no message 

@@ -2,6 +2,7 @@
 #define FSM_FUNCTIONS
 
 #include <time.h>
+#include <queue>
 
 /*  
 Elevator Finite State Machone 
@@ -32,18 +33,23 @@ typedef enum {
 } ElevatorSate; 
 
 #define DOOR_OPEN_TIME_SEC 10 ///Door stayys open for 10 sec before closing 
-
 #define MOVING_FALLBACK_SEC 8 ///
+#define WEBSITE_POLL_SEC 1 //How often to poll the DB for a new websirte requested floor 
 
 typedef struct {
     ElevatorSate state; 
 
-    int floorRequest[3]; //Outside call requets, index 0 = floor 1, and so on 
-    int carRequest[3]; //Inside car requests, index 0 = floor 1
+    ///Priority queues 
+    std::queue<int> carQueue; // Priotity 1 
+    std::queue<int> floorQueue; //Priotity 2 
+    std::queue<int> websiteQueue; //Priority 3 
 
     int doorClosed; // 0 = door open, 1 = door open 
     int previousFloor; //Las floor the elevator was AT before it started moving (1,2,3)
     int targetFloor; //Destinantion floor while state == STATE_MOVING (1,2,3)
+
+    int lastDbfloor;     ///last currentfloor read/written value to rghe DB to detect new website requests 
+    time_t lastWebsitePoll; //Time Stamp for last poll 
 
     time_t doorTimeStart; //Timestamp when the door was last open 
     time_t movingTimeStart; //Timestamp when the elevator started moving (foor the fallback timeout)
