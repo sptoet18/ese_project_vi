@@ -1,6 +1,7 @@
 #include "../include/pcanFunctions.h"
 #include "../include/databaseFunctions.h"
 #include "../include/mainFunctions.h"
+#include "../include/fsmFuntions.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,8 +69,11 @@ int main() {
 					sleep(20);
 				}
 				break;
-				
-			case 5: 
+			case 5:
+				fsmRun(); //Autonomous Elevator FSM - Starts on Floor 1, door open 10s timer 
+				break; 
+
+			case 6: 
 				return(0);
 			
 			default:

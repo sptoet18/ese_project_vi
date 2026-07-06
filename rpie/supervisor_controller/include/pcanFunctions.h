@@ -24,5 +24,21 @@
 int pcanTx(int id, int data);
 int pcanRx(int num_msgs);
 
+// --- Decode helpers (used by the RX/TX switch-case printouts) ---
+// Exposed in case other modules want human-readable names too.
+const char* decodeSenderName(int id);
+const char* decodeRecipientName(int id);
+const char* decodeMsgType(int data);
+
+// --- Persistent-handle, non-blocking CAN I/O for continuous FSM use ---
+// Unlike pcanTx()/pcanRx() (which open/close the channel and block on every
+// call), these keep one CAN handle open so the FSM loop can poll for
+// messages AND service a door timer in the same loop without stalling.
+int  pcanFsmOpen(void);                                   // open + init channel once; returns 0 on success, -1 on failure
+void pcanFsmClose(void);                                  // close the persistent channel
+int  pcanFsmTx(int id, int data);                          // non-blocking send (prints TX decode); returns 0 on success
+int  pcanFsmRxPoll(int *outId, int *outData, int *outLen); // non-blocking receive; returns 1 if a message was read, 0 if none waiting, -1 on error
+
+
 
 #endif
