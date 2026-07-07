@@ -18,6 +18,7 @@ section.title h2 {
     font-size: medium;
 
     text-transform: uppercase;
+    text-align: center;
 }
 
 main {
@@ -45,7 +46,7 @@ section.body > h1 {
     border-bottom-style: solid;
 }
 
-section.body > article h1 {
+section.body article h1 {
     color: var(--heading-color);
 
     font-size: 24px;
@@ -55,7 +56,7 @@ section.body > article h1 {
     border-bottom-style: solid;
 }
 
-section.body > article h2 {
+section.body article h2 {
     color: var(--heading-color);
 
     font-size: 24px;
@@ -82,7 +83,10 @@ figure {
 }
 
 figure img {
-    width: 300px;
+    display: block;
+
+    height: 300px;
+    max-width: 100%;
 }
 
 figure figcaption {
