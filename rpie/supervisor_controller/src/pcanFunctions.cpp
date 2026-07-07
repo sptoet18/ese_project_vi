@@ -100,7 +100,16 @@ const char* decodeRecipientName(int id){
 }
 
 //Map a data byte value to the type of request/status it represents 
-const char* decodeMsgType(int data){
+const char* decodeMsgType(int id, int  data){
+
+	if(id == ID_F1_TO_SC && data == 0x01){
+		return "FLOOR 1";
+	}else if(id == ID_F2_TO_SC && data == 0x01){
+		return "FLOOR 2";
+	}else if(id == ID_F3_TO_SC && data == 0x01){
+		return "FLOOR 3";
+	}
+
 	switch (data){
 	case	GO_TO_FLOOR1:
 		return "FLOOR 1"; 
@@ -118,6 +127,7 @@ const char* decodeMsgType(int data){
 		return "UNKNOWN";
 		break;
 	}
+
 }
 
 
@@ -126,27 +136,27 @@ const char* decodeMsgType(int data){
 static void printRxDecoded(int id, int len, int data){
 	switch (id){
 	case ID_EC_TO_ALL: //0x101: EC -> ALL (Position/Status report)
-		printf(" [RX] Sender: %-30s LEN: %d Type: EC Status/Position Report -> %s\n", decodeSenderName(id), len, decodeMsgType(data)); 
+		printf(" [RX] Sender: %-30s LEN: %d Type: EC Status/Position Report -> %s\n", decodeSenderName(id), len, decodeMsgType(id,data)); 
 		break;
 	
 	case ID_CC_TO_SC: //0x200: CC -> SC (Request from inside the car)
-		printf(" [RX] Sender: %-30s LEN: %d Type: Car Request (inside elevator) -> %s\n", decodeSenderName(id), len, decodeMsgType(data)); 
+		printf(" [RX] Sender: %-30s LEN: %d Type: Car Request (inside elevator) -> %s\n", decodeSenderName(id), len, decodeMsgType(id,data)); 
 		break;
 
 	case ID_F1_TO_SC: //0x201: Floor 1 call button -> SC
-		printf(" [RX] Sender: %-30s LEN: %d Type: Floor Car Request -> %s\n", decodeSenderName(id), len, decodeMsgType(data)); 
+		printf(" [RX] Sender: %-30s LEN: %d Type: Floor Request -> %s\n", decodeSenderName(id), len, decodeMsgType(id,data)); 
 		break;
 
 	case ID_F2_TO_SC: //0x202: Floor 2 call button -> SC 
-		printf(" [RX] Sender: %-30s LEN: %d Type: Floor Car Request -> %s\n", decodeSenderName(id), len, decodeMsgType(data)); 
+		printf(" [RX] Sender: %-30s LEN: %d Type: Floor Car Request -> %s\n", decodeSenderName(id), len, decodeMsgType(id,data)); 
 		break;
 
 	case ID_F3_TO_SC: //0x203: Floor 3 call button -> SC 
-		printf(" [RX] Sender: %-30s LEN: %d Type: Floor Car Request -> %s\n", decodeSenderName(id), len, decodeMsgType(data)); 
+		printf(" [RX] Sender: %-30s LEN: %d Type: Floor Car Request -> %s\n", decodeSenderName(id), len, decodeMsgType(id,data)); 
 		break;
 
 	case ID_SC_TO_EC: //0x100: SC -> EC (Only Expected if SC hear its own Tx Echo back)
-		printf(" [RX] Sender: %-30s LEN: %d Type: Command to EC -> %s\n", decodeSenderName(id), len, decodeMsgType(data)); 
+		printf(" [RX] Sender: %-30s LEN: %d Type: Command to EC -> %s\n", decodeSenderName(id), len, decodeMsgType(id,data)); 
 		break;
 
 	
@@ -161,7 +171,7 @@ static void printRxDecoded(int id, int len, int data){
 static void printTxDecoded(int id, int len, int data){
 	switch (id){
 	case ID_SC_TO_EC: //0x100:  The only ID the SC is defined to transmit on 
-		printf(" [TX] From Supervisory Cntroller (SC) To: %-25s LEN: %d Type: Command -> GO TO %s\n", decodeRecipientName(id), len, decodeMsgType(data));
+		printf(" [TX] From Supervisory Cntroller (SC) To: %-25s LEN: %d Type: Command -> GO TO %s\n", decodeRecipientName(id), len, decodeMsgType(id,data));
 		break;
 	
 	default:

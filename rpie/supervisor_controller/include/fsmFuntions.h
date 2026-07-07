@@ -32,9 +32,11 @@ typedef enum {
     STATE_MOVING = 3
 } ElevatorSate; 
 
-#define DOOR_OPEN_TIME_SEC 10 ///Door stayys open for 10 sec before closing 
+#define DOOR_OPEN_TIME_SEC 10///Door stayys open for 10 sec before closing 
 #define MOVING_FALLBACK_SEC 8 ///
 #define WEBSITE_POLL_SEC 1 //How often to poll the DB for a new websirte requested floor 
+#define REQUEST_COLLECTION_SEC 5
+#define PRE_MOVE_DELAY_SEC 10 
 
 typedef struct {
     ElevatorSate state; 
@@ -52,7 +54,11 @@ typedef struct {
     time_t lastWebsitePoll; //Time Stamp for last poll 
 
     time_t doorTimeStart; //Timestamp when the door was last open 
+    time_t collectTimerStart; //Time to listen for request 
     time_t movingTimeStart; //Timestamp when the elevator started moving (foor the fallback timeout)
+
+    int lockedTarget; 
+    time_t preMoveTimerStart; 
 
 }ElevatorFSM; 
 

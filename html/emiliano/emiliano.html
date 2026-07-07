@@ -16,14 +16,15 @@
         <meta name="robots" content="noindex nofollow"/>   <!-- Do not want page or any of its links to be indexed-->
         <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
         <meta http-equiv="pragma" content="no-cache"/> 
-
-        <!-- Css Style 1 -->
-        <link href="/ese_project_vi/css/style.css" type="text/css" rel="stylesheet"/>
+        <link href="/css/theme.css" rel="stylesheet"/>
+        <link href="/css/style.css" rel="stylesheet"/>
+        <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
+        <link href="/css/components/card-style.css" rel="stylesheet"/>
     </head>
     <!-- === Body section === -->
     <body>
         <header>
-
+            <div id="topbar"></div>
         </header>
 
         <main>
@@ -46,7 +47,16 @@
                 </article>
 
                 <article>
-                    <h3>Logbooks</h3>
+                     <div class="col">
+                        <div class="card">
+                            <h1>Logbooks</h1>
+                              <ul>
+                                <li>
+                                    <a href="logbooks/logbook_EPP.html">Emiliano's Logbook</a>
+                                </li>
+                              </ul>
+                        </div>
+                    </div>
                 </article>
             </section>
         </main>
@@ -76,9 +86,7 @@
 
         <!-- === Add a Logbook Link === -->
         <h2>Logbooks</h2>
-        <ul>
-            <li> <a href="logbooks/logbook_EPP.html">Emiliano's Logbook</a></li>
-        </ul>
+      
 
         <footer>
             <!-- === CopyRight Symbol  === -->
