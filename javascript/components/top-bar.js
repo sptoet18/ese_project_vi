@@ -1,5 +1,4 @@
 const topbarHTML = `
-
 <div class="container text-center">
     <div class="row">
         <div class="col-3" id="title">
@@ -13,7 +12,7 @@ const topbarHTML = `
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                             <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="index.html">Home</a>
+                                <a class="nav-link active" aria-current="page" href="/index.html">Home</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link active" aria-current="page" target="_blank" href="https://github.com/sptoet18/ese_project_vi.git">GitHub</a>
@@ -23,9 +22,9 @@ const topbarHTML = `
                                     Project
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="./html/proj_details.html">Project Details</a></li>
-                                    <li><a class="dropdown-item" href="./html/project-plan.html">Project Plan</a></li>
-                                    <li><a class="dropdown-item" href="./html/about.html">About the Project</a></li>
+                                    <li><a class="dropdown-item" href="/html/proj_details.html">Project Details</a></li>
+                                    <li><a class="dropdown-item" href="/html/project-plan.html">Project Plan</a></li>
+                                    <li><a class="dropdown-item" href="/html/about.html">About the Project</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item"  aria-current="page" target="_blank" href="https://www.conestogac.on.ca/fulltime/bachelor-of-engineering-electronic-systems-engineering">ESE Program</a></li>
                                 </ul>
@@ -35,9 +34,9 @@ const topbarHTML = `
                                     Members
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="./html/besart/besart.html">Besart Kalezic</a></li>
-                                    <li><a class="dropdown-item" href="./html/emiliano/emiliano.html">Emiliano Perez Pellicer</a></li>
-                                    <li><a class="dropdown-item" href="./html/sean/sean.html">Sean Toet</a></li>
+                                    <li><a class="dropdown-item" href="/html/besart/besart.html">Besart Kalezic</a></li>
+                                    <li><a class="dropdown-item" href="/html/emiliano/emiliano.html">Emiliano Perez Pellicer</a></li>
+                                    <li><a class="dropdown-item" href="/html/sean/sean.html">Sean Toet</a></li>
                                 </ul>
                             </li>
                         </ul>
