@@ -22,8 +22,8 @@ const topbarHTML = `
                                     Project
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="/html/proj_details.html">Project Details</a></li>
-                                    <li><a class="dropdown-item" href="/html/project-plan.html">Project Plan</a></li>
+                                    <li><a class="dropdown-item" href="/html/details.html">Project Details</a></li>
+                                    <li><a class="dropdown-item" href="/html/plan.html">Project Plan</a></li>
                                     <li><a class="dropdown-item" href="/html/about.html">About the Project</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item"  aria-current="page" target="_blank" href="https://www.conestogac.on.ca/fulltime/bachelor-of-engineering-electronic-systems-engineering">ESE Program</a></li>
