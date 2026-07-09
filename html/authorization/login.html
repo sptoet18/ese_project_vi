@@ -17,37 +17,45 @@
         <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
         <meta http-equiv="pragma" content="no-cache"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
-        <script src="/js/components/copyright.js" defer></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <link href="/css/theme.css" rel="stylesheet"/>
+        <link href="/css/style.css" rel="stylesheet"/>
+        <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
     </head>
     <!-- ===Body Section ===  -->
-    <body>
+    <body class="d-flex flex-column min-vh-100">
         <header>
-
+            <div id="topbar"></div>
         </header>
 
-        <main>
-            <section class="title">
-                <h1>Login</h1>
-            </section>
-
-            <section>
-                <form action="php/login.php" method="post" id="login">
-                    <!-- Add Username  -->
-                    <p>Username: 
-                        <input type="text" id="username" name="username"/>
-                    </p>
-                    <!-- Add Password -->
-                    <p>Password:
-                        <input type="password" id="password" name="password"/>
-                    </p>
-
-                    <p id="errorMessage"></p>
-
-                    <!-- Generate Log in button -->
-                    <input type="submit" value="Log in"/>
-                    <p><a href="/html/access/request_access.html">Request Access</a></p> 
-                </form>
-            </section>
+        <main class="flex-grow-1">
+            <div class="container">
+                <section class="title">
+                    <h1>Login</h1>
+                    <h2>To access the elevator</h2>
+                </section>
+    
+                <section class="login">
+                    <div>
+                        <form action="/php/authorization/login.php" method="post" id="login">
+                            <!-- Add Username  -->
+                            <p>Username: 
+                                <input type="text" id="username" name="username"/>
+                            </p>
+                            <!-- Add Password -->
+                            <p>Password:
+                                <input type="password" id="password" name="password"/>
+                            </p>
+        
+                            <p id="errorMessage"></p>
+        
+                            <!-- Generate Log in button -->
+                            <input type="submit" value="Log in"/>
+                            <p><a href="/html/authorization/request-access.html">Request Access</a></p> 
+                        </form>
+                    </div>
+                </section>
+            </div>
         </main>
 
         <footer>
@@ -79,5 +87,7 @@
                 }
             })
         </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="/js/components/top-bar.js"></script>
     </body>
 </html>

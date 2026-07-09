@@ -63,6 +63,25 @@ section.body article h2 {
     font-weight: bold;
 }
 
+section.login {
+    margin-top: 12px;
+
+    justify-items: center;
+    align-items: center;
+}
+
+section.login div {
+    border-color: var(--primary-color);
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 12px;
+
+    padding: 12px;
+
+    justify-items: center;
+    align-items: center;
+}
+
 figure.headshot {
     display: flex;
     flex: 1;
