@@ -12,7 +12,10 @@ CXXFLAGS	:= -std=c++17 -Wall -Wextra -g
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
-LFLAGS =
+LFLAGS = -L./lib \
+		 -L/usr/lib/aarch64-linux-gnu \
+		 -L/usr/local/lib \
+		 -L/usr/lib
 
 # define output directory
 OUTPUT	:= output
@@ -48,7 +51,7 @@ endif
 INCLUDES	:= $(patsubst %,-I%, $(INCLUDEDIRS:%/=%))
 
 # define the C libs
-LIBS		:= $(patsubst %,-L%, $(LIBDIRS:%/=%))
+LIBS		:= -lmysqlcppconn -lpcan
 
 # define the C source files
 SOURCES		:= $(wildcard $(patsubst %,%/*.cpp, $(SOURCEDIRS)))

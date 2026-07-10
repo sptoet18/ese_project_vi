@@ -15,9 +15,14 @@
 #define ID_F2_TO_SC  0x202	// ID for messages from floor 2 controller to supervisory controller
 #define ID_F3_TO_SC  0x203	// ID for messages from floor 3 controller to supervisory controller	
 
-#define GO_TO_FLOOR1 0x05	// Go to floor 1
+#define GO_TO_FLOOR1 0x05 // Go to floor 1
 #define GO_TO_FLOOR2 0x06	// Go to floor 2
 #define GO_TO_FLOOR3 0x07	// Go to floor 3
+
+#define GO_TO_FLOOOR1 0x01 // Go to floor 1
+#define GO_TO_FLOOOR2 0x02	// Go to floor 2
+#define GO_TO_FLOOOR3 0x03	// Go to floor 3
+
 
 
 // Function declarations
@@ -28,7 +33,7 @@ int pcanRx(int num_msgs);
 // Exposed in case other modules want human-readable names too.
 const char* decodeSenderName(int id);
 const char* decodeRecipientName(int id);
-const char* decodeMsgType(int data);
+const char* decodeMsgType(int id, int data);
 
 // --- Persistent-handle, non-blocking CAN I/O for continuous FSM use ---
 // Unlike pcanTx()/pcanRx() (which open/close the channel and block on every

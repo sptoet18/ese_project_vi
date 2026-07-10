@@ -71,5 +71,7 @@ int db_setFloorNum(int floorNum) {
 	delete pstmt;
 	delete stmt;
 	delete con;
+
+	return 0;
 } 
  
