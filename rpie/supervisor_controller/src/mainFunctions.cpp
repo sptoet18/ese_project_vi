@@ -147,6 +147,15 @@ int FloorFromHex(int Hex){
 		case GO_TO_FLOOR3:
 			return(3);
 			break;
+		case GO_TO_FLOOOR1:
+			return(1);
+			break; 
+		case GO_TO_FLOOOR2:
+			return(2);
+			break; 
+		case GO_TO_FLOOOR3:
+			return(3);
+			break;
 		default:
 			return(1);							// Default is to reset to floor 1 on bad input
 		}
