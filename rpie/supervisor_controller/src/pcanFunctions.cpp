@@ -167,7 +167,6 @@ static void printRxDecoded(int id, int len, int data){
 		printf(" [RX] Sender: %-30s LEN: %d Type: Command to EC -> %s\n", decodeSenderName(id), len, decodeMsgType(id,data)); 
 		break;
 
-	
 	default:
 		printf(" [RX] Sender: Unknown (ID 0x%x) LEN %d Type: Unrecognized message\n", id, len); 
 		break;
