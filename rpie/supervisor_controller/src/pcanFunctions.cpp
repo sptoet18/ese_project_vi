@@ -110,6 +110,14 @@ const char* decodeMsgType(int id, int  data){
 		return "FLOOR 3";
 	}
 
+	if(id == ID_CC_TO_SC && data == GO_TO_FLOOOR1){
+		return "FLOOR 1";
+	}else if(id == ID_CC_TO_SC && data == GO_TO_FLOOOR2){
+		return "FLOOR 2";
+	}else if(id == ID_CC_TO_SC && data == GO_TO_FLOOOR3){
+		return "FLOOR 3";
+	}
+
 	switch (data){
 	case	GO_TO_FLOOR1:
 		return "FLOOR 1"; 

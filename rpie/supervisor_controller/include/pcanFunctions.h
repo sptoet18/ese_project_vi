@@ -19,6 +19,9 @@
 #define GO_TO_FLOOR2 0x06	// Go to floor 2
 #define GO_TO_FLOOR3 0x07	// Go to floor 3
 
+#define GO_TO_FLOOOR1 0x01 // Go to floor 1
+#define GO_TO_FLOOOR2 0x02	// Go to floor 2
+#define GO_TO_FLOOOR3 0x03	// Go to floor 3
 
 
 

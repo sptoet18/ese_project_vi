@@ -32,11 +32,11 @@ typedef enum {
     STATE_MOVING = 3
 } ElevatorSate; 
 
-#define DOOR_OPEN_TIME_SEC 10///Door stayys open for 10 sec before closing 
+#define DOOR_OPEN_TIME_SEC 5///Door stayys open for 10 sec before closing 
 #define MOVING_FALLBACK_SEC 8 ///
 #define WEBSITE_POLL_SEC 1 //How often to poll the DB for a new websirte requested floor 
 #define REQUEST_COLLECTION_SEC 5
-#define PRE_MOVE_DELAY_SEC 10 
+#define PRE_MOVE_DELAY_SEC 5
 
 typedef struct {
     ElevatorSate state; 

@@ -301,7 +301,7 @@ static void fsmStep(ElevatorFSM *fsm){
             time_t nowSec = time(NULL); 
             if(nowSec != lastCollectingPrint ){ //resuse the same once/sec
                 lastCollectingPrint = nowSec; 
-                printf("[FSM] DEBUG: still collecting");
+                printf("[FSM] DEBUG: still collecting\n");
             }
             return; //Still on the collecting window - keep collecting
         }
