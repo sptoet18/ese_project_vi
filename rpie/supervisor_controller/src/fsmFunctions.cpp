@@ -152,8 +152,7 @@ static void fsmPollWebsite(ElevatorFSM *fsm){
     }
     fsm->lastWebsitePoll = time(NULL); 
 
-    //int dbFloor = db_getFloorNum();
-    int dbFloor = fsm->lastDbfloor;
+    int dbFloor = db_getFloorNum();
     if(dbFloor == fsm->lastDbfloor){
         return; //No change since we last looked or is the same 
     }
@@ -178,7 +177,7 @@ static void fsmArrive(ElevatorFSM *fsm, int floor){
     
     fsmConsumeRequestsForFloor(fsm, floor); 
     
-    //db_setFloorNum(floor); //Keep the website/Db in sync with the real  elevator position 
+    db_setFloorNum(floor); //Keep the website/Db in sync with the real  elevator position 
     fsm->lastDbfloor = floor; //Next website poll doesn't re que our own update 
 
     printf("[FSM] Arrived at Floor %d - door OPEN(%ds Timer started)\n", floor, DOOR_OPEN_TIME_SEC);
@@ -360,7 +359,7 @@ void fsmRun(void){
     }
 
     fsmInit(&fsm); //Keep DB in sync with the FSM initial State 
-    //db_setFloorNum(1); 
+    db_setFloorNum(1); 
     pcanFsmTx(ID_SC_TO_EC, GO_TO_FLOOR1); //Make sure the EC agree we are starting at floor 1
 
     g_fsmStop = 0; 
