@@ -50,16 +50,11 @@
                     <h2>Roles and Tasks</h2>
                     <p>This summarizes our tasks for Phase II</p>
 
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-12">
-                                <figure>
-                                    <img src="/assets/images/sean/task-and-roles.png" height="300">
-                                    <figcaption>Task and Roles</figcaption>
-                                </figure>
-                            </div>
-                        </div>
-                    </div>
+                    <figure>
+                        <img src="/assets/images/sean/task-and-roles.png" height="300">
+                        <figcaption>Task and Roles</figcaption>
+                    </figure>
+
                 </article>
 
                 <article>
@@ -72,6 +67,34 @@
                     <h1>Videos</h1>
 
                     <p>In the future these videos will be added to the current page. For now you can find them on Github at Main under 'assets/videos/sean/week-9'</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/sean/week-9/debrief-4-document.mp4"/>
+                        </video>
+                        <figcaption>Video showcasing our Debrief 4 Document</figcaption>
+                    </figure>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/sean/week-9/gantt-chart.mp4"/>
+                        </video>
+                        <figcaption>Video showcasing our Gantt Chart</figcaption>
+                    </figure>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/sean/week-9/github.mp4"/>
+                        </video>
+                        <figcaption>Video showcasing our GitHub page</figcaption>
+                    </figure>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/sean/week-9/website.mp4"/>
+                        </video>
+                        <figcaption>Video showcasing our Website</figcaption>
+                    </figure>
                 </article>
 
                 <article>
@@ -93,7 +116,7 @@
                 </article>
 
                 <article>
-                    <h1>Website Updating</h1>
+                    <h1>Website Cohesion</h1>
 
                     <p>I went through each of my logbooks and changed the styling to be consistent with each other.</p>
 
@@ -102,6 +125,119 @@
                     <p>I updated the Plan page to use out new website style. This one what pretty interesting as it includes a table which serves as the gantt chart.</p>
 
                     <p>I updated the Details page to include the top bar. The new style wasn't added as it was a part of Assignment 1 for Software Engineering so it will stay as it is as a historical landmark.</p>
+                </article>
+
+                <article>
+                    <h1>Elevator Communication</h1>
+
+                    <p>The car controller was communicating with the elevator controller directly. This needs to change as we need to send the message through the Supervisory Controller. To do this our floor requests need to change our floor requests from 0x05, 0x06, and 0x07 to 0x01, 0x02, 0x03.</p>
+
+                    <p>Now we are trying to debug the Supervisory Controller's issue. The STM32 is sending the correct message. The Raspberry Pi is receiving the correct message. The Raspberry Pi is not sending a message to the Elevator Controller.</p>
+
+                    <p>We've confirmed that the Elevator Controller is not the issue because if we load known-working code on the elevator's Pi then the elevator moves just fine.</p>
+
+                    <p>The Raspberry Pi is able to send a message to the Elevator Controller and it will move to Floor 1 on start-up. Whenever a floor is requested the Elevator Controller doesn't move the car. This should mean that the Raspberry Pi is causing the issue.</p>
+
+                    <p>We learned that the Car Controller is communicating with the Elevator Controller. We are going to try re-flashing the Elevator Controller to ensure that we know that code running on the controller. Re-flashing the Elevator Controller had no effect on the system.</p>
+
+                    <p>It seems like it may be an issue with the Supervisory code as all of the messages are being sent but the elevator is still no moving. Every so often the Supervisory controller will receive a request but not do anything with it. It also causes any future requests to be ignored too.</p>
+
+                    <p>There is an artificial 5 second delay on the Supervisory Controller when a Floor/Car Controller sends a request to allow for time to show that the queue is working with priority.</p>
+
+                    <h2>Text Plan</h2>
+                    <p>I created a Test Plan for the Supervisory Controller to start at the basics. The following text will explain what happened throughout and during the test.</p>
+
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <iframe src="/assets/documents/Supervisory Controller Test Plan.pdf" width="100%" height="600px"></iframe>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Results</h2>
+                    <p>We where unable to receive messages from the Elevator Controller with the following ID and data. ID: `0x101` data: `0x00`. We were getting an `status = 4` this is directly from the `can_read()` function from the `libcan` library. We are unable to change the library so we are going to move on and mark down that we are unable to receive this message.</p>
+
+                    <h2>Discovery</h2>
+                    <p>Right now we have our Supervisory Controller set to receive and send messages. There is no queue or FSM. The issue that we are running into is that the Elevator Controller will only move the elevator once. After that it will not move the elevator again. We have confirmed that this is the case because we keep everything the same, unplug and re-plug the Arduino, essentially power cycling it and starting the code again. And then it works just fine.</p>
+
+                    <h2>Final Result</h2>
+                    <p>We re-flashed the Elevator Controller (Arduino) and everything is working fine.</p>
+
+                    <h2>Debugging and Verification Videos</h2>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/sean/elevator-contoller-broken.mp4"/>
+                        </video>
+                        <figcaption>Video showing the Elevator Controller breaking</figcaption>
+                    </figure>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/sean/elevator-controller-fixed.mp4"/>
+                        </video>
+                        <figcaption>Video showing that the Elevator Controller is fixed</figcaption>
+                    </figure>
+                </article>
+
+                <article>
+                    <h1>User Authentication</h1>
+
+                    <p>I'm about to get started on the user authentication. My plan is to re-read through the PHP document from the Software Engineering course. This will server as a reminder of PHP and how the authentication should work.</p>
+
+                    <p>I've been developing on Windows for a while now. For some reason my PHP stopped working correctly today. I know that it was working before because that is how I did my Software Engineering midterm. For now I am able to test things on the VM but I'm going to try debug the issue on Windows.</p>
+
+                    <p>By updating the Apache configuration files (see the Apache server file on Ubuntu for more details) I was able to get my PHP working on windows.</p>
+
+                    <p>Now I was able to ensure that the user is logged in before looking at the member's page. If the user attempts to look at the member's page they will be redirected to the login page.</p>
+
+                    <pre><code class="language-php">
+                        &lt;?php
+                            session_start();
+
+                            if (isset($_SESSION['username'])) {
+                                $username = $_SESSION['username'];
+
+                                if ($username === "seantoet") {
+                                } else {
+                                    echo "&lt;script&gt;location.href = \"/html/authorization/login.html\"&lt;/script&gt;";
+                                }
+                            } else {
+                                echo "&lt;script&gt;location.href = \"/html/authorization/login.html\"&lt;/script&gt;";
+                            }
+                        ?&gt;
+                    </code></pre>
+                </article>
+
+                <article>
+                    <h1>Elevator Scheduling with Group 2</h1>
+
+                    <p>Due to the amount of debugging we have communicated with Group 2 about when each group can work on the elevator. We have discussed that Group 2 would use the elevator on Thursdays while we will work on it on Fridays. This schedule hasn't been fully determined but it will be implemented in Week 10 for sure.</p>
+                </article>
+
+                <article>
+                    <h1>Updated CAN Protocol</h1>
+
+                    <p>Right now our CAN Protocol doesn't support communication about the car door opening and closing. I went ahead and updated the protocol. I also added a legend explain it more in depth.</p>
+
+                    <p>`0x08` will indicate that the door is closed and `0x09` will indicate that the door is open.</p>
+
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <iframe src="/assets/documents/CAN Protocol.pdf" width="100%" height="600px"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article>
+                    <h1>Car Controller</h1>
+
+                    <p>I noticed a bug with the Car Controller code. The push button lights were not turning off correctly. That is because the Elevator Controller would sometimes send 0x01, 0x02, 0x03 instead of 0x05, 0x06, 0x07. Now that the Elevator Controller is fixed it will work fine.</p>
+
+                    <p>Now that the CAN Protocol is updated I'm going to add the door close and open buttons. Group 2 is planning to switch some of the wiring on the elevator so I won't be able to continue programming until that happens.</p>
                 </article>
             </section>
         </div>

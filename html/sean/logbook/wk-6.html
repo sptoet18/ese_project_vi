@@ -61,32 +61,24 @@
                     <p>I programmed the Floor Controllers to use UART. Specifically the Floor Controllers use USART2 as virtual UART when debugging. The UART is set to print whenever a button is pressed. The UART will also print when there is a CAN message. This allows use to easily monitor the CAN bus and see what is being sent. The STM32 translates the CAN messages into natural language. (i.e. Elevator Controller sent Floor 1)</p>
                     <p>I programmed the Car Controller. This one is a bit different then the Floor Controllers. It will use three different buttons and three different LEDs.</p>
     
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-4">
-                                <figure>
-                                    <img src="/assets/images/sean/ioc-2026-06-18.png" height="300">
-                                    <figcaption>The current pinout for the STM32</figcaption>
-                                </figure>
-                            </div>
-                            <div class="col-4">
-                                <figure>
-                                    <video height="300" preload controls>
-                                        <source src="/assets/videos/sean/stm32-displays-the-elevators-position.mp4"/>
-                                    </video>
-                                    <figcaption>The STM32s will display which floor the elevator is at.</figcaption>
-                                </figure>
-                            </div>
-                            <div class="col-4">
-                                <figure>
-                                <video height="300" preload controls>
-                                    <source src="/assets/videos/sean/stm32-receives-can-messages.mp4"/>
-                                </video>
-                                <figcaption>The STM32s will receive CAN messages and display them via UART.</figcaption>
-                            </figure>
-                            </div>
-                        </div>
-                    </div>
+                    <figure>
+                        <img src="/assets/images/sean/ioc-2026-06-18.png" height="300">
+                        <figcaption>The current pinout for the STM32</figcaption>
+                    </figure>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/sean/stm32-displays-the-elevators-position.mp4"/>
+                        </video>
+                        <figcaption>The STM32s will display which floor the elevator is at.</figcaption>
+                    </figure>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/sean/stm32-receives-can-messages.mp4"/>
+                        </video>
+                        <figcaption>The STM32s will receive CAN messages and display them via UART.</figcaption>
+                    </figure>
                 </article>
     
                 <article>
