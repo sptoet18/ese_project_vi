@@ -108,6 +108,13 @@ figure img {
     max-width: 100%;
 }
 
+figure video {
+    display: block;
+
+    height: 300px;
+    max-width: 100%;
+}
+
 figure figcaption {
     text-align: center;
 }
