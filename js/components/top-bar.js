@@ -39,6 +39,9 @@ const topbarHTML = `
                                     <li><a class="dropdown-item" href="/html/sean/sean.html">Sean Toet</a></li>
                                 </ul>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="/php/authorization/member.php">Elevator Controls</a>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -55,6 +58,9 @@ const topbarHTML = `
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link active" aria-current="page" href="#">Sign Up</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="/php/authorization/logout.php">Logout</a>
                                 </li>
                             </ul>
                         </div>
