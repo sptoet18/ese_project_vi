@@ -2,5 +2,5 @@
     session_start();
     session_destroy();
 
-    // todo: redirect to home page
+    echo "<script>location.href = \"/index.html\"</script>";
 ?>
