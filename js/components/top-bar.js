@@ -1,0 +1,77 @@
+const topbarHTML = `
+<div class="container text-center">
+    <div class="row">
+        <div class="col-3" id="title">
+            <div>
+                <h1>Project VI</h1>
+            </div>
+        </div>
+        <div class="col-6" id="bar">
+            <nav class="navbar navbar-expand-md">
+                <div class="container-fluid">
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="/index.html">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" target="_blank" href="https://github.com/sptoet18/ese_project_vi.git">GitHub</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Project
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/html/details.html">Project Details</a></li>
+                                    <li><a class="dropdown-item" href="/html/plan.html">Project Plan</a></li>
+                                    <li><a class="dropdown-item" href="/html/about.html">About the Project</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item"  aria-current="page" target="_blank" href="https://www.conestogac.on.ca/fulltime/bachelor-of-engineering-electronic-systems-engineering">ESE Program</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Members
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/html/besart/besart.html">Besart Kalezic</a></li>
+                                    <li><a class="dropdown-item" href="/html/emiliano/emiliano.html">Emiliano Perez Pellicer</a></li>
+                                    <li><a class="dropdown-item" href="/html/sean/sean.html">Sean Toet</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="/php/authorization/member.php">Elevator Controls</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div class="col-3" id="info">
+            <div>
+                <nav class="navbar navbar-expand-lg">
+                    <div class="container-fluid">
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="/html/authorization/login.html">Login</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="#">Sign Up</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="/php/authorization/logout.php">Logout</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('topbar').outerHTML = topbarHTML;
+});
