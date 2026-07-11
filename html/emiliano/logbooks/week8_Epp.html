@@ -2,28 +2,72 @@
 <!--AUTHOR: Emiliano Perez Pellicer
     DATE: 22-05-2026
     COMMENTS: This will be my main page to control and update my personal Logbook From weeks 1 - 14
-    VERSION: 1.0 
+    VERSION: 1.0
 -->
-
-<!--==== HTML SCRIPT =====-->
-<html lang = "en">
+<html lang="en">
     <!-- === Head section === -->
     <head>
-        <!-- === Include Specia -->
         <meta charset="UTF-8">
-        <!-- === Title ==== -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- === Title === -->
         <title>Emiliano's Engineering Logbook Week 8</title>
         <meta name="description" content="This is the logbook week 8 page for Emiliano" />
-        <meta name="robots" content="noindex nofollow"/>   <!-- Do not want page or any of its links to be indexed-->
-        <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
-        <meta http-equiv="pragma" content="no-cache"/> 
+        <meta name="robots" content="noindex nofollow"/>
+        <meta http-equiv="author" content="Emiliano Perez Pellicer"/>
+        <meta http-equiv="pragma" content="no-cache"/>
+        <!-- === Stylesheets (same set Sean uses) === -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <link href="/css/theme.css" rel="stylesheet"/>
+        <link href="/css/style.css" rel="stylesheet"/>
+        <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
     </head>
     <!-- === Body section === -->
-    <body>
-        <!-- === Send Back to Logbook Page=== -->
-        <p>During this week I finished and Signed the <b>Safety Module</b></p>
-        <!-- === Send Back to Logbook Page=== -->
-        <p>Copyright &copy Emiliano Perez Pellicer</p>
-        <a href="/logbooks/logbook_EPP.html">Back to logbooks</a>
+    <body class="d-flex flex-column min-vh-100">
+        <header>
+            <div id="topbar"></div>
+        </header>
+
+        <main class="flex-grow-1">
+            <div class="container">
+                <section class="title">
+                    <h1>Emiliano's Logbook</h1>
+                    <h2>Week 8</h2>
+                </section>
+
+                <section class="body">
+                    <article>
+                        <h1>Overview</h1>
+                        <p>This week was focused on completing the required <b>Safety Module</b>, an important step before continuing hands-on work with the elevator hardware.</p>
+                    </article>
+
+                    <article>
+                        <h1>Tasks Completed</h1>
+                        <ol>
+                            <li>Completed and signed off on the <b>Safety Module</b></li>
+                            <li>Reviewed the safety procedures required for working with the elevator hardware</li>
+                        </ol>
+                    </article>
+
+                    <article>
+                        <h1>Challenges</h1>
+                        <ol>
+                            <li>Fitting the Safety Module completion around the rest of the week's coursework</li>
+                        </ol>
+                    </article>
+                </section>
+            </div>
+        </main>
+
+        <footer>
+            <!-- === Send Back to Logbook Page === -->
+            <a href="logbook_EPP.html">Back to logbooks</a>
+            <!-- === CopyRight Symbol === -->
+            <copyright-text name="Emiliano Perez Pellicer"></copyright-text>
+        </footer>
+
+        <!-- === Scripts (same set Sean uses) === -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        <script src="/js/components/top-bar.js"></script>
+        <script src="/js/components/copyright.js" defer></script>
     </body>
 </html>

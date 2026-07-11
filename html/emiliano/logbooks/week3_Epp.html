@@ -2,67 +2,87 @@
 <!--AUTHOR: Emiliano Perez Pellicer
     DATE: 22-05-2026
     COMMENTS: This will be my main page to control and update my personal Logbook From weeks 1 - 14
-    VERSION: 1.0 
+    VERSION: 1.0
 -->
-
-<!--==== HTML SCRIPT =====-->
-<html lang = "en">
+<html lang="en">
     <!-- === Head section === -->
     <head>
-        <!-- === Include Specia -->
         <meta charset="UTF-8">
-        <!-- === Title ==== -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- === Title === -->
         <title>Emiliano's Engineering Logbook Week 3</title>
-        <meta name="description" content="This is the logbook week 3 page for Emiliano"  />
-        <meta name="robots" content="noindex nofollow"/>   <!-- Do not want page or any of its links to be indexed-->
-        <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
-        <meta http-equiv="pragma" content="no-cache"/> 
+        <meta name="description" content="This is the logbook week 3 page for Emiliano" />
+        <meta name="robots" content="noindex nofollow"/>
+        <meta http-equiv="author" content="Emiliano Perez Pellicer"/>
+        <meta http-equiv="pragma" content="no-cache"/>
+        <!-- === Stylesheets (same set Sean uses) === -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        <link href="/ese_project_vi/css/theme.css" rel="stylesheet"/>
-        <link href="/ese_project_vi/css/project-style.css" rel="stylesheet"/>
+        <link href="/css/theme.css" rel="stylesheet"/>
+        <link href="/css/style.css" rel="stylesheet"/>
+        <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
     </head>
     <!-- === Body section === -->
-    <body>
-        <h1>Week 3 Achieved Tasks</h1>
-        <p>Under this section you will find all the tasks that were done during <b>week 3</b></p>
+    <body class="d-flex flex-column min-vh-100">
+        <header>
+            <div id="topbar"></div>
+        </header>
 
-        <!-- Add Separating line -->
-        <hr /> 
-        <h2>Overview</h2>
-        <p>This week Focused on CAN bus communication testing and hardware assembly. As well I mostly focused on the development of the website page. 
-            As well, I had to focus on the Developmen of my personal page and logbooks page. 
-        </p>
+        <main class="flex-grow-1">
+            <div class="container">
+                <section class="title">
+                    <h1>Emiliano's Logbook</h1>
+                    <h2>Week 3</h2>
+                </section>
 
-        <h2>Tasks Completed</h2>
-        <ol>
-            <li>Created Gantt Chart</li>
-            <li>Wrote Personal Page & Logbook page</li>
-            <ul>
-                <li>Created a brief introduction to my personal page</li>
-                <li>Attached Personal Picture</li>
-                <li>Added a Figure caption</li>
-                <li>Added a Copyright Symbol to all my worked pages </li>
-            </ul>
-            <li>Logbook Pages and weekly templates\</li>
-            <li>Supported with the creation of the Index and about page</li>
+                <section class="body">
+                    <article>
+                        <h1>Overview</h1>
+                        <p>This week focused on CAN bus communication testing and hardware assembly, alongside the initial development of the project website. I also spent time building out my personal page and the logbook pages that document my weekly progress.</p>
+                    </article>
 
-            <figure>
-                <img src="/ese_project_vi/assets/images/emiliano/Emiliano_page.png"/>
+                    <article>
+                        <h1>Tasks Completed</h1>
+                        <ol>
+                            <li>Created the project Gantt Chart to plan and track deliverables</li>
+                            <li>Built my personal page and logbook pages:
+                                <ul>
+                                    <li>Wrote a brief introduction for my personal page</li>
+                                    <li>Attached a personal picture with a descriptive figure caption</li>
+                                    <li>Added the copyright element consistently across all of my pages</li>
+                                </ul>
+                            </li>
+                            <li>Set up the logbook pages and reusable weekly templates</li>
+                            <li>Supported the creation of the project Index and About pages</li>
+                        </ol>
 
-                <figcaption>Image Example of my Main Page</figcaption>
-            </figure>
-            
-        </ol>
+                        <figure>
+                            <img src="/assets/images/emiliano/Emiliano_page.png" alt="Example of my main personal page"/>
+                            <figcaption>Example of my main personal page</figcaption>
+                        </figure>
+                    </article>
 
-        <h2>Challenges</h2>
-        <p>Some of the challenges encountered during this week were the following</p>
-        <ol>
-            <li>Get Up to speed after a 2 week delay</li>
-            <li>Properly Understand the requirements of the project and all of the achieved tasks</li>
-            <li>The Delegation of tasks in the project</li>
-        </ol>
-        <!-- === Send Back to Logbook Page=== -->
-        <p>Copyright &copy Emiliano Perez Pellicer</p>
-        <a href="./logbook_EPP.html">Back to logbooks</a>
+                    <article>
+                        <h1>Challenges</h1>
+                        <ol>
+                            <li>Getting up to speed after a two-week delay joining the project</li>
+                            <li>Fully understanding the project requirements and the tasks already completed by the team</li>
+                            <li>Coordinating the delegation of tasks across the team</li>
+                        </ol>
+                    </article>
+                </section>
+            </div>
+        </main>
+
+        <footer>
+            <!-- === Send Back to Logbook Page === -->
+            <a href="logbook_EPP.html">Back to logbooks</a>
+            <!-- === CopyRight Symbol === -->
+            <copyright-text name="Emiliano Perez Pellicer"></copyright-text>
+        </footer>
+
+        <!-- === Scripts (same set Sean uses) === -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        <script src="/js/components/top-bar.js"></script>
+        <script src="/js/components/copyright.js" defer></script>
     </body>
 </html>

@@ -1,100 +1,96 @@
 <!DOCTYPE html>
 <!--AUTHOR: Emiliano Perez Pellicer
     DATE: 22-05-2026
-    COMMENTS: This will be my Main Page in which you can acces my Logbooks and Info page 
-    VERSION: 1.0 
+    COMMENTS: This will be my Main Page in which you can acces my Logbooks and Info page
+    VERSION: 1.0
 -->
-<!-- !--==== HTML SCRIPT ===== -->
-<html lang = "en">
-        <!-- === Head section === -->
+<html lang="en">
+    <!-- === Head section === -->
     <head>
-        <!-- === Include Special Character, Get out of ASCII default -->
+        <!-- === Include Special Character, Get out of ASCII default === -->
         <meta charset="UTF-8">
-        <!-- === Title ==== -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- === Title === -->
         <title id="title">Emiliano's Main Page</title>
         <meta name="description" content="This is the main page for Emiliano" />
-        <meta name="robots" content="noindex nofollow"/>   <!-- Do not want page or any of its links to be indexed-->
-        <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
-        <meta http-equiv="pragma" content="no-cache"/> 
+        <meta name="robots" content="noindex nofollow"/>   <!-- Do not want page or any of its links to be indexed -->
+        <meta http-equiv="author" content="Emiliano Perez Pellicer"/>
+        <meta http-equiv="pragma" content="no-cache"/>
+        <!-- === Stylesheets (same set Sean uses) === -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
         <link href="/css/theme.css" rel="stylesheet"/>
         <link href="/css/style.css" rel="stylesheet"/>
         <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
         <link href="/css/components/card-style.css" rel="stylesheet"/>
     </head>
     <!-- === Body section === -->
-    <body>
+    <body class="d-flex flex-column min-vh-100">
         <header>
             <div id="topbar"></div>
         </header>
 
-        <main>
-            <!--=== Main Title ===-->
-            <section class="title">
-                <h1>Emiliano Perez Pellicer</h1>
-            </section>
+        <main class="flex-grow-1">
+            <div class="container">
+                <!--=== Main Title ===-->
+                <section class="title">
+                    <h1>Emiliano Perez Pellicer</h1>
+                </section>
 
-            <section>
-                <article>
-                    <p>Welcome to <b>Emiliano's</b> Main Page!<br />
-                    Under this Page you will be able to access links such as my <b>Github Account</b> and <b>Logbooks</b> Tab.</p>
-                </article>
+                <section class="body">
+                    <!-- === Intro + Logbooks (two-column, matches Sean's layout) === -->
+                    <div class="row">
+                        <div class="col">
+                            <article>
+                                <h1>Project Role</h1>
+                                <p>Welcome to <b>Emiliano's</b> Main Page! Under this page you will be able to access links such as my <b>Github Account</b> and <b>Logbooks</b>.</p>
 
-                <article>
-                    <!-- === Second Header (GitHub Account)=== -->
-                    <h3>Github</h3>
-
-                    <p>Click on my username to visit my Github Account! <a href="https://github.com/Em2704">Em2704</a></p>
-                </article>
-
-                <article>
-                     <div class="col">
-                        <div class="card">
-                            <h1>Logbooks</h1>
-                              <ul>
-                                <li>
-                                    <a href="logbooks/logbook_EPP.html">Emiliano's Logbook</a>
-                                </li>
-                              </ul>
+                                <p>My key role in the project is the development of the front end and the deployment of the Supervisory Controller unit.</p>
+                            </article>
+                        </div>
+                        <div class="col">
+                            <div class="card">
+                                <h1>Logbooks</h1>
+                                <a href="logbooks/logbook_EPP.html">Emiliano's Logbook</a>
+                            </div>
                         </div>
                     </div>
-                </article>
-            </section>
+
+                    <!-- === About Me (text beside headshot) === -->
+                    <article>
+                        <h1>About Me</h1>
+                        <div class="row">
+                            <div class="col">
+                                <p>Hi, my name is Emiliano. I'm an Electronic Systems Engineering student, passionate about embedded software and hardware.</p>
+                                <p>I'm studying at Conestoga College in the Electronic Systems Engineering Bachelor's of Engineering Program.</p>
+                            </div>
+                            <div class="col">
+                                <figure class="headshot">
+                                    <img src="/assets/images/emiliano/Emiliano.jpeg" alt="A picture of Emiliano" height="300">
+                                    <figcaption>Emiliano Perez Pellicer</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- === Github === -->
+                    <article>
+                        <h1>Github</h1>
+                        <p>If you want to check out my GitHub you can find it at <a href="https://github.com/Em2704">Em2704</a>. Click on my username to visit my account.</p>
+                    </article>
+                </section>
+            </div>
         </main>
 
-        <!-- Add Image of Emi  -->
-         <figure>
-            <img src="/ese_project_vi/assets/images/emiliano/Emiliano.jpeg" alt="Image of Emiliano"
-              title="Emiliano" width="150"  height="100"/>
-
-            <figcaption><b>Emiliano Perez:</b>Electronic Systems Engineering Student, 
-                Passioned about embedded software and hardware. 
-                Emiliano's key role in the project will be the development of front end and the deployment of the Supervisory controller unit
-            </figcaption>
-         </figure>
-         
-        
-        
-        <!-- Add Separating line -->
-        <hr />
-
-        
-        <h2>Github Account</h2>
-        <!-- ==== Add a List === -->
-        <ul>
-            <li></li>
-        </ul>
-
-        <!-- === Add a Logbook Link === -->
-        <h2>Logbooks</h2>
-      
-
         <footer>
-            <!-- === CopyRight Symbol  === -->
-            <p id = "copyright">Copyright &copy Emiliano Perez Pellicer</p>
+            <!-- === Send Back to Home === -->
+            <a href="/index.html">Back to Home</a>
+            <!-- === CopyRight Symbol === -->
+            <copyright-text name="Emiliano Perez Pellicer"></copyright-text>
         </footer>
 
-        <!-- === Send Back to Home === -->
-        <copyright-text name="Emiliano Perez Pellicer"></copyright-text>
-        <a href="/ese_project_vi/index.html">Back to Home</a>
+        <!-- === Scripts (same set Sean uses) === -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        <script src="/js/components/top-bar.js"></script>
+        <script src="/js/components/copyright.js" defer></script>
     </body>
 </html>
