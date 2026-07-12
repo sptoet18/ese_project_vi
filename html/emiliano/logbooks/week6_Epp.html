@@ -55,30 +55,82 @@
                             <li>Implemented the Finite State Machine (FSM) on the Raspberry Pi</li>
                         </ol>
 
-                        <figure>
-                            <img src="/assets/images/emiliano/log_in.png" alt="Login page of the project"/>
-                            <figcaption>Login page of the project</figcaption>
-                        </figure>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/log_in.png" alt="Login page of the project"/>
+                                        <figcaption>Login page of the project</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/php_reponse_request.png" alt="PHP request-access response page"/>
+                                        <figcaption>PHP request-access response page</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/Php_response.png" alt="PHP login response page"/>
+                                        <figcaption>PHP login response page</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/IMG_0166.jpg" alt="Working on the Supervisory Controller hardware"/>
+                                        <figcaption>Working on the Supervisory Controller</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/IMG_0168.jpg" alt="Testing the Supervisory Controller on the bench"/>
+                                        <figcaption>Testing the Supervisory Controller on the bench</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
 
-                        <figure>
-                            <img src="/assets/images/emiliano/php_reponse_request.png" alt="PHP request-access response page"/>
-                            <figcaption>PHP request-access response page</figcaption>
-                        </figure>
+                    <article>
+                        <h1>FSM Raspberry Pi</h1>
+                        <p>I started implementing the elevator's Finite State Machine on the Raspberry Pi Supervisory Controller. The FSM tracks whether the elevator is sitting at one of the three floors or moving, and keeps separate priority queues for car, floor, and website requests. Below are the core data structures and the initialization routine.</p>
+                        <pre><code class="language-cpp">
+typedef enum {
+    STATE_FLOOR1 = 0,   // floor number - 1, used as an array index
+    STATE_FLOOR2 = 1,
+    STATE_FLOOR3 = 2,
+    STATE_MOVING = 3
+} ElevatorSate;
 
-                        <figure>
-                            <img src="/assets/images/emiliano/Php_response.png" alt="PHP login response page"/>
-                            <figcaption>PHP login response page</figcaption>
-                        </figure>
+typedef struct {
+    ElevatorSate state;
 
-                        <figure>
-                            <img src="/assets/images/emiliano/IMG_0166.jpg" alt="Working on the Supervisory Controller hardware" height="300">
-                            <figcaption>Working on the Supervisory Controller</figcaption>
-                        </figure>
+    // Priority queues
+    std::queue&lt;int&gt; carQueue;      // Priority 1
+    std::queue&lt;int&gt; floorQueue;    // Priority 2
+    std::queue&lt;int&gt; websiteQueue;  // Priority 3
 
-                        <figure>
-                            <img src="/assets/images/emiliano/IMG_0168.jpg" alt="Working on the Supervisory Controller hardware" height="300">
-                            <figcaption>Testing the Supervisory Controller on the bench</figcaption>
-                        </figure>
+    int doorClosed;        // 0 = door open, 1 = door closed
+    int previousFloor;     // last floor the elevator was AT before moving
+    int targetFloor;       // destination floor while state == STATE_MOVING
+
+    time_t doorTimeStart;  // timestamp when the door was last opened
+} ElevatorFSM;
+
+// Initial Condition
+void fsmInit(ElevatorFSM *fsm) {
+    fsm-&gt;state = STATE_FLOOR1;
+
+    fsm-&gt;carQueue = std::queue&lt;int&gt;();
+    fsm-&gt;floorQueue = std::queue&lt;int&gt;();
+    fsm-&gt;websiteQueue = std::queue&lt;int&gt;();
+
+    fsm-&gt;doorClosed = 0;   // door starts open
+    fsm-&gt;previousFloor = 1;
+    fsm-&gt;targetFloor = 1;
+    fsm-&gt;doorTimeStart = time(NULL);
+}
+</code></pre>
                     </article>
 
                     <article>

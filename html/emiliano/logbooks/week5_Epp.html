@@ -54,15 +54,54 @@
                             <li>Implemented the first styled CSS pages for the project</li>
                         </ol>
 
-                        <figure>
-                            <img src="/assets/images/emiliano/project_details.png" alt="Project details page &mdash; first view"/>
-                            <figcaption>Project details page &mdash; first view</figcaption>
-                        </figure>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-6">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/project_details.png" alt="Project details page &mdash; first view"/>
+                                        <figcaption>Project details page &mdash; first view</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-6">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/project_details2.png" alt="Project details page &mdash; second view"/>
+                                        <figcaption>Project details page &mdash; second view</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
 
-                        <figure>
-                            <img src="/assets/images/emiliano/project_details2.png" alt="Project details page &mdash; second view"/>
-                            <figcaption>Project details page &mdash; second view</figcaption>
-                        </figure>
+                    <article>
+                        <h1>Project Details Styling</h1>
+                        <p>Below is a snippet of the <code>project_details_style.css</code> stylesheet I worked on this week, which defines the bordered, centered layout used on the project details page.</p>
+                        <pre><code class="language-css">
+body {
+    font-family: Georgia, sans-serif;
+
+    /* Border details: top, right, bottom, left */
+    border-width: 2px 2px 2px 2px;
+    border-style: solid;
+    border-color: black;
+    border-radius: 10px;
+
+    /* Box width, centering &amp; padding */
+    width: 950px;
+    margin: 1px auto 1px auto;
+    padding: 0px 10px 0px 10px;
+}
+
+p, ul, ol {
+    font-size: 100%;
+    line-height: 20px;
+    text-align: justify;
+}
+
+p { text-indent: 15px; }
+
+h1 { font-size: 160%; }
+h2 { font-size: 125%; }
+</code></pre>
                     </article>
 
                     <article>

@@ -35,7 +35,230 @@
                 </section>
 
                 <section class="body">
-                    <p>During this week I finished and Signed the <b>Safety Module</b></p>
+                    <article>
+                        <h1>Overview</h1>
+                        <p>This week was focused on the tiered priority queues for the elevator's Finite State Machine on the Supervisory Controller. The goal was to make sure requests from the car controller, the floor controllers, and the website are all serviced in the correct order (Car &gt; Floor &gt; Website), and to capture status videos of the queue working on the real elevator.</p>
+                    </article>
+
+                    <article>
+                        <h1>Data Structures for the FSM Queue</h1>
+                        <p>Each queue just holds floor numbers (1, 2, or 3) waiting to be served, in the order they were requested (FIFO &mdash; first in, first out). Three separate queues, one per request source, is what makes this a <em>tiered priority queue</em>: instead of one queue sorted by a priority number, we have three plain queues and always drain the highest-priority one first.</p>
+
+                        <pre><code class="language-cpp">
+std::queue&lt;int&gt; carQueue;      // priority 1 (highest)
+std::queue&lt;int&gt; floorQueue;    // priority 2
+std::queue&lt;int&gt; websiteQueue;  // priority 3 (lowest)
+</code></pre>
+
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Priority</th>
+                                    <th>Source</th>
+                                    <th>Queue</th>
+                                    <th>Entry point</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1 (highest)</td>
+                                    <td>Car controller (0x200)</td>
+                                    <td><code>carQueue</code></td>
+                                    <td><code>fsmProcessMessage()</code></td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>Floor controllers (0x201&ndash;0x203)</td>
+                                    <td><code>floorQueue</code></td>
+                                    <td><code>fsmProcessMessage()</code></td>
+                                </tr>
+                                <tr>
+                                    <td>3 (lowest)</td>
+                                    <td>Website (MySQL)</td>
+                                    <td><code>websiteQueue</code></td>
+                                    <td><code>fsmPollWebsite()</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </article>
+
+                    <article>
+                        <h1>How a Request Flows Through the Queues</h1>
+
+                        <h2>Step 1 &mdash; Getting a request into a queue: <code>fsmProcessMessage()</code></h2>
+                        <p>Every time a CAN message is received (via <code>pcanFsmRxPoll()</code> in the main loop), it's handed to <code>fsmProcessMessage(fsm, id, data)</code>, which does a <code>switch(id)</code>:</p>
+
+                        <pre><code class="language-cpp">
+case ID_F1_TO_SC: case ID_F2_TO_SC: case ID_F3_TO_SC:
+    floor = ...;
+    if (!queueContainsFloor(fsm-&gt;floorQueue, floor)) {
+        fsm-&gt;floorQueue.push(floor);
+    }
+    break;
+
+case ID_CC_TO_SC:
+    floor = FloorFromHex(data);
+    if (!queueContainsFloor(fsm-&gt;carQueue, floor)) {
+        fsm-&gt;carQueue.push(floor);
+    }
+    break;
+</code></pre>
+
+                        <ul>
+                            <li>The CAN ID tells us which queue the request belongs in (Car Controller <code>0x200</code> &rarr; <code>carQueue</code>; floor controllers <code>0x201/0x202/0x203</code> &rarr; <code>floorQueue</code>).</li>
+                            <li><code>queueContainsFloor()</code> (explained below) is a dedup guard &mdash; no point pushing "floor&nbsp;2" twice if it's already waiting in that queue.</li>
+                            <li>The website source doesn't come through CAN at all &mdash; it's handled separately by <code>fsmPollWebsite()</code> (step&nbsp;2), which pushes into <code>websiteQueue</code> the same way.</li>
+                        </ul>
+                        <p>At this point, a request is sitting in a queue but nothing has happened yet &mdash; it's just waiting to be picked up.</p>
+
+                        <h2>Step 2 &mdash; Website requests get into their queue differently: <code>fsmPollWebsite()</code></h2>
+                        <p>Called once per <code>fsmStep()</code> tick, throttled to once a second:</p>
+
+                        <pre><code class="language-cpp">
+int dbFloor = db_getFloorNum();
+if (dbFloor == fsm-&gt;lastDbFloor) return;   // no change, nothing to do
+fsm-&gt;lastDbFloor = dbFloor;
+
+if (dbFloor &gt;= 1 &amp;&amp; dbFloor &lt;= 3 &amp;&amp; !queueContainsFloor(fsm-&gt;websiteQueue, dbFloor)) {
+    fsm-&gt;websiteQueue.push(dbFloor);
+}
+</code></pre>
+
+                        <ul>
+                            <li>It reads the MySQL <code>currentFloor</code> field (same field the original case&nbsp;3 menu option read).</li>
+                            <li>Compares against <code>lastDbFloor</code> &mdash; this is how it tells "the website changed the value" apart from "nothing changed since I last checked."</li>
+                        </ul>
+
+                        <div class="alert alert-info">
+                            <strong>Important trick:</strong> when the elevator itself arrives somewhere, <code>fsmArrive()</code> also writes to that same DB field (see step&nbsp;5) and immediately updates <code>lastDbFloor</code> to match. That way, the FSM's own position update is never mistaken for a fresh website request &mdash; only a change that <em>didn't</em> come from <code>fsmArrive()</code> gets queued.
+                        </div>
+
+                        <h2>Step 3 &mdash; Deciding where to go next: <code>fsmPeekPriority()</code></h2>
+                        <p>This is the heart of the "priority" behavior. It only runs when the elevator is stopped and the door is closed:</p>
+
+                        <pre><code class="language-cpp">
+tmp = fsm-&gt;carQueue;
+while (!tmp.empty()) {
+    int f = tmp.front(); tmp.pop();
+    if (f != currentFloor) return f;   // found a usable car request — done
+}
+
+tmp = fsm-&gt;floorQueue;
+while (!tmp.empty()) { ... same check ... }   // only reached if carQueue had nothing usable
+
+tmp = fsm-&gt;websiteQueue;
+while (!tmp.empty()) { ... same check ... }   // only reached if carQueue AND floorQueue had nothing
+</code></pre>
+
+                        <ul>
+                            <li>It copies each queue into a temporary (<code>tmp</code>) so peeking doesn't destroy the real queue &mdash; we're just looking, not committing yet.</li>
+                            <li>It walks <code>carQueue</code> first. If it finds any entry that isn't the current floor, that's the answer &mdash; floor requests and website requests are never even looked at.</li>
+                            <li>Only if <code>carQueue</code> is completely empty (or only contains the current floor) does it move on to <code>floorQueue</code>, and only if that's empty too does it fall through to <code>websiteQueue</code>.</li>
+                            <li>Returns <code>0</code> if literally nothing is pending anywhere &mdash; meaning the elevator just stays put with the door closed.</li>
+                        </ul>
+                        <p>This strict "don't even look at the next tier unless this one is empty" ordering is exactly what makes it <strong>Car &gt; Floor &gt; Website</strong> rather than, say, a weighted scoring system.</p>
+
+                        <h2>Step 4 &mdash; Committing to a target and cleaning up: inside <code>fsmStep()</code></h2>
+                        <p>Once <code>fsmPeekPriority()</code> returns a real target floor:</p>
+
+                        <pre><code class="language-cpp">
+int target = fsmPeekPriority(fsm, currentFloor);
+if (target != 0 &amp;&amp; target != currentFloor) {
+    fsmConsumeRequestsForFloor(fsm, target);   // remove it from ALL THREE queues
+    fsm-&gt;targetFloor = target;
+    fsm-&gt;state = STATE_MOVING;
+    pcanFsmTx(ID_SC_TO_EC, HexFromFloor(target));
+}
+</code></pre>
+
+                        <p><code>fsmConsumeRequestsForFloor(fsm, floor)</code> calls <code>purgeFloorFromQueue()</code> on all three queues for that floor number:</p>
+
+                        <pre><code class="language-cpp">
+static void purgeFloorFromQueue(std::queue&lt;int&gt; &amp;q, int floor) {
+    std::queue&lt;int&gt; kept;
+    while (!q.empty()) {
+        int f = q.front(); q.pop();
+        if (f != floor) kept.push(f);   // keep everything except the floor we're now serving
+    }
+    q = kept;
+}
+</code></pre>
+
+                        <div class="alert alert-info">
+                            <strong>Why purge from all three, not just the queue it came from?</strong> Because if floor&nbsp;2 was requested from inside the car <em>and</em> someone pressed the floor-2 call button <em>and</em> the website also asked for floor&nbsp;2 &mdash; one trip to floor&nbsp;2 satisfies all three. Otherwise the elevator would immediately think it still owes a "floor&nbsp;2" trip to whichever queue(s) weren't the one we peeked from.
+                        </div>
+
+                        <h2>Step 5 &mdash; Arriving and closing the loop: <code>fsmArrive()</code></h2>
+
+                        <pre><code class="language-cpp">
+fsmConsumeRequestsForFloor(fsm, floor);   // safety net — purge again in case anything slipped in mid-trip
+db_setFloorNum(floor);                    // tell the website where we really are
+fsm-&gt;lastDbFloor = floor;                 // prevent this write from re-triggering fsmPollWebsite()
+</code></pre>
+
+                        <p>This closes the loop back to the database, and re-arms the door timer (handled just above this in the function) so the whole cycle &mdash; <em>enqueue &rarr; peek &rarr; consume &rarr; move &rarr; arrive &rarr; door open/close &rarr; peek again</em> &mdash; repeats.</p>
+                    </article>
+
+                    <article>
+                        <h1>The Two Small Helpers Tying It Together</h1>
+                        <ul>
+                            <li><code>queueContainsFloor(queue, floor)</code> &mdash; copies the queue, walks it, checks if the floor is already in there. Used purely to avoid double-pushing the same floor into a queue that already has it pending.</li>
+                            <li><code>purgeFloorFromQueue(queue, floor)</code> &mdash; rebuilds the queue keeping everything except the given floor. Used both when a target is claimed (step&nbsp;4) and on arrival (step&nbsp;5).</li>
+                        </ul>
+                        <p>Both work by copying/rebuilding rather than mutating in place, because <code>std::queue</code> doesn't support random access or removal from the middle &mdash; with only 0&ndash;3 tiny integers per queue, this is cheap and keeps the logic simple.</p>
+                    </article>
+
+                    <article>
+                        <h1>Elevator Videos</h1>
+                        <p>The following videos show the current status of the elevator and demonstrate the priority ordering (Car &gt; Floor &gt; Website) working on the real hardware.</p>
+
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-6">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Week9_Status_1.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption>Elevator status &mdash; part 1</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-6">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Week9_Status_2.MOV" type="video/quicktime"/>
+                                        </video>
+                                        <figcaption>Elevator status &mdash; part 2</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-6">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Week9_Status_3.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption>Elevator status &mdash; part 3</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-6">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Week9_Status_4.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption>Elevator status &mdash; part 4</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article>
+                        <h1>Challenges</h1>
+                        <p>It was a difficult task to get the priority behavior working, but it worked. The hardest part was making sure a single trip satisfies every queue that asked for that floor, and that the elevator's own position updates never get mistaken for fresh website requests.</p>
+                    </article>
+
+                    <article>
+                        <h1>Final Outcomes</h1>
+                        <p>The queues have been properly implemented and the demo now showcases the priority ordering working (Car &gt; Floor &gt; Website). I also added several timing delays to the code to make the queue behavior clearer during the demonstration.</p>
+                    </article>
                 </section>
             </div>
         </main>
