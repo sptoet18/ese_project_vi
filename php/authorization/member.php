@@ -43,7 +43,27 @@
             </section>
 
             <section class="body">
-                
+                <article class="elevator-ui">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col">
+                                <div class="controls">
+                                    <button class="elevator">Request Floor 3</button>
+                                    <button class="elevator">Request Floor 2</button>
+                                    <button class="elevator">Request Floor 1</button>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="indicators">
+                                    <div class="indicator">Floor 3</div>
+                                    <div class="indicator">Floor 2</div>
+                                    <div class="indicator">Floor 1</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="indicator">Moving</div>
+                    </div>
+                </article>
             </section>
         </div>
     </main>
