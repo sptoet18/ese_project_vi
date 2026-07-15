@@ -24,6 +24,32 @@
         $result = $statement->execute($params); 
     }
 
+    //Mannually insert into user tabele 
+    function insert_usr($path, $user, $password, $username, $password_db, $firstname, $lastname, $role) {
+        $db = dbConnect($path, $user, $password);
+        $query = 'INSERT INTO user(username, hashed_password, firstname, lastname, role) VALUES
+        (:username, :password_db, :firstname, :lastname, :role)';
+        $params = [
+            'username' => $username,
+            'password_db' => password_hash($password_db, PASSWORD_DEFAULT), 
+            'firstname' => $firstname,
+            'lastname' => $lastname, 
+            'role' => $role
+        ];
+        $statement = $db->prepare($query);
+        $result = $statement->execute($params);
+        
+        if($result == false){
+            $error = $db->errorInfo();
+            echo "ERROR: " . $error[2];
+        } else {
+            //var_dump($result);
+        }
+        
+        
+    }
+
+
     // Read
     function showtable(string $path, string $user, string $password, $tablename) {
         echo "<h3>Content of ElevatorNetwork table</h3>";
