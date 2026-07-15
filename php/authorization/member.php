@@ -1,11 +1,22 @@
 <?php
     session_start();
 
+    $db = dbConnect(path, user, password);
+
     if (isset($_SESSION['username'])) {
 
         $username = $_SESSION['username'];
 
-        if ($username === "seantoet") {
+        // database query for username
+        $userQuery = $db->prepare('
+            select id, username, hashed_password
+            from users
+            where username = :username
+        ');
+        $userQuery->execute(['username' => $username]);
+        $user = $userQuery->fetch();
+
+        if ($user) {
 
         } else {
             echo "<script>location.href = \"/html/authorization/login.html\"</script>";

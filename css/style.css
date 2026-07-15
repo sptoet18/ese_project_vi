@@ -70,7 +70,7 @@ section.login {
     align-items: center;
 }
 
-section.login div {
+section.login > div {
     border-color: var(--primary-color);
     border-style: solid;
     border-width: 1px;
@@ -80,6 +80,37 @@ section.login div {
 
     justify-items: center;
     align-items: center;
+}
+
+section.login div.grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 10px;
+}
+
+section.signup {
+    margin-top: 12px;
+
+    justify-items: center;
+    align-items: center;
+}
+
+section.signup > div {
+    border-color: var(--primary-color);
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 12px;
+
+    padding: 12px;
+
+    justify-items: center;
+    align-items: center;
+}
+
+section.signup div.grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 10px;
 }
 
 figure.headshot {

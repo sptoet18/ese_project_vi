@@ -57,7 +57,7 @@ const topbarHTML = `
                                     <a class="nav-link active" aria-current="page" href="/html/authorization/login.html">Login</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link active" aria-current="page" href="#">Sign Up</a>
+                                    <a class="nav-link active" aria-current="page" href="/html/authorization/signup.html">Sign Up</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link active" aria-current="page" href="/php/authorization/logout.php">Logout</a>

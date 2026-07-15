@@ -3,13 +3,7 @@
 
     session_start();
 
-    $db = new PDO(
-        'mysql:host=127.0.1;dbname=__________',     // Add the database name
-        '____',										// Add the username
-		'____'										// Add the password
-    );
-
-	$db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    $db = dbConnect(path, user, password);
 
 	$username = $_POST['username'];
     $password = $_POST['password'];
