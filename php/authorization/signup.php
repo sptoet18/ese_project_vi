@@ -30,7 +30,7 @@
 	');
 	$userInsert->execute([
         'username'  => $username,
-        'password'  => $password,
+        'password'  => password_hash($password, PASSWORD_DEFAULT),
         'firstname' => $firstname,
         'lastname'  => $lastname,
         'role'      => $role
