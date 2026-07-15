@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!--AUTHOR: Emiliano Perez Pellicer
+    DATE: 12-06-2026
+    COMMENTS: This page will be dealing with the login page  
+    VERSION: 1.0 
+-->
+<!-- !--==== HTML SCRIPT ===== -->
+<html lang = "en">
+    <!-- === Head Section ====  -->
+    <head>
+        <!-- === Include Special Character, Get out of ASCII default -->
+        <meta charset="UTF-8">
+        <!-- === Title ==== -->
+        <title id="title">Request Access page</title>
+        <meta name="description" content="This is the request access page for Project VI"/>
+        <meta name="robots" content="index follow"/>   <!-- Want links to be indexed indexed-->
+        <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
+        <meta http-equiv="pragma" content="no-cache"/>
+        <meta name="viewport" content="width=device-width, initial-scale=2"/>
+        <link href="/css/request_access_style.css" type="text/css" rel="stylesheet"/>
+    </head>
+    <!-- ===Body Section ===  -->
+    <body>
+        <h1>Request Access</h1>
+        <form id="access" action="/php/authorization/request-access.php" method="post"> 
+            <!-- === Primary Data fields === -->
+            <fieldset>
+                <legend>Contact Details</legend>
+                <div>
+                    <p><label>First Name: <input id="firstname" type="text" name="firstname" placeholder="First Name" /></label></p>
+                    <!-- Attach the java Script feedback check -->
+                    <a id="firstNameFeedback"></a>
+                </div>
+                
+                <div>
+                    <p><label>Last Name: <input id="lastname" type="text" name="lastname" placeholder="Last Name" /></label></p>
+                    <!-- Attach the java Script feedback check -->
+                    <a id="lastNameFeedback"></a>
+                </div>
+
+                <div>
+                    <p><label>Email: <input id="email" type="email" name="email" /></label></p>
+                    <!-- Attach the java Script feedback check -->
+                    <a id="emailFeedback"></a>
+                </div>
+                
+                
+                <div>
+                   <p><label>Website: <input id="url" type="url" name="url"/></label></p>
+                    <!-- Attach the java Script feedback check -->
+                    <a id="websiteFeedback"></a>
+                </div>
+                
+                
+                <div>
+                    <p><label>Birthdate: <input id="birthday" type="date" name="birthday"/></label></p>
+                    <!-- Attach the java Script feedback check -->
+                    <a id="birthdayFeedback"></a>
+                </div>
+
+                <div>
+                    <!-- Buttons for student of professor -->
+                    <label><input type="radio" name="prof_or_student" value="professor"/>Professor</label>
+                    <label><input type="radio" name="prof_or_student" value="student"/>Student</label>
+                
+                    <!-- Attach the java Script feedback check -->
+                    <a id="prof_or_studentFeedback"></a>
+                </div>
+            </fieldset>
+
+            <!-- Add Separating Line  -->
+            <br />
+            <hr />
+            
+            <!-- ===Secondary Data fields === -->
+            <fieldset>
+                <legend>Additional Information</legend>
+                <!-- Check Boxes  -->
+                <p>Please Check all the boxes that apply</p>
+
+                <div>
+                    <label><input  type="checkbox" name="involvement" value="none"/> I am not involved in Project VI</label><br/>
+                    <label><input  type="checkbox" name="involvement" value="professor"/> I am at professor in Project VI</label><br/>
+                    <label><input  type="checkbox" name="involvement" value="otherProfessor"/> I am a professor in another project/College</label><br/>
+                    <label><input  type="checkbox" name="involvement" value="student"/> I am a student in Project VI</label><br/>
+                    <label><input  type="checkbox" name="involvement" value="industry"/> I am a member of industry, interested in this project</label><br/>
+                    <label><input  type="checkbox" name="involvement" value="none"/> None of the Above</label>
+
+                    <!-- Attach the java Script feedback check -->
+                    <a id="involvementFeedback"></a>
+                </div>
+
+                <!-- Drop Down List / 'Select Box' -->
+                <p>Do you own a car?</p>
+                <select name="drive_car">
+                    <option value="no_answer" selected></option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+
+                <!-- Text Box -->
+                <p>Please tell us about yourserlf</p>
+                <textarea id="text_area" placeholder="Add any Comments here..." maxlength="180"></textarea>
+
+                <!-- Print Statements -->
+                <div>
+                    <p id="charactersLeft"></p>
+                    <p id="lastkey"></p>
+                </div>
+                
+                
+                <!-- Errro Message  -->
+                <div>
+                    <p>Error Messages:</p>
+                    <p id = "feedback"></p>
+                </div>
+                
+            </fieldset>
+
+            <!-- =====Submit Button -->
+            <input type="submit" value="Request access"/>
+        </form>
+
+        <!-- Listen to when the user Paases 180 words -->
+        <script src="../js/request-access.js"></script>
+
+        <!-- Go Back to Index -->
+        <br />
+        <p><a href="/ese_project_vi/index.html">Back to index</a></p>
+        
+        <footer>
+            <!-- Add Copy Right  -->
+            <p id = "copyright">Copyright &copy Emiliano Perez Pellicer</p>
+        </footer>
+
+    </body>
+</html>

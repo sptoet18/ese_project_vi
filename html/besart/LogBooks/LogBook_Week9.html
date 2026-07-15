@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Besart's Week 9 Logbook">
+    <meta name="robots" content="noindex nofollow"/>
+    <meta http-equiv="author" content="Besart Kalezic">
+    <meta http-equiv="pragma" content="no-cache"/>
+    <title>Besart's Logbook - Week 9</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="/ese_project_vi/css/theme.css" rel="stylesheet"/>
+    <link href="/ese_project_vi/css/project-style.css" rel="stylesheet"/>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <nav class="navbar">
+            <a class="nav-link" href="../../../index.html">Home</a>
+            <a class="nav-link" href="../../about.html">About</a>
+            <a class="nav-link" href="../../../html/proj_details.html">Details</a>
+            <a class="nav-link" href="../../../html/proj-plan.html">Plan</a>
+            <a class="nav-link" href="../../../login.html">Login</a>
+            <a class="nav-link" href="../../besart/besart.html">Besart</a>
+            <a class="nav-link" href="../../emiliano/emiliano.html">Emiliano</a>
+            <a class="nav-link" href="../../sean/sean.html">Sean</a>
+        </nav>
+    </header>
+
+    <main>
+
+        <section class="title">
+            <h1>Besart's Logbook</h1>
+            <p>Week 9</p>
+        </section>
+
+        <section>
+            <h2>Tasks Completed</h2>
+
+            <article>
+                <h3>Elevator Troubleshooting and Root Cause Analysis</h3>
+
+                <p>
+                    This week I worked closely with my project group members to troubleshoot
+                    several issues affecting the elevator's operation. We performed
+                    testing of the software to identify the root causes of bugs
+                    impacting elevator motion. This involved observing system behaviour,
+                    verifying controller operation, and analyzing communication between the
+                    microcontrollers during different operating conditions.
+                </p>
+
+                <p>
+                    Through team debugging sessions, we isolated several software and
+                    communication-related issues that contributed to unexpected elevator
+                    behaviour. Working through these problems as a team improved both the
+                    reliability of the system and our understanding of how each subsystem
+                    interacted during operation.
+                </p>
+            </article>
+
+            <article>
+                <h3>CAN/LAN Communication Preparation</h3>
+
+                <p>
+                    I began preparing the Raspberry Pi supervisory controller for the Phase II
+                    implementation of the project. This included configuring the software
+                    environment required to host the project website directly from the Raspberry
+                    Pi while preparing it to communicate with devices over the Local Area
+                    Network (LAN).
+                </p>
+
+                <p>
+                    I also researched database integration and web server configuration to
+                    establish the foundation for the CAN/LAN communication system. This work
+                    will allow elevator status information received from the CAN network to be
+                    monitored remotely through a web interface hosted on the Raspberry Pi.
+                </p>
+            </article>
+
+            <article>
+                <h3>Project Integration Support</h3>
+
+                <p>
+                    Throughout the week I continued supporting overall project integration by
+                    assisting with testing after software modifications were made. This helped
+                    verify that implemented fixes resolved existing issues without introducing
+                    new problems and ensured the elevator continued operating reliably during
+                    system validation.
+                </p>
+
+                <p>
+                    I also collaborated with teammates to prepare the project for future Phase
+                    II development by ensuring the hardware and software components remained
+                    compatible with the upcoming supervisory controller implementation.
+                </p>
+            </article>
+
+            <article>
+                <h3>Challenges</h3>
+
+                <p>
+                    The primary challenge this week was identifying the source of bugs affecting
+                    elevator motion. Since multiple STM32 controllers communicate over the CAN
+                    network, determining whether problems originated from software logic,
+                    communication, or hardware required careful troubleshooting and repeated
+                    testing. Working through these issues highlighted the importance of a
+                    structured debugging process when developing distributed embedded systems.
+                </p>
+            </article>
+
+            <article>
+                <h3>What I Learned</h3>
+
+                <p>
+                    This week I gained additional experience troubleshooting control
+                    systems by approaching problems methodically and verifying each subfunction
+                    independently before testing the complete system. I also learned more about
+                    preparing a Raspberry Pi to host web services and the networking concepts
+                    required to support future CAN-to-LAN communication between the elevator
+                    controllers and the supervisory interface.
+                </p>
+            </article>
+
+            <article>
+                <h3>Next Steps</h3>
+
+                <ul>
+                    <li>Implement CAN/LAN communication using the Raspberry Pi supervisory controller.</li>
+                    <li>Configure the Raspberry Pi web server and database for elevator status monitoring.</li>
+                    <li>Integrate the supervisory website hosting with the CAN communication network.</li>
+                </ul>
+            </article>
+        </section>
+
+        <a href="../../besart/besart.html">Back to Besart's Main Page</a>
+
+    </main>
+
+    <footer>
+        <p>COPYRIGHT &copy; Besart Kalezic</p>
+    </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

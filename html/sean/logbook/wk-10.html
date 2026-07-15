@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sean's Week 10 Logbook">
+    <meta name="robots" content="noindex nofollow"/>
+    <meta http-equiv="author" content="Sean Toet">
+    <meta http-equiv="pragma" content="no-cache"/> 
+    <title>Sean's Logbook - Week 10</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="/css/theme.css" rel="stylesheet"/>
+    <link href="/css/style.css" rel="stylesheet"/>
+    <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <header>
+        <div id="topbar"></div>
+    </header>
+
+    <main class="flex-grow-1">
+        <div class="container">
+            <section class="title">
+                <h1>Sean's Logbook</h1>
+                <h2>Week 10</h2>
+            </section>
+
+            <section class="body">
+                <h1>Tasks Completed</h1>
+
+                <article>
+                    <h1>Website Elevator Controls</h1>
+
+                    <p>How website will be able to control the elevator. This means that some sort of input will need to be implemented to actually intract with the elevator.</p>
+
+                    <p>Intraction Ideas</p>
+                    <ul>
+                        <li>Text Input (i.e. 1, 2, or 3)</li>
+                        <li>Button Input (i.e. a button to call each floor)</li>
+                    </ul>
+
+                    <p>Of the ideas that I have listed I like the button method more. This will make the UI less complex and it will be more intuative. It may be nice to allow the website to open/close the door and simulate any message on the CAN bus. This could be implemented in a debug page and only be accessed by admin users.</p>
+
+                    <p>The buttons are implemented. There are 3 buttons and 4 indicators of the elevator's state.</p>
+
+                    <p>In the future I'd like to detect if we are connected to the elevator or not. I'd like to display that on the website so that the user knows that they should be able to control the elevator.</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/sean/website-login-1.mp4"/>
+                        </video>
+                        <figcaption>Video showing the login working</figcaption>
+                    </figure>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/sean/elevator-controls-1.mp4"/>
+                        </video>
+                        <figcaption>Video showing that elevator controls</figcaption>
+                    </figure>
+                </article>
+
+                <article>
+                    <h1>Database Tables</h1>
+
+                    <p>Reference diagram for the database tables used by the website.</p>
+
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <iframe src="/assets/documents/database-tables.pdf" width="100%" height="600px"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article>
+                    <h1>Car Controller Rewiring</h1>
+
+                    <p>Group 2 came up with a Car Controller rewiring proposal.</p>
+
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <iframe src="/assets/documents/STM Pin Document.pdf" width="100%" height="600px"></iframe>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Physical Wiring</h2>
+
+                    <p>I wired up the proposal on the STM32. I've attached images of what the new pinout looks like.</p>
+
+                    <figure>
+                        <img src="/assets/images/sean/car-controller-labelled-1.jpg">
+                    </figure>
+
+                    <figure>
+                        <img src="/assets/images/sean/car-controller-labelled-external-buttons.jpg">
+                    </figure>
+
+                    <p>Note that the top pins on the external push buttons are for the buttons while the bottom pins are the LEDs.</p>
+
+                    <h2>Implementation</h2>
+
+                    <p>Here is the new wiring:</p>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Pin</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Shield LED 1a</td>
+                                <td>PC5</td>
+                                <td>Indicates that the elevator's current position is Floor 1</td>
+                            </tr>
+                            <tr>
+                                <td>Shield LED 2a</td>
+                                <td>PB0</td>
+                                <td>Indicates that the elevator's current position is Floor 2</td>
+                            </tr>
+                            <tr>
+                                <td>Shield LED 3a</td>
+                                <td>PB1</td>
+                                <td>Indicates that the elevator's current position is Floor 3</td>
+                            </tr>
+                            <tr>
+                                <td>Shield LED 1b</td>
+                                <td>PA4</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Shield LED 2b</td>
+                                <td>PA6</td>
+                                <td>Indicates that the door is open</td>
+                            </tr>
+                            <tr>
+                                <td>Shield LED 3b</td>
+                                <td>PA7</td>
+                                <td>Indicates that the door is closed</td>
+                            </tr>
+                            <tr>
+                                <td>External LED 1</td>
+                                <td>PC9</td>
+                                <td>Indicates that the Car Controller requested to go to Floor 1</td>
+                            </tr>
+                            <tr>
+                                <td>External LED 2</td>
+                                <td>PC8</td>
+                                <td>Indicates that the Car Controller requested to go to Floor 2</td>
+                            </tr>
+                            <tr>
+                                <td>External LED 3</td>
+                                <td>PC6</td>
+                                <td>Indicates that the Car Controller requested to go to Floor 3</td>
+                            </tr>
+                            <tr>
+                                <td>Shield Button 1</td>
+                                <td>PB12</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Shield Button 2</td>
+                                <td>PB15</td>
+                                <td>Opens the car's door</td>
+                            </tr>
+                            <tr>
+                                <td>Shield Button 3</td>
+                                <td>PB14</td>
+                                <td>Closes the car's door</td>
+                            </tr>
+                            <tr>
+                                <td>External Button 1</td>
+                                <td>PC10</td>
+                                <td>Request for Floor 1</td>
+                            </tr>
+                            <tr>
+                                <td>External Button 2</td>
+                                <td>PC11</td>
+                                <td>Request for Floor 2</td>
+                            </tr>
+                            <tr>
+                                <td>External Button 3</td>
+                                <td>PD2</td>
+                                <td>Request for Floor 3</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <p>See image below for component location reference.</p>
+
+                    <figure>
+                        <img src="/assets/images/sean/car-controller-labelled-2.jpg" alt="Component location reference" class="img-fluid">
+                    </figure>
+
+                    <h2>Programming</h2>
+
+                    <p>Here are my steps to program the STM32.</p>
+                    <ol>
+                        <li>Change to only allow the external push buttons to request a floor.</li>
+                        <li>Change Shield Button 2b to transmit a CAN message to let the Supervisory Controller know that the door is open.</li>
+                        <li>Change Shield Button 3b to transmit a CAN message to let the Supervisory Controller know that the door is closed.</li>
+                        <li>Have the Shield LEDs 2b and 3b display if the door is open or closed.</li>
+                    </ol>
+
+                    <h3>Step 1 - Floor Request</h3>
+
+                    <p>My plan for this is to make the external and shield pins separate. I'm going to split them into different <code>#define</code> so that I can easily call them. For now the shield buttons won't do anything.</p>
+
+                    <figure>
+                        <img src="/assets/images/sean/floor-pin-out.png">
+                        <figcaption>Setup <code>#define</code> for each of the buttons</figcaption>
+                    </figure>
+
+                    <figure>
+                        <img src="/assets/images/sean/code-button-floor-request.png">
+                        <figcaption>Only the external push buttons will make a floor request</figcaption>
+                    </figure>
+
+                    <h3>Step 2 & 3 - Announce Door is Open/Closed</h3>
+
+                    <p>My plan for this is to <code>#define</code> the CAN data for the open and close messages. Then I can make a flag that will be set when an open message is sent. The flag will be set when the button is pressed. It will be cleared once we detect that the flag is set and transmit the message.</p>
+
+                    <figure>
+                        <img src="/assets/images/sean/code-door-can-protocol.png">
+                        <figcaption><code>#define</code> the door open and close CAN messages</figcaption>
+                    </figure>
+
+                    <figure>
+                        <img src="/assets/images/sean/code-button-door.png">
+                        <figcaption>Buttons 2 and 3 will set the flags to be pressed if the button is pressed</figcaption>
+                    </figure>
+
+                    <figure>
+                        <img src="/assets/images/sean/code-door-msg.png">
+                        <figcaption>Change the message if the door is opened or closed.</figcaption>
+                    </figure>
+
+                    <h3>Step 4 - LED Indicate Door is Open/Closed</h3>
+
+                    <p>My plan for this to just update the LEDs when the message changes.</p>
+
+                    <figure>
+                        <img src="/assets/images/sean/code-door-msg-led.png">
+                        <figcaption>The LEDs are toggled to the correct state when the button is pushed.</figcaption>
+                    </figure>
+
+                    <h3>Results</h3>
+
+                    <p>The STM32 is transmitting the correct signals along the CAN Bus.</p>
+
+                    <figure>
+                        <img src="/assets/images/sean/teraterm-door-printout.png">
+                    </figure>
+                </article>
+
+                <article>
+                    <h1>Website Authentication</h1>
+
+                    <h2>Updating Login Page</h2>
+
+                    <p>The login page will take a username and password. Then it will query the database for a user with the same username. If there is a user with that username we can compare the passwords. If there isn't a user with that username or the password is incorrect then we will prompt them to try login again.</p>
+
+                    <figure>
+                        <img src="/assets/images/sean/code-login-php.png">
+                    </figure>
+
+                    <h2>Creating Sign Up Page</h2>
+
+                    <p>The needs to be a sign up page too. The sign up page will insert into the database.</p>
+
+                    <figure>
+                        <img src="/assets/images/sean/sign-up-page-1.png">
+                    </figure>
+
+                    <figure>
+                        <img src="/assets/images/sean/code-sign-up-msg.png">
+                    </figure>
+                </article>
+            </section>
+        </div>
+    </main>
+    
+    <footer>
+        <copyright-text name="Sean Toet"></copyright-text>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="/js/components/top-bar.js"></script>
+    <script src="/js/components/copyright.js" defer></script>
+</body>
+</html>

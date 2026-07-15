@@ -2,51 +2,77 @@
 <!--AUTHOR: Emiliano Perez Pellicer
     DATE: 22-05-2026
     COMMENTS: This will be my main page to control and update my personal Logbook From weeks 1 - 14
-    VERSION: 1.0 
+    VERSION: 1.0
 -->
-
-<!--==== HTML SCRIPT =====-->
-<html lang = "en">
+<html lang="en">
     <!-- === Head section === -->
     <head>
-        <!-- === Include Specia -->
         <meta charset="UTF-8">
-        <!-- === Title ==== -->
-        <title>Emiliano's Engineering Logbook Week 6</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- === Title === -->
+        <title>Emiliano's Engineering Logbook Week 7</title>
         <meta name="description" content="This is the logbook week 7 page for Emiliano" />
-        <meta name="robots" content="noindex nofollow"/>   <!-- Do not want page or any of its links to be indexed-->
-        <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
+        <meta name="robots" content="noindex nofollow"/>
+        <meta http-equiv="author" content="Emiliano Perez Pellicer"/>
         <meta http-equiv="pragma" content="no-cache"/>
+        <!-- === Stylesheets (same set Sean uses) === -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        <link href="/ese_project_vi/css/theme.css" rel="stylesheet"/>
-        <link href="/ese_project_vi/css/project-style.css" rel="stylesheet"/> `
+        <link href="/css/theme.css" rel="stylesheet"/>
+        <link href="/css/style.css" rel="stylesheet"/>
+        <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
     </head>
     <!-- === Body section === -->
-    <body>
-        <h1 id="top">Week 7 Assigments Completed</h1>
-        <p>Under this section you will find all the tasks that were done during <b>week 7</b></p>
-        <!-- Add Sepratating line -->
-        <hr />
-        <h2>Overview</h2>
-        <p>Under this week I was moustly focsed on Midterms and Finally integrating Queues on the FSM 
-        </p>
+    <body class="d-flex flex-column min-vh-100">
+        <header>
+            <div id="topbar"></div>
+        </header>
 
-        <h2>Tasks Completed</h2>
-        <ol>
-            <li>Started the development of Priority Queues for the FSM</li>
-            <ul>
-                <li>FSM</li>
-                <p>Focused on working on applying the FSM and the Queues for the project</p>
-            </ul>
-            <li></li>
-        <h2>Challenges</h2>
-        <ol>
-            <li>Focused on my Midterms and finalizing some of the QUeues</li>
-        </ol>
+        <main class="flex-grow-1">
+            <div class="container">
+                <section class="title">
+                    <h1>Emiliano's Logbook</h1>
+                    <h2>Week 7</h2>
+                </section>
+
+                <section class="body">
+                    <article>
+                        <h1>Overview</h1>
+                        <p>This week I was mostly focused on midterms, while also making progress on integrating priority queues into the Finite State Machine (FSM) for the Supervisory Controller.</p>
+                    </article>
+
+                    <article>
+                        <h1>Tasks Completed</h1>
+                        <ol>
+                            <li>Started the development of priority queues for the FSM:
+                                <ul>
+                                    <li>Applied the FSM logic and integrated the queues into the Supervisory Controller</li>
+                                    <li>Began testing how requests are prioritized and handled by the queue</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </article>
+
+                    <article>
+                        <h1>Challenges</h1>
+                        <ol>
+                            <li>Balancing project work with midterm exams</li>
+                            <li>Finalizing the priority-queue logic and its integration with the FSM</li>
+                        </ol>
+                    </article>
+                </section>
+            </div>
+        </main>
+
         <footer>
-            <!-- === CopyRight Symbol  === -->
-            <p id = "copyright">Copyright &copy Emiliano Perez Pellicer</p>
+            <!-- === Send Back to Logbook Page === -->
+            <a href="logbook_EPP.html">Back to logbooks</a>
+            <!-- === CopyRight Symbol === -->
+            <copyright-text name="Emiliano Perez Pellicer"></copyright-text>
         </footer>
-        
+
+        <!-- === Scripts (same set Sean uses) === -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        <script src="/js/components/top-bar.js"></script>
+        <script src="/js/components/copyright.js" defer></script>
     </body>
 </html>
