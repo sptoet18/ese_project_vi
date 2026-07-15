@@ -3,7 +3,7 @@
 
     session_start();
 
-    $db = dbConnect(path, user, password);
+    $db = dbConnect('mysql:host=127.0.0.1; dbname=elevator', 'Emiliano', 'ESE');
 
 	$username = $_POST['username'];
     $password = $_POST['password'];
@@ -14,9 +14,9 @@
 	$_SESSION['username'] = $username;
 
 	$userInsert = $db->prepare('
-        insert into users (
+        insert into user (
             username,
-            password,
+            hashed_password,
             firstname,
             lastname,
             role
@@ -30,7 +30,7 @@
 	');
 	$userInsert->execute([
         'username'  => $username,
-        'password'  => password_hash($password, PASSWORD_DEFAULT),
+        'password'  =>  $password,//password_hash($password, PASSWORD_DEFAULT),
         'firstname' => $firstname,
         'lastname'  => $lastname,
         'role'      => $role

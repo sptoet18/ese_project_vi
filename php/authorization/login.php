@@ -3,8 +3,7 @@
 
     session_start();
 
-    $db = dbConnect(path, user, password);
-
+    $db = dbConnect('mysql:host=127.0.0.1; dbname=elevator', 'Emiliano', 'ESE');
 	$username = $_POST['username'];
     $password = $_POST['password'];
 
@@ -12,7 +11,7 @@
 
 	$userQuery = $db->prepare('
 		select id, username, hashed_password
-		from users
+		from user
 		where username = :username
 	');
 	$userQuery->execute(['username' => $username]);
