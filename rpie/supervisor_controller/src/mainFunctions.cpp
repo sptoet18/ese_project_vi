@@ -157,6 +157,6 @@ int FloorFromHex(int Hex){
 			return(3);
 			break;
 		default:
-			return(1);							// Default is to reset to floor 1 on bad input
+			return(0);							// Default is to reset to floor 1 on bad input
 		}
 }

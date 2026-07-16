@@ -169,7 +169,7 @@ static void fsmPollWebsite(ElevatorFSM *fsm){
 //EC_TO_ALL confirmaton, or from the MoVING fall back timeput 
 static void fsmArrive(ElevatorFSM *fsm, int floor){
     fsm->state = (ElevatorSate)(floor - 1); //STATE FLOOR - 1 
-    fsm->doorClosed  = 0; 
+    fsm->doorClosed  = DOOR_CLOSE; 
     fsm->doorTimeStart = time(NULL);
     fsm->collectTimerStart = 0; // No listening window until the door closes again 
     fsm->lockedTarget = 0; 
@@ -180,7 +180,7 @@ static void fsmArrive(ElevatorFSM *fsm, int floor){
     db_setFloorNum(floor); //Keep the website/Db in sync with the real  elevator position 
     fsm->lastDbfloor = floor; //Next website poll doesn't re que our own update 
 
-    printf("[FSM] Arrived at Floor %d - door OPEN(%ds Timer started)\n", floor, DOOR_OPEN_TIME_SEC);
+    printf("[FSM] Arrived at Floor %d - door CLOSED(%ds Timer started)\n", floor, DOOR_OPEN_TIME_SEC);
 }
 
 //Applies one incoming CAN message to the FSM's request flags / arrival detection 
@@ -214,10 +214,15 @@ static void fsmProcessMessage(ElevatorFSM *fsm, int id, int data){
     
     case ID_CC_TO_SC:
         floor = FloorFromHex(data);
-        if(!queueContainsFloor(fsm->carQueue, floor)){
-            fsm->carQueue.push(floor);
-            printf("[FSM] Car Request Detected (Prioptity 1): FLOOR %d\n", floor); 
-        }  
+        if(floor == 0){
+            //Indicate if te door is oopen or closed
+            fsm->doorClosed = data; 
+        }else{
+            if(!queueContainsFloor(fsm->carQueue, floor)){
+                fsm->carQueue.push(floor);
+                printf("[FSM] Car Request Detected (Prioptity 1): FLOOR %d\n", floor); 
+            }  
+        }
         break;
     
     case ID_EC_TO_ALL:
@@ -247,21 +252,14 @@ static void fsmStep(ElevatorFSM *fsm){
         int currentFloor = (int)fsm->state + 1; //State Floor1(0) -> 1
 
         //DOOR IS OPEN 
-        if(!fsm->doorClosed){
-            //Check the time passed 
-            double elapsed = difftime(time(NULL), fsm->doorTimeStart); 
-            if(elapsed >= DOOR_OPEN_TIME_SEC){
-                fsm->doorClosed = 1; 
-                fsmConsumeRequestsForFloor(fsm, currentFloor); //Requesrts at this floor are now beind done 
-                fsm->collectTimerStart =0; //re start listening window 
-                fsm->lockedTarget =0;
-                printf("[FSM] Door CLOSED at Floor %d\n", currentFloor);
-            
-            }else{
-                return; //Still wating for the door timer 
-            }
-        }
-        if(fsm->lockedTarget != 0){
+        if(fsm->doorClosed != DOOR_CLOSE){
+            fsmConsumeRequestsForFloor(fsm, currentFloor); //Requesrts at this floor are now beind done 
+            fsm->collectTimerStart =0; //re start listening window 
+            fsm->lockedTarget =0;
+
+            printf("[FSM] Door OPEN at Floor %d\n", currentFloor);
+
+        }else if(fsm->doorClosed == DOOR_CLOSE && fsm->lockedTarget != 0){
             double waited = difftime(time(NULL), fsm->preMoveTimerStart); 
             if(waited < PRE_MOVE_DELAY_SEC){
                 time_t nowSec = time(NULL); 
@@ -285,9 +283,10 @@ static void fsmStep(ElevatorFSM *fsm){
             //SECOND handle + blocks 1s via sleep(1), which fights with the hfsm handle pcanFsmRxPoll() uses)
             pcanFsmTx(ID_SC_TO_EC, HexFromFloor(target));
             return;
+
         }
         //DOOR IS CLOSED && LISTENING FOR REQUEST 
-        if(fsm->collectTimerStart == 0){
+        if(fsm->doorClosed == DOOR_CLOSE && fsm->collectTimerStart == 0){
             fsm->collectTimerStart = time(NULL);
             lastCollectingPrint = 0; 
             printf("[FSM] Listening for requests for %d seconds before choosing Next Stop\n",REQUEST_COLLECTION_SEC);
@@ -305,22 +304,26 @@ static void fsmStep(ElevatorFSM *fsm){
             return; //Still on the collecting window - keep collecting
         }
 
-        //LISTENING WINDOW IS OVER PICK NEXT TARGET 
-
-        int target = fsmPeekPriotity(fsm, currentFloor); 
-        if(target != 0 && target != currentFloor){
-            fsmConsumeRequestsForFloor(fsm, target); //locked in now - remove from queues 
-            fsm->lockedTarget = target; 
-            fsm->preMoveTimerStart = time(NULL); 
-            fsm->collectTimerStart =0; //reset for next stop 
-
-            //Print what got locked in - actual move happens after Phase B (see top of this function)
-            printf("[FSM] Locked FLOOR %d - waiting %d seconds before moving\n", target, PRE_MOVE_DELAY_SEC); 
-            
+        //LISTENING WINDOW IS OVER, PICK NEXT TARGET 
+        if(fsm->doorClosed == DOOR_OPEN){
+            return;
         }else{
-            //Nothing then restarts timer 
-            fsm->collectTimerStart = time(NULL); 
+            int target = fsmPeekPriotity(fsm, currentFloor); 
+            if(target != 0 && target != currentFloor){
+                fsmConsumeRequestsForFloor(fsm, target); //locked in now - remove from queues 
+                fsm->lockedTarget = target; 
+                fsm->preMoveTimerStart = time(NULL); 
+                fsm->collectTimerStart =0; //reset for next stop 
+
+                //Print what got locked in - actual move happens after Phase B (see top of this function)
+                printf("[FSM] Locked FLOOR %d - waiting %d seconds before moving\n", target, PRE_MOVE_DELAY_SEC); 
+                
+            }else{
+                //Nothing then restarts timer 
+                fsm->collectTimerStart = time(NULL); 
+            }
         }
+        
 
     }else{
         //We are MOVING 
