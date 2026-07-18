@@ -190,6 +190,8 @@ button.elevator {
     border-radius: 12px;
 
     cursor: pointer;
+
+    margin-top: 12px;
 }
 
 button.elevator:hover{
@@ -220,5 +222,19 @@ div.indicator {
 
     align-content: center;
     justify-self: center;
+    text-align: center;
+}
+
+div.elevator-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+
+    justify-items: center;
+}
+
+div.elevator-grid > div {
+    /* background-color: green; */
+
     text-align: center;
 }

@@ -19,7 +19,9 @@
         $user = $userQuery->fetch();
 
         if ($user) {
+            // Add query to get the elevator's current location
 
+            $elevatorPosition = getPositionImage(1);
         } else {
             echo "<script>location.href = \"/html/authorization/login.html\"</script>";
         }
@@ -57,7 +59,26 @@
 
             <section class="body">
                 <article class="elevator-ui">
-                    <div class="container">
+                    <div class="elevator-grid">
+                        <div>
+                            <h2>Request as Floor Controller</h2>
+                            <button class="elevator">Request Floor 3</button>
+                            <button class="elevator">Request Floor 2</button>
+                            <button class="elevator">Request Floor 1</button>
+                        </div>
+                        <div>
+                            <h2>Request as Car Controller</h2>
+                            <button class="elevator">Request Floor 3</button>
+                            <button class="elevator">Request Floor 2</button>
+                            <button class="elevator">Request Floor 1</button>
+                        </div>
+                        <div>
+                            <h2>Elevator's Current Floor</h2>
+                            <img src="<?php echo $elevatorPosition; ?>" height="340px" style="image-rendering: pixelated"/>
+                        </div>
+                    </div>
+
+                    <!-- <div class="container">
                         <div class="row">
                             <div class="col">
                                 <div class="controls">
@@ -75,7 +96,7 @@
                             </div>
                         </div>
                         <div class="indicator">Moving</div>
-                    </div>
+                    </div> -->
                 </article>
             </section>
         </div>

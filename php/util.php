@@ -96,4 +96,18 @@
             return false;
         }
     }
+
+    // --------- Elevator Position ---------
+
+    function getPositionImage(int $position) {
+        switch ($position) {
+            case 1:
+                return "/assets/images/floor-indicators/floor1.png";
+            case 2:
+                return "/assets/images/floor-indicators/floor2.png";
+            case 3:
+                return "/assets/images/floor-indicators/floor3.png";
+        }
+    }
+
 ?>
