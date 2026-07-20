@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Besart's Week 10 Logbook">
+    <meta name="robots" content="noindex nofollow"/>
+    <meta http-equiv="author" content="Besart Kalezic">
+    <meta http-equiv="pragma" content="no-cache"/>
+    <title>Besart's Logbook - Week 10</title>
+
+```
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+<link href="/ese_project_vi/css/theme.css" rel="stylesheet"/>
+<link href="/ese_project_vi/css/project-style.css" rel="stylesheet"/>
+```
+
+</head>
+
+<body>
+
+<div class="container">
+
+```
+<header>
+    <nav class="navbar">
+        <a class="nav-link" href="../../../index.html">Home</a>
+        <a class="nav-link" href="../../about.html">About</a>
+        <a class="nav-link" href="../../../html/proj_details.html">Details</a>
+        <a class="nav-link" href="../../../html/proj-plan.html">Plan</a>
+        <a class="nav-link" href="../../../login.html">Login</a>
+        <a class="nav-link" href="../../besart/besart.html">Besart</a>
+        <a class="nav-link" href="../../emiliano/emiliano.html">Emiliano</a>
+        <a class="nav-link" href="../../sean/sean.html">Sean</a>
+    </nav>
+</header>
+
+<main>
+
+    <section class="title">
+        <h1>Besart's Logbook</h1>
+        <p>Week 10</p>
+    </section>
+
+    <section>
+        <h2>Tasks Completed</h2>
+
+        <article>
+            <h3>SQL Development Environment Setup</h3>
+
+            <p>
+                This week I configured the development environment required to work with
+                SQL databases directly through Visual Studio Code on Windows. I installed
+                and configured the necessary VS Code extensions to allow SQL scripts and
+                database queries to be created, viewed, and executed from within the
+                development environment.
+            </p>
+
+            <p>
+                This setup will support the database portion of the Raspberry Pi supervisory
+                controller. The database will eventually be used to store elevator events,
+                operating states, commands, and other information received from the elevator
+                control network.
+            </p>
+        </article>
+
+        <article>
+            <h3>Elevator Code Testing and Troubleshooting</h3>
+
+            <p>
+                I assisted my project group with testing and troubleshooting the Arduino
+                code used to control the elevator system. This involved observing elevator
+                behaviour during operation and helping determine whether issues were caused 
+                by control logic, button inputs, or communication between the controllers.
+            </p>
+
+            <p>
+                Repeated testing was performed after software changes were made to confirm
+                that the elevator responded correctly and that the changes did not introduce
+                additional problems. This process helped improve the reliability of the
+                elevator control software.
+            </p>
+        </article>
+
+        <article>
+            <h3>Open and Close Button Switch Implementation</h3>
+
+            <p>
+                I helped implement the open and close switch functionality for the elevator
+                buttons. This required assisting with the integration of the physical button
+                inputs into the elevator control logic so that a user could request the
+                elevator doors to open or close.
+            </p>
+
+            <p>
+                The button operation was tested to verify that each input was detected
+                correctly and produced the expected response from the elevator controller.
+                This work also required ensuring that the switches operated consistently
+                with the existing elevator control sequence.
+            </p>
+        </article>
+
+        <article>
+            <h3>Raspberry Pi Website Hosting</h3>
+
+            <p>
+                I verified that the Raspberry Pi was capable of hosting the project website.
+                The website was deployed to the Raspberry Pi and accessed through the local
+                network using the Raspberry Pi's IP address.
+            </p>
+
+            <p>
+                Successfully hosting the website on the Raspberry Pi established the
+                foundation for the supervisory control interface. This interface will
+                eventually allow users to monitor elevator status information and send
+                commands to the elevator system through a web browser.
+            </p>
+        </article>
+
+        <article>
+            <h3>Challenges</h3>
+
+            <p>
+                One of the primary challenges this week was troubleshooting the elevator
+                code while multiple hardware and software components were operating
+                together. A problem observed at the elevator could have originated from the
+                original code written for elevator control.
+            </p>
+
+        </article>
+
+        <article>
+            <h3>What I Learned</h3>
+
+            <p>
+                This week I gained additional experience configuring database development
+                tools within Visual Studio Code and preparing SQL functionality for future
+                project integration. I also improved my understanding of how physical button
+                inputs are incorporated into embedded elevator control software.
+            </p>
+
+            <p>
+                I learned how a Raspberry Pi can host a website that is accessible over a
+                local network and how this website can serve as the user interface for a
+                larger supervisory control system.
+            </p>
+        </article>
+
+        <article>
+            <h3>Next Steps</h3>
+
+            <ul>
+                <li>
+                    Develop code that allows commands to be sent from the hosted website
+                    to the Raspberry Pi supervisory controller.
+                </li>
+                <li>
+                    Connect website button inputs to the supervisory controller software.
+                </li>
+                <li>
+                    Transfer supervisory commands from the Raspberry Pi to the elevator
+                    controllers.
+                </li>
+                <li>
+                    Configure the SQL database to store elevator commands, status updates,
+                    and system events.
+                </li>
+                <li>
+                    Test communication between the website, database, Raspberry Pi, and
+                    elevator control network.
+                </li>
+            </ul>
+        </article>
+    </section>
+
+    <a href="../../besart/besart.html">Back to Besart's Main Page</a>
+
+</main>
+
+<footer>
+    <p>COPYRIGHT &copy; Besart Kalezic</p>
+</footer>
+```
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
