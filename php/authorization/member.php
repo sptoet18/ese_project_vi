@@ -1,12 +1,27 @@
 <?php
+    require_once __DIR__ . '/../util.php';
+
     session_start();
 
+    $db = dbConnect('mysql:host=127.0.0.1; dbname=elevator', 'Emiliano', 'ESE');
+    
     if (isset($_SESSION['username'])) {
 
         $username = $_SESSION['username'];
 
-        if ($username === "seantoet") {
+        // database query for username
+        $userQuery = $db->prepare('
+            select id, username, hashed_password
+            from user
+            where username = :username
+        ');
+        $userQuery->execute(['username' => $username]);
+        $user = $userQuery->fetch();
 
+        if ($user) {
+            // Add query to get the elevator's current location
+
+            $elevatorPosition = getPositionImage(1);
         } else {
             echo "<script>location.href = \"/html/authorization/login.html\"</script>";
         }
@@ -43,7 +58,46 @@
             </section>
 
             <section class="body">
-                
+                <article class="elevator-ui">
+                    <div class="elevator-grid">
+                        <div>
+                            <h2>Request as Floor Controller</h2>
+                            <button class="elevator">Request Floor 3</button>
+                            <button class="elevator">Request Floor 2</button>
+                            <button class="elevator">Request Floor 1</button>
+                        </div>
+                        <div>
+                            <h2>Request as Car Controller</h2>
+                            <button class="elevator">Request Floor 3</button>
+                            <button class="elevator">Request Floor 2</button>
+                            <button class="elevator">Request Floor 1</button>
+                        </div>
+                        <div>
+                            <h2>Elevator's Current Floor</h2>
+                            <img src="<?php echo $elevatorPosition; ?>" height="340px" style="image-rendering: pixelated"/>
+                        </div>
+                    </div>
+
+                    <!-- <div class="container">
+                        <div class="row">
+                            <div class="col">
+                                <div class="controls">
+                                    <button class="elevator">Request Floor 3</button>
+                                    <button class="elevator">Request Floor 2</button>
+                                    <button class="elevator">Request Floor 1</button>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="indicators">
+                                    <div class="indicator">Floor 3</div>
+                                    <div class="indicator">Floor 2</div>
+                                    <div class="indicator">Floor 1</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="indicator">Moving</div>
+                    </div> -->
+                </article>
             </section>
         </div>
     </main>

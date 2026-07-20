@@ -38,57 +38,27 @@
                 <section class="login">
                     <div>
                         <form action="/php/authorization/login.php" method="POST">
-                            <!-- Add Username  -->
-                            <p>Username: 
+                            <div class="grid">
+                                <p>Username:</p>
                                 <input type="text" id="username" name="username" required/>
-                            </p>
-                            <!-- Add Password -->
-                            <p>Password:
+                                <p>Password:</p>
                                 <input type="password" id="password" name="password" required/>
-                            </p>
+                            </div>
         
                             <p id="errorMessage"></p>
         
                             <!-- Generate Log in button -->
-                            <input type="submit" value="Log in"/>
-                            <p><a href="/html/authorization/request-access.html">Request Access</a></p> 
+                            <input type="submit" value="Sign Up"/>
                         </form>
-
-                        <p>Username: seantoet Password: seantoet</p>
                     </div>
                 </section>
             </div>
         </main>
 
         <footer>
-            <copyright-text name="Emiliano Perez Pellicer"></copyright-text>
+            
         </footer>
 
-        <script>
-            const username = document.getElementById("username");
-            const password = document.getElementById("password");
-
-            username.addEventListener("input", (event) => {
-                if (username.value.length < 7) {
-                    document.getElementById("errorMessage").textContent = "Username must be more then 6 characters";
-                } else {
-                    document.getElementById("errorMessage").textContent = "";
-                }
-            })
-            password.addEventListener("input", (event) => {
-                if (password.value.length < 7) {
-                    document.getElementById("errorMessage").textContent = "Password must be more then 6 characters";
-                } else {
-                    document.getElementById("errorMessage").textContent = "";
-                }
-            })
-
-            document.addEventListener("DOMContentLoaded", () => {
-                if (username) {
-                    username.focus();
-                }
-            })
-        </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="/js/components/top-bar.js"></script>
     </body>

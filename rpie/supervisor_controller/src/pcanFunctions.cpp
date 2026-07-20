@@ -119,17 +119,25 @@ const char* decodeMsgType(int id, int  data){
 	}
 
 	switch (data){
-	case	GO_TO_FLOOR1:
+	case GO_TO_FLOOR1:
 		return "FLOOR 1"; 
 		break;
 	
-	case	GO_TO_FLOOR2:
+	case GO_TO_FLOOR2:
 		return "FLOOR 2"; 
 		break;
 
-	case	GO_TO_FLOOR3:
+	case GO_TO_FLOOR3:
 		return "FLOOR 3"; 
 		break;
+
+	case DOOR_OPEN:
+		return "DOOR OPEN";
+		break; 
+
+	case DOOR_CLOSE:
+		return "DOOR_CLOSED"; 
+		break; 
 	
 	default:
 		return "UNKNOWN";

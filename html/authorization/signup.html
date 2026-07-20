@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<!--AUTHOR: Emiliano Perez Pellicer
+    DATE: 12-06-2026
+    COMMENTS: This page will be dealing with the login page  
+    VERSION: 1.0 
+-->
+<!-- !--==== HTML SCRIPT ===== -->
+<html lang = "en">
+    <!-- === Head Section ====  -->
+    <head>
+        <!-- === Include Special Character, Get out of ASCII default -->
+        <meta charset="UTF-8">
+        <!-- === Title ==== -->
+        <title id="title">Sign Up Page</title>
+        <meta name="description" content="This is the login page " />
+        <meta name="robots" content="noindex nofollow"/>   <!-- Do not want page or any of its links to be indexed-->
+        <meta http-equiv="author" content="Sean Toet"/> <!-- Want browser to reload this page every time -->
+        <meta http-equiv="pragma" content="no-cache"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <link href="/css/theme.css" rel="stylesheet"/>
+        <link href="/css/style.css" rel="stylesheet"/>
+        <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
+    </head>
+    <!-- ===Body Section ===  -->
+    <body class="d-flex flex-column min-vh-100">
+        <header>
+            <div id="topbar"></div>
+        </header>
+
+        <main class="flex-grow-1">
+            <div class="container">
+                <section class="title">
+                    <h1>Sign Up</h1>
+                    <h2>To access the elevator</h2>
+                </section>
+    
+                <section class="signup">
+                    <div>
+                        <form action="/php/authorization/signup.php" method="POST">
+                            <div class="grid">
+                                <p>Username:</p>
+                                <input type="text" id="username" name="username" required/>
+                                <p>Password:</p>
+                                <input type="password" id="password" name="password" required/>
+                                <p>First Name:</p>
+                                <input type="text" id="firstname" name="firstname" required/>
+                                <p>Last Name:</p>
+                                <input type="text" id="lastname" name="lastname" required/>
+                                <p>Role:</p>
+                                <input list="roles" id="role" name="role" required/>
+
+                                <datalist id="roles">
+                                    <option value="admin">Admin</option>
+                                    <option value="project_member">Project Member</option>
+                                    <option value="project_supervisory">Project Supervisory</option>
+                                    <option value="ese_student">ESE Student</option>
+                                    <option value="user">User</option>
+                                </datalist>
+                            </div>
+        
+                            <p id="errorMessage"></p>
+        
+                            <!-- Generate Log in button -->
+                            <input type="submit" value="Sign Up"/>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer>
+            
+        </footer>
+
+        <script>
+            const username = document.getElementById("username");
+            const password = document.getElementById("password");
+
+            username.addEventListener("input", (event) => {
+                if (username.value.length < 7) {
+                    document.getElementById("errorMessage").textContent = "Username must be more then 6 characters";
+                } else {
+                    document.getElementById("errorMessage").textContent = "";
+                }
+            })
+            password.addEventListener("input", (event) => {
+                if (password.value.length < 7) {
+                    document.getElementById("errorMessage").textContent = "Password must be more then 6 characters";
+                } else {
+                    document.getElementById("errorMessage").textContent = "";
+                }
+            })
+
+            document.addEventListener("DOMContentLoaded", () => {
+                if (username) {
+                    username.focus();
+                }
+            })
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="/js/components/top-bar.js"></script>
+    </body>
+</html>

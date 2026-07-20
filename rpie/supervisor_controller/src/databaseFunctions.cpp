@@ -20,7 +20,7 @@ int db_getFloorNum() {
 	
 	// Create a connection 
 	driver = get_driver_instance();
-	con = driver->connect("tcp://127.0.0.1:3306", "ese", "ese");	
+	con = driver->connect("tcp://127.0.0.1:3306", "Emiliano", "ESE");	
 	con->setSchema("elevator");		
 	
 	// Query database
@@ -49,7 +49,7 @@ int db_setFloorNum(int floorNum) {
 	
 	// Create a connection 
 	driver = get_driver_instance();
-	con = driver->connect("tcp://127.0.0.1:3306", "ese", "ese");	
+	con = driver->connect("tcp://127.0.0.1:3306", "Emiliano", "ESE");	
 	con->setSchema("elevator");										
 	
 	// Query database (possibly not necessary)

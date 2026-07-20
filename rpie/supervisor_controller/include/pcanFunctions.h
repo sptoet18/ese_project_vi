@@ -23,6 +23,9 @@
 #define GO_TO_FLOOOR2 0x02	// Go to floor 2
 #define GO_TO_FLOOOR3 0x03	// Go to floor 3
 
+#define DOOR_CLOSE 0x08
+#define DOOR_OPEN 0x09
+
 
 
 // Function declarations
