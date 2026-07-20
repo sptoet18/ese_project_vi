@@ -2,28 +2,267 @@
 <!--AUTHOR: Emiliano Perez Pellicer
     DATE: 22-05-2026
     COMMENTS: This will be my main page to control and update my personal Logbook From weeks 1 - 14
-    VERSION: 1.0 
+    VERSION: 1.0
 -->
-
-<!--==== HTML SCRIPT =====-->
-<html lang = "en">
+<html lang="en">
     <!-- === Head section === -->
     <head>
-        <!-- === Include Specia -->
         <meta charset="UTF-8">
-        <!-- === Title ==== -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- === Title === -->
         <title>Emiliano's Engineering Logbook Week 10</title>
         <meta name="description" content="This is the logbook week 10 page for Emiliano"/>
-        <meta name="robots" content="noindex nofollow"/>   <!-- Do not want page or any of its links to be indexed-->
-        <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
-        <meta http-equiv="pragma" content="no-cache"/> 
+        <meta name="robots" content="noindex nofollow"/>
+        <meta http-equiv="author" content="Emiliano Perez Pellicer"/>
+        <meta http-equiv="pragma" content="no-cache"/>
+        <!-- === Stylesheets (same set Sean uses) === -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <link href="/css/theme.css" rel="stylesheet"/>
+        <link href="/css/style.css" rel="stylesheet"/>
+        <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
     </head>
     <!-- === Body section === -->
-    <body>
-        <!-- === Send Back to Logbook Page=== -->
-        <p>During this week I finished and Signed the <b>Safety Module</b></p>
-        <!-- === Send Back to Logbook Page=== -->
-        <p>Copyright &copy Emiliano Perez Pellicer</p>
-        <a href="/logbooks/logbook_EPP.html">Back to logbooks</a>
+    <body class="d-flex flex-column min-vh-100">
+        <header>
+            <div id="topbar"></div>
+        </header>
+
+        <main class="flex-grow-1">
+            <div class="container">
+                <section class="title">
+                    <h1>Emiliano's Logbook</h1>
+                    <h2>Week 10</h2>
+                </section>
+
+                <section class="body">
+                    <article>
+                        <h1>Overview and Objectives</h1>
+                        <p>The work carried out during Week&nbsp;10 concentrated on the data-management layer of the supervisory controller, which is responsible for bridging the local-area network (web interface) and the CAN network within the elevator system. The principal objective was to design and implement the relational database that records the operational state of each network node, and to establish the foundation required for the web interface to read from and write to that database.</p>
+                        <p>To meet this objective, the relational schema was defined, the core tables were created within a MySQL instance administered through phpMyAdmin, and the supporting SQL procedures for creating, describing, and modifying tables were formalised. In parallel, the basic functions required to interface the web front end with the database were developed. The sections that follow document the schema design, the SQL methodology adopted, the key constraints applied, the week's day-to-day progress, and the outstanding challenges identified for subsequent weeks.</p>
+                    </article>
+
+                    <article>
+                        <h1>Database Schema Development</h1>
+                        <p>The database was structured around a primary table describing the elevator network as a whole, together with a related sub-network table describing the individual CAN nodes. The design applies a parent&ndash;child relationship between these two tables so that the integrity of node records is enforced at the database level.</p>
+
+                        <h2>Primary table &mdash; <code>elevatorNetwork</code></h2>
+                        <p>The <code>elevatorNetwork</code> table serves as the master record of the system. Each entry captures a timestamped snapshot of a node together with its status and floor information. The <code>nodeID</code> field is declared as the primary key and is configured to auto-increment, so that every record receives a unique identifier automatically. All fields are declared <code>NOT&nbsp;NULL</code> to guarantee that no incomplete records are admitted.</p>
+
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Type</th>
+                                    <th>Null</th>
+                                    <th>Key / Extra</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>date</code></td><td>date</td><td>NOT NULL</td><td>&mdash;</td></tr>
+                                <tr><td><code>time</code></td><td>time</td><td>NOT NULL</td><td>&mdash;</td></tr>
+                                <tr><td><code>nodeID</code></td><td>int(10)</td><td>NOT NULL</td><td>Primary Key &middot; Auto Increment</td></tr>
+                                <tr><td><code>status</code></td><td>tinyInt(4)</td><td>NOT NULL</td><td>&mdash;</td></tr>
+                                <tr><td><code>currentFloor</code></td><td>tinyInt(4)</td><td>NOT NULL</td><td>&mdash;</td></tr>
+                                <tr><td><code>requestedFloor</code></td><td>tinyInt(4)</td><td>NOT NULL</td><td>&mdash;</td></tr>
+                                <tr><td><code>lastFloor</code></td><td>tinyInt(4)</td><td>NOT NULL</td><td>&mdash;</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h2>Sub-network table &mdash; <code>CAN_subNetwork</code></h2>
+                        <p>The <code>CAN_subNetwork</code> table records the state reported by each CAN node. Its <code>CAN_nodeID</code> field is defined as a foreign key that references the <code>nodeID</code> of the <code>elevatorNetwork</code> table. As a consequence, a row may only be inserted into this child table when a corresponding parent record already exists, which preserves referential integrity across the two tables.</p>
+
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Type</th>
+                                    <th>Null</th>
+                                    <th>Key</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>CAN_nodeID</code></td><td>int(10)</td><td>NOT NULL</td><td>Foreign Key &rarr; elevatorNetwork.nodeID</td></tr>
+                                <tr><td><code>CAN_status</code></td><td>tinyInt(4)</td><td>NOT NULL</td><td>&mdash;</td></tr>
+                                <tr><td><code>CAN_currentFloor</code></td><td>tinyInt(4)</td><td>NOT NULL</td><td>&mdash;</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h2>Supporting tables</h2>
+                        <p>In addition to the two schema tables above, a set of supporting tables was created and verified within phpMyAdmin to model the remaining aspects of the system: node registration, transaction history, elevator position, and user accounts. The following figures record the databases overview and the structure of each table as it appeared in the phpMyAdmin interface during development.</p>
+
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/SQLDatabases.png" alt="phpMyAdmin databases overview"/>
+                                        <figcaption>Databases overview in phpMyAdmin</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/can_node_table.png" alt="can_node table structure"/>
+                                        <figcaption>CAN Node table &mdash; <code>can_node</code> structure</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/CAN_subNetwork.png" alt="CAN_subNetwork table structure"/>
+                                        <figcaption>CAN SubNetwork table &mdash; <code>CAN_subNetwork</code> structure</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/can_transaction.png" alt="can_transaction table structure"/>
+                                        <figcaption>CAN Transaction table &mdash; <code>can_transaction</code> structure</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/elevator_position.png" alt="elevator_position table structure"/>
+                                        <figcaption>Elevator Position table &mdash; <code>elevator_position</code> structure</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/elevatorNetwork.png" alt="elevatorNetwork table structure"/>
+                                        <figcaption>ElevatorNetwork table &mdash; <code>elevatorNetwork</code> structure</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/user_table.png" alt="user table structure and records"/>
+                                        <figcaption>User table &mdash; <code>user</code> structure and stored records</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article>
+                        <h1>SQL Methodology</h1>
+                        <p>A consistent set of SQL procedures was adopted for creating and maintaining the tables. These procedures are recorded below both as a reference for the remainder of the project and as evidence of the commands exercised during this week's work.</p>
+
+                        <h2>Establishing a session and selecting a database</h2>
+                        <p>Database sessions were opened from the command line by authenticating as the project user, after which the working database was selected before any table operations were performed.</p>
+                        <pre><code class="language-bash">
+# Log in to the MySQL server as the project user
+mysql -u Emiliano -p
+
+# Select the database to operate on
+USE [database name];
+</code></pre>
+
+                        <h2>Creating a table</h2>
+                        <p>Tables were created by declaring each field with its data type and null constraint, and by specifying the InnoDB storage engine so that foreign-key relationships could be enforced.</p>
+                        <pre><code class="language-sql">
+CREATE TABLE [table name] (
+    date            DATE             NOT NULL,
+    nodeID          TINYINT UNSIGNED NOT NULL
+    -- ... remaining fields ...
+) ENGINE = InnoDB;
+</code></pre>
+
+                        <h2>Inspecting a table</h2>
+                        <p>The structure of any table was verified using the describe command, which lists each field together with its type, null setting, key, and default.</p>
+                        <pre><code class="language-sql">
+DESC [table name];
+</code></pre>
+
+                        <h2>Modifying an existing table</h2>
+                        <p>Existing tables were altered to add new fields or to redefine the properties of a field. New fields were positioned relative to existing ones, and a field was promoted to an auto-incrementing primary key by modifying its definition.</p>
+                        <pre><code class="language-sql">
+-- Add a field at a chosen position
+ALTER TABLE elevatorNetwork
+    ADD [field] [type] AFTER [field];
+
+-- Promote a field to an auto-incrementing primary key
+ALTER TABLE [table name]
+    MODIFY [field] [type] UNSIGNED NOT NULL
+    AUTO_INCREMENT PRIMARY KEY;
+</code></pre>
+                    </article>
+
+                    <article>
+                        <h1>Key Constraints</h1>
+                        <p>Three categories of key were applied during the schema design. Each enforces a distinct guarantee about the uniqueness or the relational integrity of the data.</p>
+
+                        <ul>
+                            <li><strong>Primary Key (one per table)</strong> &mdash; a primary key defines a field for which every row must hold a unique value. It functions much like the index of an array, providing an unambiguous handle to each record. In this schema, <code>nodeID</code> serves as the primary key of the <code>elevatorNetwork</code> table.</li>
+                            <li><strong>Foreign Key (parent &harr; child)</strong> &mdash; a foreign key links a child table to a parent (reference) table. It prevents a row from being inserted into the child table unless a matching record already exists in the parent, thereby preserving referential integrity. The InnoDB engine is required for this behaviour, so tables using foreign keys are declared with <code>ENGINE = InnoDB</code>.</li>
+                            <li><strong>Unique Key (no repeats)</strong> &mdash; a table may hold only one primary key; where additional fields must also be free of duplicate values, they are declared as unique keys. A unique constraint guarantees that no two rows share the same value in that field.</li>
+                        </ul>
+
+                        <pre><code class="language-sql">
+-- Declare a foreign-key relationship
+FOREIGN KEY ([field]) REFERENCES [parent table]([field])
+ENGINE = InnoDB;
+
+-- Enforce uniqueness on an additional field
+ADD UNIQUE KEY ([field]);
+</code></pre>
+                    </article>
+
+                    <article>
+                        <h1>Weekly Progress</h1>
+                        <h2>Tuesday &mdash; 14 July 2026</h2>
+                        <p>Work began on populating the database with entries as part of the database-development effort. The principal task undertaken was the connection of the web-interface input to the SQL database, so that data entered through the website could be persisted to the corresponding tables. By the end of the session, all of the basic functions required to interface with the SQL databases had been developed, providing the groundwork on which the read and write operations for the web interface will be built.</p>
+                    </article>
+
+                    <article>
+                        <h1>Demonstration &mdash; User Login</h1>
+                        <p>A short demonstration was recorded to verify the end-to-end flow of user creation. In the recording, new users are added to the <code>user</code> table directly through the website, confirming that the web interface successfully writes records to the underlying database.</p>
+
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/User_dB.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption>Demonstration of users being added to the <code>user</code> table through the website</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article>
+                        <h1>Challenges</h1>
+                        <p>Two principal challenges were identified during the week. Both concern the coordination between the distributed controllers and the timely propagation of state to the database.</p>
+
+                        <div class="alert alert-info">
+                            <strong>Challenge 01 &mdash; Inter-controller coordination.</strong> Determining the correct mechanism by which the car controller communicates with, and updates, its door state in accordance with the commands issued by the supervisory controller. Resolving this requires a clear definition of the message exchange between the car controller and the supervisory controller.
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>Challenge 02 &mdash; Dynamic database updates.</strong> Enabling the database to be updated dynamically as the system runs. This will require the adoption of socket programming so that live state changes can be pushed to the database without manual intervention.
+                        </div>
+                    </article>
+
+                    <article>
+                        <h1>Next Steps</h1>
+                        <ul>
+                            <li>Define the message protocol governing communication between the car controller and the supervisory controller for door-state updates.</li>
+                            <li>Study and apply socket programming to allow the database to be updated dynamically during operation.</li>
+                            <li>Extend the web interface to perform full read and write operations against the completed schema.</li>
+                        </ul>
+                    </article>
+                </section>
+            </div>
+        </main>
+
+        <footer>
+            <!-- === Send Back to Logbook Page === -->
+            <a href="logbook_EPP.html">Back to logbooks</a>
+            <!-- === CopyRight Symbol === -->
+            <copyright-text name="Emiliano Perez Pellicer"></copyright-text>
+        </footer>
+
+        <!-- === Scripts (same set Sean uses) === -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        <script src="/js/components/top-bar.js"></script>
+        <script src="/js/components/copyright.js" defer></script>
     </body>
 </html>
