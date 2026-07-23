@@ -166,11 +166,11 @@
                                     <table class="console">
                                         <thead>
                                             <tr>
-                                                <th>Sender</th>
+                                                <th>Current Floor</th>
                                                 <th>Time</th>
-                                                <th>Data</th>
-                                                <th>Floor</th>
                                                 <th>Last Floor</th>
+                                                <th>Moving</th>
+                                                <th>Door Closed</th>
                                             </tr>
                                         </thead>
 
