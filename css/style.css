@@ -200,7 +200,7 @@ button.elevator:hover{
 
 article.elevator-ui div.col div.indicators {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
 
     align-content: center;
     justify-content: center;
