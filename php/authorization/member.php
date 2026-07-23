@@ -40,7 +40,7 @@
             $positionQuery->execute([]);
             $positions = $positionQuery->fetchAll(PDO::FETCH_ASSOC);
 
-            $elevatorPosition = getPositionImage(1);
+            $elevatorPosition = getPositionImage($positions[0]["current_floor"]);
         } else {
             echo "<script>location.href = \"/html/authorization/login.html\"</script>";
         }
