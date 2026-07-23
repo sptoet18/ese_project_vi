@@ -1,13 +1,14 @@
 <?php
     require_once __DIR__ . './util.php';
 
-    // 1. Set critical headers to allow persistent even streaming
+    set_time_limit(0);
+    ignore_user_abort(true);
+
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache');
     header('Connection: keep-alive');
     header('X-Accel-Buffering: no');
 
-    // 2. Connect to the database
     $db = dbConnect('mysql:host=127.0.0.1; dbname=elevator', 'Emiliano', 'ESE');
 
     // 3. Trak the last ID sent to aoid repeating historical data
@@ -15,6 +16,9 @@
 
     // 4. Start the server stream loop
     while (true) {
+        if (connection_aborted()) {
+            break;
+        }
         // Check for rows newer than the last sent ID
         $statement = $db->prepare("
             select id, current_floor, last_floor, is_moving, is_closed, recorded_at
@@ -25,8 +29,9 @@
         $positions = $statement->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($positions as $position) {
+            $payload = json_encode($position);
             echo "id: " . $position['id'] . "\n";
-            echo "current_floor: " . $position['current_floor'] . "\n";
+            echo "data: " . $payload . "\n\n";
 
             $lastId = $position['id'];
         }

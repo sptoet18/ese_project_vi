@@ -197,7 +197,6 @@
                         </div>
                     </article> 
                 <?php endif; ?>
-
             </section>
         </div>
     </main>
@@ -211,5 +210,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="/js/components/top-bar.js"></script>
     <script src="/js/components/copyright.js" defer></script>
+    <script src="/js/components/event-source.js"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@ eventSource.onmessage = (event) => {
     const data = JSON.parse(event.data);
     const html = document.getElementById('sse');
 
-    html.innerHTML += `<p>${data.message}</p>`;
+    html.innerHTML += `<p>Floor: ${data.current_floor}</p>`;
 };
 
 eventSource.onerror = (err) => {
