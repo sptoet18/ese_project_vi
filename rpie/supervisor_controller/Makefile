@@ -51,7 +51,7 @@ endif
 INCLUDES	:= $(patsubst %,-I%, $(INCLUDEDIRS:%/=%))
 
 # define the C libs
-LIBS		:= -lmysqlcppconn -lpcan
+LIBS		:= -lmysqlcppconn -lpcan -lpthread -lm -ldl 
 
 # define the C source files
 SOURCES		:= $(wildcard $(patsubst %,%/*.cpp, $(SOURCEDIRS)))
