@@ -3,31 +3,84 @@
 
     session_start();
 
-    $db = dbConnect('mysql:host=127.0.0.1; dbname=elevator', 'Emiliano', 'ESE');
-    
-    if (isset($_SESSION['username'])) {
+    $elevatorPosition = getPositionImage(1);
 
-        $username = $_SESSION['username'];
+    class CanTransaction {
+        public string $sender;
+        public string $time;
+        public string $data;
+        public string $floor;
+        public string $last_floor;
 
-        // database query for username
-        $userQuery = $db->prepare('
-            select id, username, hashed_password
-            from user
-            where username = :username
-        ');
-        $userQuery->execute(['username' => $username]);
-        $user = $userQuery->fetch();
-
-        if ($user) {
-            // Add query to get the elevator's current location
-
-            $elevatorPosition = getPositionImage(1);
-        } else {
-            echo "<script>location.href = \"/html/authorization/login.html\"</script>";
+        public function __construct(
+            string $sender,
+            string $time,
+            string $data,
+            string $floor,
+            string $last_floor
+        ) {
+            $this->sender = $sender;
+            $this->time = $time;
+            $this->data = $data;
+            $this->floor = $floor;
+            $this->last_floor = $last_floor;
         }
-    } else {
-        echo "<script>location.href = \"/html/authorization/login.html\"</script>";
     }
+
+    class ElevatorPosition {
+        public string $floor;
+        public string $last_floor;
+        public bool $is_moving;
+        public bool $is_closed;
+        public string $time;
+
+        public function __construct(
+            string $floor,
+            string $last_floor,
+            bool $is_moving,
+            bool $is_closed,
+            string $time,
+        ) {
+            $this->floor = $floor;
+            $this->last_floor = $last_floor;
+            $this->is_moving = $is_moving;
+            $this->is_closed = $is_closed;
+            $this->time = $time;
+        }
+    }
+
+    $transactions = [];
+    $transactions[] = new CanTransaction("0x200", "10:40:300", "0x05", "1", "3");
+    $transactions[] = new CanTransaction("0x203", "10:43:023", "0x01", "3", "1");
+
+    $positions = [];
+    $positions[] = new ElevatorPosition("1", "3", true, true, "10:40:000");
+
+    // $db = dbConnect('mysql:host=127.0.0.1; dbname=elevator', 'Emiliano', 'ESE');
+    
+    // if (isset($_SESSION['username'])) {
+
+    //     $username = $_SESSION['username'];
+
+    //     // database query for username
+    //     $userQuery = $db->prepare('
+    //         select id, username, hashed_password
+    //         from user
+    //         where username = :username
+    //     ');
+    //     $userQuery->execute(['username' => $username]);
+    //     $user = $userQuery->fetch();
+
+    //     if ($user) {
+    //         // Add query to get the elevator's current location
+
+    //         $elevatorPosition = getPositionImage(1);
+    //     } else {
+    //         echo "<script>location.href = \"/html/authorization/login.html\"</script>";
+    //     }
+    // } else {
+    //     echo "<script>location.href = \"/html/authorization/login.html\"</script>";
+    // }
 ?>
 
 <!DOCTYPE html>
@@ -58,46 +111,127 @@
             </section>
 
             <section class="body">
+                <article>
+                    <div id="see"></div>"
+                </article>
+
                 <article class="elevator-ui">
                     <div class="elevator-grid">
-                        <div>
+                        <div class="col">
                             <h2>Request as Floor Controller</h2>
                             <button class="elevator">Request Floor 3</button>
                             <button class="elevator">Request Floor 2</button>
                             <button class="elevator">Request Floor 1</button>
                         </div>
-                        <div>
+                        <div class="col">
                             <h2>Request as Car Controller</h2>
                             <button class="elevator">Request Floor 3</button>
                             <button class="elevator">Request Floor 2</button>
                             <button class="elevator">Request Floor 1</button>
                         </div>
-                        <div>
+                        <div class="col">
                             <h2>Elevator's Current Floor</h2>
                             <img src="<?php echo $elevatorPosition; ?>" height="340px" style="image-rendering: pixelated"/>
                         </div>
                     </div>
+                </article>
 
-                    <!-- <div class="container">
-                        <div class="row">
-                            <div class="col">
-                                <div class="controls">
-                                    <button class="elevator">Request Floor 3</button>
-                                    <button class="elevator">Request Floor 2</button>
-                                    <button class="elevator">Request Floor 1</button>
+                <article class="elevator-ui">
+                    <div class="elevator-grid">
+                        <div>
+                            <h2>Elevator Mode</h2>
+                            <button class="elevator">Start Elevator Mode</button>
+                        </div>
+                        <div>
+                            <h2>Sabbath Mode</h2>
+                            <button class="elevator">Start Sabbath Mode</button>
+                        </div>
+                        <div>
+                            <h2>Maintenance Mode</h2>
+                            <button class="elevator">Start Maintenance Mode</button>
+                        </div>
+                    </div>
+                </article>
+
+                <?php if (true): ?>
+                    <article>
+                        <div style="margin-top: 36px;"></div>
+
+                        <h1>Maintenance Printout</h1>
+
+                        <div class="maintenance-grid">
+                            <div>
+                                <h2>Can Transactions</h2>
+                                <div class="maintenance-card">
+                                    <table class="console">
+                                        <thead>
+                                            <tr>
+                                                <th>Sender</th>
+                                                <th>Time</th>
+                                                <th>Data</th>
+                                                <th>Floor</th>
+                                                <th>Last Floor</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <?php if (count($transactions)): ?>
+                                                <?php foreach ($transactions as $row): ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($row->sender) ?></td>
+                                                        <td><?= htmlspecialchars($row->time) ?></td>
+                                                        <td><?= htmlspecialchars($row->data) ?></td>
+                                                        <td><?= htmlspecialchars($row->floor) ?></td>
+                                                        <td><?= htmlspecialchars($row->last_floor) ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="5">No transactions found.</td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="indicators">
-                                    <div class="indicator">Floor 3</div>
-                                    <div class="indicator">Floor 2</div>
-                                    <div class="indicator">Floor 1</div>
+                            <div>
+                                <h2>Elevator Position</h2>
+                                <div class="maintenance-card">
+                                    <table class="console">
+                                        <thead>
+                                            <tr>
+                                                <th>Sender</th>
+                                                <th>Time</th>
+                                                <th>Data</th>
+                                                <th>Floor</th>
+                                                <th>Last Floor</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <?php if (count($positions)): ?>
+                                                <?php foreach ($positions as $row): ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($row->floor) ?></td>
+                                                        <td><?= htmlspecialchars($row->time) ?></td>
+                                                        <td><?= htmlspecialchars($row->last_floor) ?></td>
+                                                        <td><?= htmlspecialchars($row->is_moving) ?></td>
+                                                        <td><?= htmlspecialchars($row->is_closed) ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="5">No transactions found.</td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>             
                                 </div>
                             </div>
                         </div>
-                        <div class="indicator">Moving</div>
-                    </div> -->
-                </article>
+                    </article> 
+                <?php endif; ?>
+
             </section>
         </div>
     </main>

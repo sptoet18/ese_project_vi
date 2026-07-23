@@ -163,10 +163,10 @@ article.elevator-ui {
 
 article.elevator-ui div.col {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
 
-    align-content: center;
-    justify-content: center;
+    align-items: center;
+    justify-self: center;
 }
 
 article.elevator-ui div.col div.controls {
@@ -234,7 +234,41 @@ div.elevator-grid {
 }
 
 div.elevator-grid > div {
-    /* background-color: green; */
-
     text-align: center;
+}
+
+div.maintenance-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+
+    justify-items: center;
+}
+
+div.maintenance-grid > div {
+    width: 100%;
+    text-align: center;
+}
+
+div.maintenance-card {
+    color: var(--primary-color);
+    background-color: var(--background-color);
+
+    width: 100%;
+    min-height: 300px;
+
+    border-radius: 6px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: var(--primary-color);
+}
+
+div.maintenance-card > table.console {
+    width: 100%;
+    justify-content: space-between;
+}
+
+div.maintenance-card > table.console thead {
+    width: 100%;
+    justify-content: space-between;
 }
