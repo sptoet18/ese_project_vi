@@ -75,9 +75,13 @@ int main() {
 
 			case 6:
 				sabbathRun();
-				break; 
-			
-			case 7: 
+				break;
+
+			case 7:
+				maintenanceRun(); //Maintenance Lockout Mode - digital e-stop, website-only control
+				break;
+
+			case 8:
 				return(0);
 			
 			default:

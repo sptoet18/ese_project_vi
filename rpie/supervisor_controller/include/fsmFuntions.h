@@ -67,8 +67,11 @@ void fsmInit(ElevatorFSM *fsm);
 void fsmRun(void); 
 const char* fsmStateName(ElevatorSate s);
 
-//Functions Declarations - Sabbath Mode 
-void sabbathRun(void); 
+//Functions Declarations - Sabbath Mode
+void sabbathRun(void);
+
+//Functions Declarations - Maintenance Lockout Mode (digital emergency stop)
+void maintenanceRun(void);
 
 
 #endif

@@ -585,3 +585,105 @@ void sabbathRun(void){
     signal(SIGINT, SIG_DFL); //Restore default Ctrl-C behaviour for the rest of the program
 
 }
+
+//Maintenance Lockout Mode - message ingestion (digital emergency stop)
+//Every request coming from HARDWARE is DROPPED: the physical floor-call buttons
+//(0x201-0x203) and the in-car car buttons (0x200, floor != 0) are ignored so no
+//passenger or floor input can move the car. Only TELEMETRY is honoured - the car's
+//own door open/closed reports (ID_CC_TO_SC, floor 0) and the EC arrival
+//confirmation (0x101) - so the FSM still tracks the door and its real position.
+//The elevator therefore only ever moves in response to website requests, which
+//enter separately through fsmPollWebsite()/websiteQueue inside fsmStep().
+static void maintenanceProcessMessage(ElevatorFSM *fsm, int id, int data){
+    int floor;
+
+    switch (id){
+    //Physical floor-call buttons - LOCKED OUT
+    case ID_F1_TO_SC:
+    case ID_F2_TO_SC:
+    case ID_F3_TO_SC:
+        //do nothing - hardware request ignored in lockout
+        break;
+
+    case ID_CC_TO_SC:
+        floor = FloorFromHex(data);
+        if(floor == 0){
+            //Door open/closed status is telemetry, not a command - still honoured
+            fsm->doorClosed = data;
+        }
+        //In-car floor buttons (floor != 0) are LOCKED OUT
+        break;
+
+    case ID_EC_TO_ALL:
+        //Arrival confirmation is telemetry - needed so the FSM tracks position
+        if(fsm->state == STATE_MOVING){
+            floor = FloorFromHex(data);
+            if(floor == fsm->targetFloor){
+                fsmArrive(fsm, floor);
+            }
+        }
+        break;
+
+    default:
+        //do nothing
+        break;
+    }
+}
+
+//Maintenance Lockout Mode Run - digital emergency stop.
+//Reuses the normal FSM brain (fsmStep / fsmArrive / fsmPollWebsite); the only
+//difference from fsmRun() is maintenanceProcessMessage(), which drops every
+//hardware request before it can reach a queue. The car holds in place with the
+//door OPEN and does not move until a website request arrives.
+void maintenanceRun(void){
+    ElevatorFSM fsm;
+
+    int id;
+    int data;
+    int len;
+
+    // Force stdout to flush immediately on every print (see fsmRun for rationale).
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    //Clear the screen
+    system("@cls||clear");
+    printf("\n==== Elevator Maintenance Lockout Mode =====\n");
+    printf("Digital EMERGENCY STOP: hardware buttons are LOCKED OUT.\n");
+    printf("The elevator only moves on WEBSITE requests. Press CTRL-C to Stop\n\n");
+
+    if(pcanFsmOpen() != 0){
+        printf("[FSM] Could not Open CAN Channel - aborting Maintenance Lockout mode \n");
+        return;
+    }
+
+    audioInit(); //Floor announcements - failure is non fatal, mode just runs silently
+
+    fsmInit(&fsm);
+
+    //Digital e-stop: hold in place with the door OPEN and do NOT command a move on
+    //entry. With every hardware queue empty, the car stays put until a website
+    //request lands in the websiteQueue.
+    fsm.doorClosed = DOOR_OPEN;
+    fsm.doorTimeStart = time(NULL);
+
+    db_setFloorNum(1); //Keep the website/DB in sync with the FSM initial state
+
+    g_fsmStop = 0;
+    signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop cleanly
+
+    while(!g_fsmStop){
+        int rc = pcanFsmRxPoll(&id, &data, &len);
+        if(rc == 1){
+            maintenanceProcessMessage(&fsm, id, data);
+        }
+
+        fsmStep(&fsm);
+
+        usleep(200000); //Responsive enough for the door timer
+    }
+
+    printf("\n[FSM] Maintenance Lockout stopped by user. Current State: %s\n", fsmStateName(fsm.state));
+    audioUninit();
+    pcanFsmClose();
+    signal(SIGINT, SIG_DFL); //Restore default Ctrl-C behaviour for the rest of the program
+}
