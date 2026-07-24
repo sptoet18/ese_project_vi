@@ -6,6 +6,7 @@
 #include "../include/mainFunctions.h"
 #include "../include/databaseFunctions.h"
 #include "../include/fsmFuntions.h"
+#include "../include/audioFunctions.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -181,6 +182,8 @@ static void fsmArrive(ElevatorFSM *fsm, int floor){
     fsm->lastDbfloor = floor; //Next website poll doesn't re que our own update 
 
     printf("[FSM] Arrived at Floor %d - door CLOSED(%ds Timer started)\n", floor, DOOR_OPEN_TIME_SEC);
+
+    audioPlayFloor(floor); //Ding + floor announcement - returns immediately (own audio thread)
 }
 
 //Applies one incoming CAN message to the FSM's request flags / arrival detection 
@@ -497,11 +500,13 @@ void fsmRun(void){
 
     if(pcanFsmOpen() != 0){
         printf("[FSM] Could not Open CAN Channel - aborting FSM mode \n");
-        return; 
+        return;
     }
 
-    fsmInit(&fsm); //Keep DB in sync with the FSM initial State 
-    db_setFloorNum(1); 
+    audioInit(); //Floor announcements - failure is non fatal, the FSM just runs silently
+
+    fsmInit(&fsm); //Keep DB in sync with the FSM initial State
+    db_setFloorNum(1);
     pcanFsmTx(ID_SC_TO_EC, GO_TO_FLOOR1); //Make sure the EC agree we are starting at floor 1
 
     g_fsmStop = 0; 
@@ -518,8 +523,9 @@ void fsmRun(void){
         usleep(200000); //Responsive enough for 10s door timer 
     }
 
-    printf("\n[FSM] Stopped by user. Current State: %s\n", fsmStateName(fsm.state)); 
-    pcanFsmClose(); 
+    printf("\n[FSM] Stopped by user. Current State: %s\n", fsmStateName(fsm.state));
+    audioUninit();
+    pcanFsmClose();
     signal(SIGINT, SIG_DFL); //Restore default Ctrl-C behaviour for the rest of the program
 }
 
@@ -548,9 +554,11 @@ void sabbathRun(void){
         return; 
     }
 
-    fsmInit(&fsm); //Keep DB in sync with the FSM initial State 
+    audioInit(); //Floor announcements - failure is non fatal, Sabbath mode just runs silently
 
-    //Due to Sabbath we need to change some states 
+    fsmInit(&fsm); //Keep DB in sync with the FSM initial State
+
+    //Due to Sabbath we need to change some states
     fsm.doorClosed = DOOR_OPEN; 
     fsm.doorTimeStart = time(NULL); 
 
@@ -571,8 +579,9 @@ void sabbathRun(void){
         usleep(200000); //Responsive enough for 10s door timer 
     }
 
-    printf("\n[FSM] Stopped by user. Current State: %s\n", fsmStateName(fsm.state)); 
-    pcanFsmClose(); 
+    printf("\n[FSM] Stopped by user. Current State: %s\n", fsmStateName(fsm.state));
+    audioUninit();
+    pcanFsmClose();
     signal(SIGINT, SIG_DFL); //Restore default Ctrl-C behaviour for the rest of the program
 
 }
