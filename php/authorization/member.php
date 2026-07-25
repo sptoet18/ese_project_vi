@@ -28,6 +28,24 @@
     } else {
         echo "<script>location.href = \"/html/authorization/login.html\"</script>";
     }
+
+/*
+ * Get the most recent known elevator position 
+ * If the table is empty, return the default image for floor 1
+ * 
+ */
+  $positionQuery = $db->query(
+        '
+        SELECT current_floor, last_floor, is_moving, is_closed
+        FROM elevator_position
+        ORDER BY recorded_at DESC, id DESC
+        LIMIT 1
+        '
+    );
+    $position = $positionQuery->fetch();
+    $currentFloor = $position ? $position['current_floor'] : 1;
+
+
 ?>
 
 <!DOCTYPE html>
@@ -60,43 +78,81 @@
             <section class="body">
                 <article class="elevator-ui">
                     <div class="elevator-grid">
+                        <!-- Floor-controller requests -->
                         <div>
+                            <!-- <h2>Request as Floor Controller</h2>
+                            <button class="elevator">Request Floor 3</button>
+                            <button class="elevator">Request Floor 2</button>
+                            <button class="elevator">Request Floor 1</button> -->
                             <h2>Request as Floor Controller</h2>
-                            <button class="elevator">Request Floor 3</button>
-                            <button class="elevator">Request Floor 2</button>
-                            <button class="elevator">Request Floor 1</button>
+                         <button
+                                type="button"
+                                class="elevator floor-request"
+                                data-controller="floor_controller"
+                                data-floor="3"
+                            >
+                                Request Floor 3
+                            </button>
+                            <button
+                                type="button"
+                                class="elevator floor-request"
+                                data-controller="floor_controller"
+                                data-floor="2"
+                            >
+                                Request Floor 2
+                            </button>
+                            <button
+                                type="button"
+                                class="elevator floor-request"
+                                data-controller="floor_controller"
+                                data-floor="1"
+                            >
+                                Request Floor 1
+                            </button>
                         </div>
+
+
                         <div>
-                            <h2>Request as Car Controller</h2>
+                            <!-- <h2>Request as Car Controller</h2>
                             <button class="elevator">Request Floor 3</button>
                             <button class="elevator">Request Floor 2</button>
-                            <button class="elevator">Request Floor 1</button>
+                            <button class="elevator">Request Floor 1</button> -->
+                         <h2>Request as Car Controller</h2>
+
+                            <button
+                                type="button"
+                                class="elevator floor-request"
+                                data-controller="car_controller"
+                                data-floor="3"
+                            >
+                                Request Floor 3
+                            </button>
+
+                            <button
+                                type="button"
+                                class="elevator floor-request"
+                                data-controller="car_controller"
+                                data-floor="2"
+                            >
+                                Request Floor 2
+                            </button>
+
+                            <button
+                                type="button"
+                                class="elevator floor-request"
+                                data-controller="car_controller"
+                                data-floor="1"
+                            >
+                                Request Floor 1
+                            </button>
+                        
+                        
                         </div>
                         <div>
                             <h2>Elevator's Current Floor</h2>
                             <img src="<?php echo $elevatorPosition; ?>" height="340px" style="image-rendering: pixelated"/>
                         </div>
                     </div>
-
-                    <!-- <div class="container">
-                        <div class="row">
-                            <div class="col">
-                                <div class="controls">
-                                    <button class="elevator">Request Floor 3</button>
-                                    <button class="elevator">Request Floor 2</button>
-                                    <button class="elevator">Request Floor 1</button>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="indicators">
-                                    <div class="indicator">Floor 3</div>
-                                    <div class="indicator">Floor 2</div>
-                                    <div class="indicator">Floor 1</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="indicator">Moving</div>
-                    </div> -->
                 </article>
             </section>
         </div>
@@ -111,6 +167,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="/js/components/top-bar.js"></script>
     <script src="/js/components/copyright.js" defer></script>
+    <script src="../../js/components/elevatorControl.js" defer></script>
+
     <script>
         document.getElementById("date").textContent = new Date().toLocaleDateString();
         document.getElementById("time").textContent = new Date().toLocaleTimeString();
