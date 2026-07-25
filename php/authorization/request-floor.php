@@ -203,9 +203,15 @@ $insertStatement = $db->prepare(
     '
 );
 
+if ($sentByCanId !== 768) {
+    $data = 1;
+} else {
+    $data = 0;
+}
+
 $insertStatement->execute([
     'sent_by' => $sentByCanId,
-    'data' => $requestedFloor,
+    'data' => $data ? $data : $requestedFloor,
     'message' => $message,
     'current_floor' => $currentFloor,
     'last_floor' => $lastFloor
