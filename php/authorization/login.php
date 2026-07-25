@@ -19,7 +19,7 @@
 
     if ($user) {
 		echo "<script>location.href = \"/php/authorization/member.php\"</script>";
-		if (isCorrectPassword($password, $user['hashed_password'])) {
+		if (password_verify($password, $user['hashed_password'])) {
 			echo "<script>location.href = \"/php/authorization/member.php\"</script>";
 		} else {
 			echo "<script>location.href = \"/html/authorization/login.html\"</script>";
