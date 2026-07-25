@@ -18,18 +18,9 @@
 	$user = $userQuery->fetch();
 
     if ($user) {
-		// $allow = isCorrectPassword($password, $user['hashed_password']);
-		// $provided_password_hashed = password_hash($password, PASSWORD_DEFAULT);
-
-		// echo "Password Provided: {$password}<br>";
-		// echo "Password Provided Hashed: {$provided_password_hashed}<br>";
-		// echo "Password Database Hashed: {$user['hashed_password']}<br>";
-
-		if (true) {
-			// echo "correct";
+		if (isCorrectPassword($password, $user['hashed_password'])) {
 			echo "<script>location.href = \"/php/authorization/member.php\"</script>";
 		} else {
-			// echo "incorrect";
 			echo "<script>location.href = \"/html/authorization/login.html\"</script>";
 		}
 	} else {
