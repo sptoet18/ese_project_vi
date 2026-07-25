@@ -1,6 +1,6 @@
 //AUTHOR: Emiliano Perez Pellicer 
 //DATE: 03/07/2026
-//COMMENTS: This is a finite state machine 
+//COMMENTS: This is a finite state machine & Sabbath Mode 
 //VERSION: 1.0 
 #include "../include/pcanFunctions.h"
 #include "../include/mainFunctions.h"
@@ -325,14 +325,153 @@ static void fsmStep(ElevatorFSM *fsm){
         }
         
 
-    }else{
+    } else {
         //We are MOVING 
         //Either wait for a real EC_TO_ALL arrival messafe (Handleld in fsmProcessMessage ) if not recieved use timer 
-
         double elapsed = difftime(time(NULL), fsm->movingTimeStart); 
         if (elapsed >= MOVING_FALLBACK_SEC){
             printf("[FSM] No EC Arrival confirmation (0x101) recieved - using fallback timeout\n");
             fsmArrive(fsm, fsm->targetFloor); 
+        }
+    }
+}
+
+//Function to Get the Arrival in Sabbarth 
+//Update the arrival 
+static void sabbathArrive(ElevatorFSM *fsm, int floor){
+    if(floor < 1 || floor > 3){
+        floor = 1; //Never let a bad target corrupt the state 
+    }
+
+    fsmArrive(fsm, floor); 
+    fsm->doorClosed = DOOR_OPEN; 
+    fsm->doorTimeStart = time(NULL); 
+    printf("[SBTH] Arrived at Floor %d - door OPEN (%ds)\n", floor, DOOR_OPEN_TIME_SEC); 
+}
+
+//Function for Sabbath mode counting on the EC for arrival confirmation 
+static void sabbathProcessMessages(ElevatorFSM *fsm, int id, int data){
+    if(id != ID_EC_TO_ALL || fsm->state != STATE_MOVING){
+        return; //Ignore 
+    }
+
+    //Upodate the arrive status 
+    if(FloorFromHex(data) == fsm->targetFloor){
+        sabbathArrive(fsm, fsm->targetFloor);
+    }
+}
+
+//Function to define Sabbath Targets 
+static int sabbathMove(ElevatorFSM *fsm){
+    
+    //Find the Current Floor 
+    int currentFloor = (int)fsm->state +1; 
+    int previousFloor = fsm->previousFloor; 
+    int nextfloor = 0; 
+
+    switch (currentFloor)
+    {
+    case 1:
+        if(previousFloor == 2){
+            nextfloor = 2; 
+        }else{
+            nextfloor = 2;
+        } 
+        return nextfloor; 
+        break;
+    
+    case 2:
+        if(previousFloor == 1){
+            nextfloor =  3; 
+        }else{
+            nextfloor =  1; 
+        }
+        return nextfloor; 
+        break;
+    
+    case 3:
+        if(previousFloor == 2){
+            nextfloor = 2; 
+        }else{
+            nextfloor = 1;
+        }
+        return nextfloor; 
+        break;
+    
+    default:
+        nextfloor = 1; 
+        return nextfloor; 
+        break;
+    }
+
+    return nextfloor; 
+}
+
+///Stepping between Floors on Sabbath mode 
+static void sabbathStep(ElevatorFSM *fsm){
+    static time_t lastCollectingPrint = 0; 
+
+   if(fsm->state != STATE_MOVING){
+    //Register current Floor 
+    int currentFloor = (int)fsm->state +1; 
+
+    //Door is OPEN 
+    if(fsm->doorClosed != DOOR_CLOSE){
+        //Check the time passed 
+        double elapsed =difftime(time(NULL), fsm->doorTimeStart); 
+        if(elapsed >= DOOR_OPEN_TIME_SEC){
+            //Close the door after the time passes 
+            fsm->doorClosed = DOOR_CLOSE; 
+            fsm->lockedTarget = sabbathMove(fsm); 
+            lastCollectingPrint = 0; 
+            printf("[SBTH] DOOR Closed at Floor %d\n", currentFloor);
+        }else{
+            return; //Still wating for the door timer 
+        }
+    }
+
+    //DOOR is Closed, nothing picked (error)
+    if(fsm->lockedTarget == 0){
+        fsm->lockedTarget = sabbathMove(fsm); 
+        fsm->preMoveTimerStart = time(NULL); 
+        return; 
+    }
+
+    //IF we have a floor picked 
+    if(fsm->lockedTarget != 0){
+        //Check the time Before moving 
+        double waited = difftime(time(NULL), fsm->preMoveTimerStart);
+        if(waited < PRE_MOVE_DELAY_SEC){
+            time_t nowSec = time(NULL); 
+            if(nowSec != lastCollectingPrint){
+                lastCollectingPrint = nowSec; 
+                printf("[SBTH] Time to Move to Floor %d (%.0f/%d) elapsed\n", fsm->lockedTarget, waited, PRE_MOVE_DELAY_SEC);
+            }
+            return; 
+        }
+    }
+
+    //Declare the current state (DEPART)
+    int target = fsm->lockedTarget;
+    fsm->lockedTarget = 0;  
+    fsm->previousFloor = currentFloor; 
+    fsm->targetFloor = target; 
+    fsm->state = STATE_MOVING; 
+    fsm->movingTimeStart = time(NULL); 
+
+    printf("[SBTH] State: %s -> MOVING (Floor %d -> Floor %d)\n", fsmStateName((ElevatorSate)(currentFloor -1)), currentFloor, target);
+
+    //Send Command to EC to Move -
+    pcanFsmTx(ID_SC_TO_EC, HexFromFloor(target));
+    return; 
+
+   }else{
+        //We are Moving 
+        //Wait for EC_TO_ALL arrivaal 
+        double elapsed = difftime(time(NULL), fsm->movingTimeStart); 
+        if(elapsed >= MOVING_FALLBACK_SEC){
+            printf("[SBTH] No EC Arrival Confirmation (0x101) recieved - Using fallback timeout\n");
+            sabbathArrive(fsm, fsm->targetFloor);
         }
     }
 }
@@ -382,4 +521,58 @@ void fsmRun(void){
     printf("\n[FSM] Stopped by user. Current State: %s\n", fsmStateName(fsm.state)); 
     pcanFsmClose(); 
     signal(SIGINT, SIG_DFL); //Restore default Ctrl-C behaviour for the rest of the program
+}
+
+//Sabbath Mode Run 
+void sabbathRun(void){
+    ElevatorFSM fsm; 
+
+    int id; 
+    int data; 
+    int len; 
+
+    // Force stdout to flush immediately on every print, regardless of whether
+    // this is running on a raw terminal, through a pipe/log/service (which
+    // would otherwise fully-buffer output and delay when prints appear on
+    // screen relative to when they actually happened).
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    //Clear the screen 
+    system("@cls||clear"); 
+    printf("\n==== Elevator Sabbath Mode =====\n");
+    printf("Starting on Floor 1 with the Door OPEN, press CTRL-C to Stop \n\n"); 
+
+
+    if(pcanFsmOpen() != 0){
+        printf("[FSM] Could not Open CAN Channel - aborting FSM mode \n");
+        return; 
+    }
+
+    fsmInit(&fsm); //Keep DB in sync with the FSM initial State 
+
+    //Due to Sabbath we need to change some states 
+    fsm.doorClosed = DOOR_OPEN; 
+    fsm.doorTimeStart = time(NULL); 
+
+    db_setFloorNum(1); 
+    pcanFsmTx(ID_SC_TO_EC, GO_TO_FLOOR1); //Make sure the EC agree we are starting at floor 1
+
+    g_fsmStop = 0; 
+    signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop the FSM cleanly 
+
+    while(!g_fsmStop){
+        int rc = pcanFsmRxPoll(&id, &data, &len);
+        if(rc == 1){
+            sabbathProcessMessages(&fsm, id, data);
+        }
+        
+        //Start on Sabath Mode. It should not handle any inputs
+        sabbathStep(&fsm); 
+        usleep(200000); //Responsive enough for 10s door timer 
+    }
+
+    printf("\n[FSM] Stopped by user. Current State: %s\n", fsmStateName(fsm.state)); 
+    pcanFsmClose(); 
+    signal(SIGINT, SIG_DFL); //Restore default Ctrl-C behaviour for the rest of the program
+
 }

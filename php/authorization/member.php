@@ -1,4 +1,8 @@
 <?php
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+
     require_once __DIR__ . '/../util.php';
 
     session_start();
@@ -19,33 +23,34 @@
         $user = $userQuery->fetch();
 
         if ($user) {
-            // Add query to get the elevator's current location
 
-            $elevatorPosition = getPositionImage(1);
+            $transactionQuery = $db->prepare('
+                select id, sent_by, transceived_at, data, message, current_floor, last_floor
+                from can_transaction
+                order by id desc
+            ');
+            $transactionQuery->execute([]);
+            $transactions = $transactionQuery->fetchAll(PDO::FETCH_ASSOC);
+            
+            $positionQuery = $db->prepare('
+                select id, current_floor, last_floor, is_moving, is_closed, recorded_at
+                from elevator_position
+                order by id desc
+            ');
+            $positionQuery->execute([]);
+            $positions = $positionQuery->fetchAll(PDO::FETCH_ASSOC);
+
+            /*
+            * Get the most recent known elevator position 
+            * If the table is empty, return the default image for floor 1
+            */
+            $elevatorPosition = getPositionImage($positions ? $positions[0]["current_floor"] : 1);
         } else {
             echo "<script>location.href = \"/html/authorization/login.html\"</script>";
         }
     } else {
         echo "<script>location.href = \"/html/authorization/login.html\"</script>";
     }
-
-/*
- * Get the most recent known elevator position 
- * If the table is empty, return the default image for floor 1
- * 
- */
-  $positionQuery = $db->query(
-        '
-        SELECT current_floor, last_floor, is_moving, is_closed
-        FROM elevator_position
-        ORDER BY recorded_at DESC, id DESC
-        LIMIT 1
-        '
-    );
-    $position = $positionQuery->fetch();
-    $currentFloor = $position ? $position['current_floor'] : 1;
-
-
 ?>
 
 <!DOCTYPE html>
@@ -76,16 +81,16 @@
             </section>
 
             <section class="body">
+                <article>
+                    <div id="see"></div>
+                </article>
+
                 <article class="elevator-ui">
                     <div class="elevator-grid">
                         <!-- Floor-controller requests -->
-                        <div>
-                            <!-- <h2>Request as Floor Controller</h2>
-                            <button class="elevator">Request Floor 3</button>
-                            <button class="elevator">Request Floor 2</button>
-                            <button class="elevator">Request Floor 1</button> -->
+                        <div class="col">
                             <h2>Request as Floor Controller</h2>
-                         <button
+                            <button
                                 type="button"
                                 class="elevator floor-request"
                                 data-controller="floor_controller"
@@ -112,13 +117,8 @@
                         </div>
 
 
-                        <div>
-                            <!-- <h2>Request as Car Controller</h2>
-                            <button class="elevator">Request Floor 3</button>
-                            <button class="elevator">Request Floor 2</button>
-                            <button class="elevator">Request Floor 1</button> -->
-                         <h2>Request as Car Controller</h2>
-
+                        <div class="col">
+                            <h2>Request as Car Controller</h2>
                             <button
                                 type="button"
                                 class="elevator floor-request"
@@ -145,15 +145,110 @@
                             >
                                 Request Floor 1
                             </button>
-                        
-                        
                         </div>
-                        <div>
+                        
+                        <div class="col">
                             <h2>Elevator's Current Floor</h2>
                             <img src="<?php echo $elevatorPosition; ?>" height="340px" style="image-rendering: pixelated"/>
                         </div>
                     </div>
                 </article>
+
+                <article class="elevator-ui">
+                    <div class="elevator-grid">
+                        <div>
+                            <h2>Elevator Mode</h2>
+                            <button class="elevator">Start Elevator Mode</button>
+                        </div>
+                        <div>
+                            <h2>Sabbath Mode</h2>
+                            <button class="elevator">Start Sabbath Mode</button>
+                        </div>
+                        <div>
+                            <h2>Maintenance Mode</h2>
+                            <button class="elevator">Start Maintenance Mode</button>
+                        </div>
+                    </div>
+                </article>
+
+                <?php if (true): ?>
+                    <article>
+                        <div style="margin-top: 36px;"></div>
+
+                        <h1>Maintenance Printout</h1>
+
+                        <div class="maintenance-grid">
+                            <div>
+                                <h2>Can Transactions</h2>
+                                <div class="maintenance-card">
+                                    <table class="console">
+                                        <thead>
+                                            <tr>
+                                                <th>Sender</th>
+                                                <th>Time</th>
+                                                <th>Data</th>
+                                                <th>Floor</th>
+                                                <th>Last Floor</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <?php if (count($transactions)): ?>
+                                                <?php foreach ($transactions as $row): ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($row['sent_by']) ?></td>
+                                                        <td><?= htmlspecialchars($row['transceived_at']) ?></td>
+                                                        <td><?= htmlspecialchars($row['data']) ?></td>
+                                                        <td><?= htmlspecialchars($row['current_floor']) ?></td>
+                                                        <td><?= htmlspecialchars($row['last_floor']) ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="5">No transactions found.</td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div>
+                                <h2>Elevator Position</h2>
+                                <div class="maintenance-card">
+                                    <table class="console">
+                                        <thead>
+                                            <tr>
+                                                <th>Current Floor</th>
+                                                <th>Time</th>
+                                                <th>Last Floor</th>
+                                                <th>Moving</th>
+                                                <th>Door Closed</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <?php if (count($positions) > 0): ?>
+                                                <?php foreach ($positions as $row): ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($row['current_floor']) ?></td>
+                                                        <td><?= htmlspecialchars($row['recorded_at']) ?></td>
+                                                        <td><?= htmlspecialchars($row['last_floor']) ?></td>
+                                                        <td><?= htmlspecialchars($row['is_moving']) ?></td>
+                                                        <td><?= htmlspecialchars($row['is_closed']) ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="5">No transactions found.</td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>             
+                                </div>
+                            </div>
+                        </div>
+                    </article> 
+                <?php endif; ?>
             </section>
         </div>
     </main>
@@ -168,10 +263,6 @@
     <script src="/js/components/top-bar.js"></script>
     <script src="/js/components/copyright.js" defer></script>
     <script src="../../js/components/elevatorControl.js" defer></script>
-
-    <script>
-        document.getElementById("date").textContent = new Date().toLocaleDateString();
-        document.getElementById("time").textContent = new Date().toLocaleTimeString();
-    </script>
+    <script src="/js/components/event-source.js"></script>
 </body>
 </html>

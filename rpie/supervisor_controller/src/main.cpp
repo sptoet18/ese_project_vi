@@ -73,7 +73,11 @@ int main() {
 				fsmRun(); //Autonomous Elevator FSM - Starts on Floor 1, door open 10s timer 
 				break; 
 
-			case 6: 
+			case 6:
+				sabbathRun();
+				break; 
+			
+			case 7: 
 				return(0);
 			
 			default:
