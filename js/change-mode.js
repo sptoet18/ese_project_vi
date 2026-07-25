@@ -5,7 +5,7 @@ document.getElementById('elevatorButton').addEventListener('click', function() {
     fetch('/php/modes/elevator.php')
         .then(response => response.text())
         .then(data => {
-            alert("response: " + data);
+            //alert("response: " + data);
         })
         .catch(error => console.error('Error:', error));
 });
@@ -16,7 +16,7 @@ document.getElementById('sabbathButton').addEventListener('click', function() {
     fetch('/php/modes/sabbath.php')
         .then(response => response.text())
         .then(data => {
-            alert("response: " + data);
+            //alert("response: " + data);
         })
         .catch(error => console.error('Error:', error));
 });
@@ -27,7 +27,7 @@ document.getElementById('maintenanceButton').addEventListener('click', function(
     fetch('/php/modes/maintenance.php')
         .then(response => response.text())
         .then(data => {
-            alert("response: " + data);
+            //alert("response: " + data);
         })
         .catch(error => console.error('Error:', error));
 });
