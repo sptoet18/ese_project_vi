@@ -152,6 +152,11 @@
                             <img src="<?php echo $elevatorPosition; ?>" height="340px" style="image-rendering: pixelated"/>
                         </div>
                     </div>
+                       <p
+                        id="request-status"
+                        role="status"
+                        aria-live="polite"
+                    ></p>
                 </article>
 
                 <article class="elevator-ui">
