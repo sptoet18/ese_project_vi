@@ -3,33 +3,25 @@
 
 document.getElementById('elevatorButton').addEventListener('click', function() {
     fetch('/php/modes/elevator.php')
-        .then(response => response.text())
-        .then(data => {
-            //alert("response: " + data);
-        })
         .catch(error => console.error('Error:', error));
+
+    window.location.reload();
 });
 
 // Sabbath
 
 document.getElementById('sabbathButton').addEventListener('click', function() {
     fetch('/php/modes/sabbath.php')
-        .then(response => response.text())
-        .then(data => {
-            //alert("response: " + data);
-        })
         .catch(error => console.error('Error:', error));
+    
+    window.location.reload();
 });
 
 // Maintenance
 
 document.getElementById('maintenanceButton').addEventListener('click', function() {
     fetch('/php/modes/maintenance.php')
-        .then(response => response.text())
-        .then(data => {
-            //alert("response: " + data);
-        })
         .catch(error => console.error('Error:', error));
+    
+    window.location.reload();
 });
-
-window.location.reload();
