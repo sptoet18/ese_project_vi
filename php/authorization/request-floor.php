@@ -105,16 +105,20 @@ try {
         '
     );
 
-    $userStatement->execute([
-        'username' => $_SESSION['username']
-    ]);
+$userStatement->execute([
+    'username' => $_SESSION['username']
+]);
 
-    if (!$userStatement->fetch()) {
-        sendJsonResponse(401, [
-            'success' => false,
-            'message' => 'The logged-in user could not be found.'
-        ]);
-    }
+$user = $userStatement->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+    sendJsonResponse(401, [
+        'success' => false,
+        'message' => 'The logged-in user could not be found.'
+    ]);
+}
+
+$userId = (int) $user['id'];
 
     /*
      * Read the latest actual elevator position.
@@ -179,7 +183,7 @@ $insertStatement = $db->prepare(
 );
 
 $insertStatement->execute([
-    'sent_by' => $controllerType,
+    'sent_by' => $userId,
     'data' => $requestedFloor,
     'message' => $message,
     'current_floor' => $currentFloor,
