@@ -90,18 +90,18 @@ try {
     /*
      * CAN node IDs from the can_node table:
      *
-     * 512 = Car Controller
-     * 513 = Floor 1 Controller
-     * 514 = Floor 2 Controller
-     * 515 = Floor 3 Controller
+     * 768 = Car Controller
+     * 769 = Floor 1 Controller
+     * 770 = Floor 2 Controller
+     * 771 = Floor 3 Controller
      */
     if ($controllerType === 'car_controller') {
-        $sentByCanId = 512;
+        $sentByCanId = 768;
     } else {
         $floorControllerCanIds = [
-            1 => 513,
-            2 => 514,
-            3 => 515
+            1 => 769,
+            2 => 770,
+            3 => 771
         ];
 
         $sentByCanId =

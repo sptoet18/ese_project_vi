@@ -86,17 +86,6 @@
         $statement->execute();                      // Execute prepared statement
     }
 
-    // --------- Passwords ---------
-
-    // Verify Password
-    function isCorrectPassword(string $password, string $hashedPassword) : bool {
-        if (password_hash($password, PASSWORD_DEFAULT) === $hashedPassword) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     // --------- Elevator Position ---------
 
     function getPositionImage(int $position) {
