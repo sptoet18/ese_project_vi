@@ -87,6 +87,29 @@ try {
         );
     }
 
+    /*
+     * CAN node IDs from the can_node table:
+     *
+     * 512 = Car Controller
+     * 513 = Floor 1 Controller
+     * 514 = Floor 2 Controller
+     * 515 = Floor 3 Controller
+     */
+    if ($controllerType === 'car_controller') {
+        $sentByCanId = 512;
+    } else {
+        $floorControllerCanIds = [
+            1 => 513,
+            2 => 514,
+            3 => 515
+        ];
+
+        $sentByCanId =
+            $floorControllerCanIds[$requestedFloor];
+    }
+
+
+
     $db = dbConnect(
         'mysql:host=127.0.0.1;dbname=elevator;charset=utf8mb4',
         'Emiliano',
@@ -117,8 +140,6 @@ if (!$user) {
         'message' => 'The logged-in user could not be found.'
     ]);
 }
-
-$userId = (int) $user['id'];
 
     /*
      * Read the latest actual elevator position.
@@ -183,7 +204,7 @@ $insertStatement = $db->prepare(
 );
 
 $insertStatement->execute([
-    'sent_by' => $userId,
+    'sent_by' => $sentByCanId,
     'data' => $requestedFloor,
     'message' => $message,
     'current_floor' => $currentFloor,
