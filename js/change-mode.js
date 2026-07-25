@@ -31,3 +31,5 @@ document.getElementById('maintenanceButton').addEventListener('click', function(
         })
         .catch(error => console.error('Error:', error));
 });
+
+window.location.reload();
