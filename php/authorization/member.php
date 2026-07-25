@@ -224,6 +224,7 @@
                                                 <th>Last Floor</th>
                                                 <th>Moving</th>
                                                 <th>Door Closed</th>
+                                                <th>Mode</th>
                                             </tr>
                                         </thead>
 
@@ -236,6 +237,7 @@
                                                         <td><?= htmlspecialchars($row['last_floor']) ?></td>
                                                         <td><?= htmlspecialchars($row['is_moving']) ?></td>
                                                         <td><?= htmlspecialchars($row['is_closed']) ?></td>
+                                                        <td><?= htmlspecialchars($row['mode']) ?></td>
                                                     </tr>
                                                 <?php endforeach; ?>
                                             <?php else: ?>
