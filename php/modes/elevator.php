@@ -3,7 +3,11 @@
 
     session_start();
 
+    echo "1";
+
     $db = dbConnect('mysql:host=127.0.0.1; dbname=elevator', 'Emiliano', 'ESE');
+
+    echo "2";
 
     $previousQuery = $db->prepare('
         select *
@@ -13,6 +17,8 @@
     ');
     $previousQuery->execute([]);
     $previousInfo = $previousQuery->fetch();
+
+    echo "3";
 
     $query = $db->prepare('
         insert into elevator_position (
@@ -35,4 +41,6 @@
         'is_closed' => $previousInfo['is_closed'],
         'mode' => 'elevator'
     ]);
+
+    echo "4";
 ?>
