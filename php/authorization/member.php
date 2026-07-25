@@ -81,10 +81,6 @@
             </section>
 
             <section class="body">
-                <article>
-                    <div id="see"></div>
-                </article>
-
                 <article class="elevator-ui">
                     <div class="elevator-grid">
                         <!-- Floor-controller requests -->
@@ -263,6 +259,5 @@
     <script src="/js/components/top-bar.js"></script>
     <script src="/js/components/copyright.js" defer></script>
     <script src="../../js/components/elevatorControl.js" defer></script>
-    <script src="/js/components/event-source.js"></script>
 </body>
 </html>
