@@ -159,15 +159,15 @@
                     <div class="elevator-grid">
                         <div>
                             <h2>Elevator Mode</h2>
-                            <button class="elevator">Start Elevator Mode</button>
+                            <button id="elevatorButton" class="elevator">Start Elevator Mode</button>
                         </div>
                         <div>
                             <h2>Sabbath Mode</h2>
-                            <button class="elevator">Start Sabbath Mode</button>
+                            <button id="sabbathButton" class="elevator">Start Sabbath Mode</button>
                         </div>
                         <div>
                             <h2>Maintenance Mode</h2>
-                            <button class="elevator">Start Maintenance Mode</button>
+                            <button id="maintenanceButton" class="elevator">Start Maintenance Mode</button>
                         </div>
                     </div>
                 </article>
@@ -263,6 +263,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="/js/components/top-bar.js"></script>
     <script src="/js/components/copyright.js" defer></script>
-    <script src="../../js/components/elevatorControl.js" defer></script>
+    <script src="/js/elevatorControl.js" defer></script>
+    <script src="/js/change-mode.js"></script>
 </body>
 </html>
