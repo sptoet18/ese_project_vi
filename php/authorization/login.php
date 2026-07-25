@@ -18,10 +18,19 @@
 	$user = $userQuery->fetch();
 
     if ($user) {
-		if (isCorrectPassword($password, $user['hashed_password'])) {
-			echo "<script>location.href = \"/php/authorization/member.php\"</script>";
+		$allow = isCorrectPassword($password, $user['hashed_password']);
+		$provided_password_hashed = password_hash($password, PASSWORD_DEFAULT);
+
+		echo "Password Provided: {$password}\n";
+		echo "Password Provided Hashed: {$provided_password_hashed}\n";
+		echo "Password Database Hashed: {$user['hashed_password']}\n";
+
+		if ($allow) {
+			echo "correct";
+			//echo "<script>location.href = \"/php/authorization/member.php\"</script>";
 		} else {
-			echo "<script>location.href = \"/html/authorization/login.html\"</script>";
+			echo "incorrect";
+			//echo "<script>location.href = \"/html/authorization/login.html\"</script>";
 		}
 	} else {
 		echo "<script>location.href = \"/html/authorization/login.html\"</script>";
