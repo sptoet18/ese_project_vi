@@ -21,7 +21,7 @@
 		$allow = isCorrectPassword($password, $user['hashed_password']);
 		$provided_password_hashed = password_hash($password, PASSWORD_DEFAULT);
 
-		echo "Password Provided: {$password}\n";
+		echo "Password Provided: {$password}<br>";
 		echo "Password Provided Hashed: {$provided_password_hashed}\n";
 		echo "Password Database Hashed: {$user['hashed_password']}\n";
 
