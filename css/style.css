@@ -198,6 +198,10 @@ button.elevator:hover{
     background-color: var(--accent-color-1);
 }
 
+button.elevator:disabled{
+    background-color: var(--accent-color-4);
+}
+
 article.elevator-ui div.col div.indicators {
     display: flex;
     flex-direction: row;

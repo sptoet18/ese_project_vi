@@ -91,7 +91,7 @@
                                 class="elevator floor-request"
                                 data-controller="floor_controller"
                                 data-floor="3"
-                                <?php echo ($positions[0]['mode'] === "sabbath" ? 'disabled' : ''); ?>
+                                <?php echo ($positions[0]["mode"] === 'sabbath' ? 'disabled' : ''); ?>
                             >
                                 Request Floor 3
                             </button>
@@ -243,7 +243,7 @@
                                                 <?php endforeach; ?>
                                             <?php else: ?>
                                                 <tr>
-                                                    <td colspan="5">No transactions found.</td>
+                                                    <td colspan="6">No transactions found.</td>
                                                 </tr>
                                             <?php endif; ?>
                                         </tbody>
