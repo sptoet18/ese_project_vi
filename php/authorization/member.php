@@ -25,7 +25,7 @@
         if ($user) {
 
             $transactionQuery = $db->prepare('
-                select id, sent_by, transceived_at, data, message, current_floor, last_floor
+                select *
                 from can_transaction
                 order by id desc
             ');
@@ -33,7 +33,7 @@
             $transactions = $transactionQuery->fetchAll(PDO::FETCH_ASSOC);
             
             $positionQuery = $db->prepare('
-                select id, current_floor, last_floor, is_moving, is_closed, recorded_at
+                select *
                 from elevator_position
                 order by id desc
             ');
@@ -91,6 +91,7 @@
                                 class="elevator floor-request"
                                 data-controller="floor_controller"
                                 data-floor="3"
+                                <?php echo ($positions[0]['mode'] === "sabbath" ? 'disabled' : ''); ?>
                             >
                                 Request Floor 3
                             </button>
