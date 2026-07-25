@@ -25,7 +25,8 @@
             current_floor,
             last_floor,
             is_moving,
-            is_closed
+            is_closed,
+            mode
         ) values (
             :current_floor,
             :last_floor,
