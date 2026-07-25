@@ -157,34 +157,34 @@ try {
      * data stores the requested floor number.
      * sent = 1 means the request was sent.
      */
-    $insertStatement = $db->prepare(
-        '
-        INSERT INTO can_transaction (
-            sent,
-            transceived_at,
-            data,
-            message,
-            current_floor,
-            last_floor
-        )
-        VALUES (
-            :sent,
-            NOW(),
-            :data,
-            :message,
-            :current_floor,
-            :last_floor
-        )
-        '
-    );
+$insertStatement = $db->prepare(
+    '
+    INSERT INTO can_transaction (
+        sent_by,
+        transceived_at,
+        data,
+        message,
+        current_floor,
+        last_floor
+    )
+    VALUES (
+        :sent_by,
+        NOW(),
+        :data,
+        :message,
+        :current_floor,
+        :last_floor
+    )
+    '
+);
 
-    $insertStatement->execute([
-        'sent' => 1,
-        'data' => $requestedFloor,
-        'message' => $message,
-        'current_floor' => $currentFloor,
-        'last_floor' => $lastFloor
-    ]);
+$insertStatement->execute([
+    'sent_by' => $controllerType,
+    'data' => $requestedFloor,
+    'message' => $message,
+    'current_floor' => $currentFloor,
+    'last_floor' => $lastFloor
+]);
 
     sendJsonResponse(201, [
         'success' => true,
