@@ -91,7 +91,7 @@
                                 class="elevator floor-request"
                                 data-controller="floor_controller"
                                 data-floor="3"
-                                <?php echo ($positions[0]["mode"] === 'sabbath' ? 'disabled' : ''); ?>
+                                <?php (true ? 'disabled' : ''); ?>
                             >
                                 Request Floor 3
                             </button>
