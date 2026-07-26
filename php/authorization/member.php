@@ -91,7 +91,7 @@
                                 class="elevator floor-request"
                                 data-controller="floor_controller"
                                 data-floor="3"
-                                <?php (true ? 'disabled' : ''); ?>
+                                <?php if ($positions[0]["modes"] === "sabbath") echo "disabled"; ?>
                             >
                                 Request Floor 3
                             </button>
@@ -100,6 +100,7 @@
                                 class="elevator floor-request"
                                 data-controller="floor_controller"
                                 data-floor="2"
+                                <?php if ($positions[0]["modes"] === "sabbath") echo "disabled"; ?>
                             >
                                 Request Floor 2
                             </button>
@@ -108,6 +109,7 @@
                                 class="elevator floor-request"
                                 data-controller="floor_controller"
                                 data-floor="1"
+                                <?php if ($positions[0]["modes"] === "sabbath") echo "disabled"; ?>
                             >
                                 Request Floor 1
                             </button>
@@ -121,6 +123,7 @@
                                 class="elevator floor-request"
                                 data-controller="car_controller"
                                 data-floor="3"
+                                <?php if ($positions[0]["modes"] === "sabbath") echo "disabled"; ?>
                             >
                                 Request Floor 3
                             </button>
@@ -130,6 +133,7 @@
                                 class="elevator floor-request"
                                 data-controller="car_controller"
                                 data-floor="2"
+                                <?php if ($positions[0]["modes"] === "sabbath") echo "disabled"; ?>
                             >
                                 Request Floor 2
                             </button>
@@ -139,6 +143,7 @@
                                 class="elevator floor-request"
                                 data-controller="car_controller"
                                 data-floor="1"
+                                <?php if ($positions[0]["modes"] === "sabbath") echo "disabled"; ?>
                             >
                                 Request Floor 1
                             </button>
