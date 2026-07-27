@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Besart's Week 11 Logbook">
+    <meta name="robots" content="noindex nofollow"/>
+    <meta http-equiv="author" content="Besart Kalezic">
+    <meta http-equiv="pragma" content="no-cache"/>
+    <title>Besart's Logbook - Week 11</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+        crossorigin="anonymous"
+    >
+    <link href="/ese_project_vi/css/theme.css" rel="stylesheet"/>
+    <link href="/ese_project_vi/css/project-style.css" rel="stylesheet"/>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <nav class="navbar">
+            <a class="nav-link" href="../../../index.html">Home</a>
+            <a class="nav-link" href="../../about.html">About</a>
+            <a class="nav-link" href="../../../html/proj_details.html">Details</a>
+            <a class="nav-link" href="../../../html/proj-plan.html">Plan</a>
+            <a class="nav-link" href="../../../login.html">Login</a>
+            <a class="nav-link" href="../../besart/besart.html">Besart</a>
+            <a class="nav-link" href="../../emiliano/emiliano.html">Emiliano</a>
+            <a class="nav-link" href="../../sean/sean.html">Sean</a>
+        </nav>
+    </header>
+
+    <main>
+
+        <section class="title">
+            <h1>Besart's Logbook</h1>
+            <p>Week 11</p>
+        </section>
+
+        <section>
+            <h2>Tasks Completed</h2>
+
+            <article>
+                <h3>Elevator Request Interface Development</h3>
+
+                <p>
+                    This week I updated the elevator control webpage so that the floor
+                    request buttons could communicate with the backend system. The
+                    original static buttons were modified to include data attributes
+                    identifying the requested floor and the controller responsible for
+                    sending the request.
+                </p>
+
+                <p>
+                    Separate button groups were created for floor-controller requests
+                    and car-controller requests. Each button now provides the JavaScript
+                    code with the information required to generate the correct request
+                    without requiring a separate event handler for every button.
+                </p>
+            </article>
+
+            <article>
+                <h3>JavaScript Fetch API Implementation</h3>
+
+                <p>
+                    I developed the <code>elevatorControl.js</code> component to detect
+                    button presses and send floor requests to the PHP backend. The
+                    JavaScript reads the requested floor and controller type from the
+                    button's data and sends the information as JSON using an
+                    asynchronous POST request.
+                </p>
+
+                <p>
+                    The script also disables the floor request buttons while a request
+                    is being processed. This prevents duplicate submissions caused by
+                    repeated button presses. Once the server responds, the webpage
+                    displays either a successful confirmation message or a description
+                    of the error that occurred.
+                </p>
+            </article>
+
+            <article>
+                <h3>PHP Request Endpoint Development</h3>
+
+                <p>
+                    I created the <code>request-floor.php</code> to receive and
+                    process requests submitted by the elevator control webpage. The
+                    endpoint confirms that the user is logged in, verifies that the
+                    request uses the POST method, and decodes the JSON information sent
+                    by the JavaScript component.
+                </p>
+
+                <p>
+                    This validates that the requested floor is between floors
+                    one and three and confirms that the request originated from either
+                    a floor controller or the car controller. It then reads the latest
+                    elevator position from the database and prepares a new CAN
+                    transaction for storage.
+                </p>
+            </article>
+
+            <article>
+                <h3>Database Troubleshooting</h3>
+
+                <p>
+                    A significant portion of this week's work involved troubleshooting
+                    the connection between the PHP endpoint and the MySQL database. The
+                    initial database INSERT statement attempted to use a column named
+                    <code>sent</code>. Testing showed that this column did not exist in
+                    the <code>can_transaction</code> table, and the correct column name
+                    was <code>sent_by</code>.
+                </p>
+
+                <p>
+                    After correcting the column name, another error occurred because the
+                    code attempted to insert the text value
+                    <code>floor_controller</code> into the
+                    <code>sent_by</code> column. Inspection of the database structure
+                    showed that this column uses the <code>BIGINT</code> data type and
+                    therefore requires a numeric value.
+                </p>
+
+                <p>
+                    Further testing revealed that <code>sent_by</code> is a foreign key
+                    referencing the <code>can_id</code> column in the
+                    <code>can_node</code> table. This meant that the value could not be
+                    a user ID or an arbitrary controller number. It had to match an
+                    existing CAN node identifier.
+                </p>
+            </article>
+
+            <article>
+                <h3>CAN Node Mapping</h3>
+
+                <p>
+                    I inspected the <code>can_node</code> table using phpMyAdmin and
+                    identified the valid CAN node identifiers used by the system. These
+                    included the car controller and each of the three floor controllers.
+                </p>
+
+                <p>
+                    The backend logic was updated so that car-controller requests use
+                    CAN ID 512. Floor-controller requests use CAN ID 513 for floor one,
+                    CAN ID 514 for floor two, and CAN ID 515 for floor three. This change
+                    ensures that every value inserted into <code>sent_by</code>
+                    satisfies the database foreign key constraint.
+                </p>
+            </article>
+
+            <article>
+                <h3>Browser Debugging</h3>
+
+                <p>
+                    I used the browser developer tools to identify client-side errors and
+                    inspect communication between the webpage and the PHP endpoint. One
+                    of the first errors occurred because the JavaScript attempted to
+                    update an element with the ID <code>request-status</code>, but that
+                    element did not exist in the webpage.
+                </p>
+
+                <p>
+                    I added the missing status element to
+                    <code>member.php</code>, allowing the JavaScript to display progress,
+                    success, and failure messages. 
+                </p>
+            </article>
+
+            <article>
+                <h3>Database Error Handling</h3>
+
+                <p>
+                    The PHP endpoint was configured to return structured JSON responses
+                    for both successful and unsuccessful requests. Separate error
+                    handling was included for invalid JSON, invalid user input, database
+                    failures, and unexpected server errors.
+                </p>
+
+                <p>
+                    Returning the database error information during development made it
+                    possible to identify problems involving incorrect column names,
+                    invalid data types, and foreign key constraint violations. This
+                    provided a more efficient troubleshooting process than relying only
+                    on whether the database appeared to update.
+                </p>
+            </article>
+
+            <article>
+                <h3>Challenges</h3>
+
+                <p>
+                    The main challenge this week was understanding how the existing
+                    database tables were related. As one of the group members had created the database structure, I was not familiar with the
+                    relationships between the tables and the purpose of each column.
+                </p>
+
+                <p>
+                    Another challenge was determining whether failures originated in the
+                    HTML interface, JavaScript code, PHP, or
+                    database structure. The problem had to be separated into individual
+                    stages and tested one stage at a time.
+                </p>
+            </article>
+
+            <article>
+                <h3>What I Learned</h3>
+
+                <p>
+                    This week I gained practical experience integrating an HTML and
+                    JavaScript frontend with a PHP and MySQL backend. I improved my
+                    understanding of JSON requests, the Fetch API, prepared SQL
+                    statements, session validation, and structured server responses.
+                </p>
+
+                <p>
+                    I also developed a stronger understanding of relational database
+                    design. In particular, I learned how foreign keys restrict the values
+                    that can be inserted into a table and how related tables must be
+                    inspected before deciding what information should be stored.
+                </p>
+
+                <p>
+                    The troubleshooting process reinforced the importance of reading
+                    complete error messages. Each error identified a different layer of
+                    the problem and helped guide the next correction.
+                </p>
+            </article>
+
+            <article>
+                <h3>Next Steps</h3>
+
+                <ul>
+                    <li>
+                        Complete testing of floor-controller and car-controller requests
+                        for all three elevator floors.
+                    </li>
+                    <li>
+                        Confirm that successful requests appear correctly in the
+                        <code>can_transaction</code> table.
+                    </li>
+                    <li>
+                        Display newly created CAN transactions on the maintenance section
+                        of the website.
+                    </li>
+                    <li>
+                        Continue troubleshooting the server-sent event connection used to
+                        retrieve live elevator updates.
+                    </li>
+                    <li>
+                        Connect the stored database requests to the Raspberry Pi
+                        supervisory controller.
+                    </li>
+                    <li>
+                        Transfer valid requests from the Raspberry Pi to the appropriate
+                        CAN controller.
+                    </li>
+                    <li>
+                        Update the elevator image and status information automatically
+                        when the elevator position changes.
+                    </li>
+                </ul>
+            </article>
+        </section>
+
+        <a href="../../besart/besart.html">Back to Besart's Main Page</a>
+
+    </main>
+
+    <footer>
+        <p>COPYRIGHT &copy; Besart Kalezic</p>
+    </footer>
+
+</div>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"
+></script>
+
+</body>
+</html>
