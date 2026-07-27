@@ -46,7 +46,7 @@ typedef struct {
     std::queue<int> floorQueue; //Priotity 2 
     std::queue<int> websiteQueue; //Priority 3 
 
-    int doorClosed; // 0 = door closed, 1 = door open 
+    int doorClosed; //Holds DOOR_CLOSE (0x08) or DOOR_OPEN (0x09) - NOT a 0/1 flag
     int previousFloor; //Las floor the elevator was AT before it started moving (1,2,3)
     int targetFloor; //Destinantion floor while state == STATE_MOVING (1,2,3)
 
