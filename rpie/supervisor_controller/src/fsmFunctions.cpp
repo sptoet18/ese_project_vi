@@ -178,8 +178,78 @@ static void fsmPollWebsite(ElevatorFSM *fsm){
 }
 
 
-//Whenever the elevator arrives at a floor 
-//EC_TO_ALL confirmaton, or from the MoVING fall back timeput 
+//Works out the (current, last) floor pair the website tables expect.
+//While MOVING the "current" floor is the DESTINATION - is_moving = 1 is what tells
+//the website the car is still in transit. Swap targetFloor for previousFloor here if
+//the indicator should instead hold the departure floor mid-travel.
+static void fsmFloorPair(const ElevatorFSM *fsm, int *outCurrent, int *outLast){
+    if(fsm->state == STATE_MOVING){
+        *outCurrent = fsm->targetFloor;
+    }else{
+        *outCurrent = (int)fsm->state + 1; //STATE_FLOOR1(0) -> 1
+    }
+
+    *outLast = fsm->previousFloor;
+}
+
+
+//Publishes the elevator's state - floor, motion, door and the running MODE - to the
+//elevator_position table the website reads.
+//Called once per FSM step, so it only inserts when something actually changed;
+//otherwise the 5 Hz loop would add hundreds of identical rows a minute.
+static void fsmPublishPosition(ElevatorFSM *fsm){
+    int currentFloor;
+    int lastFloor;
+
+    fsmFloorPair(fsm, &currentFloor, &lastFloor);
+
+    int isMoving = (fsm->state == STATE_MOVING) ? 1 : 0;
+    //doorClosed holds DOOR_CLOSE/DOOR_OPEN, never a 0/1 flag - compare the macro.
+    //fsmInit() leaves it at literal 0, which correctly reads as "not closed".
+    int isClosed = (fsm->doorClosed == DOOR_CLOSE) ? 1 : 0;
+
+    if(currentFloor == fsm->pubFloor &&
+       lastFloor == fsm->pubLast &&
+       isMoving == fsm->pubMoving &&
+       isClosed == fsm->pubClosed &&
+       fsm->mode == fsm->pubMode){
+        return; //Nothing changed since the last row
+    }
+
+    if(db_insertElevatorPosition(currentFloor, lastFloor, isMoving, isClosed, fsm->mode) != 0){
+        return; //Insert failed - leave the snapshot alone so we retry next step
+    }
+
+    fsm->pubFloor = currentFloor;
+    fsm->pubLast = lastFloor;
+    fsm->pubMoving = isMoving;
+    fsm->pubClosed = isClosed;
+    fsm->pubMode = fsm->mode;
+}
+
+
+//Records one CAN frame sensed on the bus into can_transaction.
+//Called from every run loop BEFORE the mode-specific handler: Sabbath drops every
+//request and Maintenance drops every hardware button, but those frames were still
+//sensed and have to show up in the log.
+static void fsmLogRxMessage(const ElevatorFSM *fsm, int id, int data, int len){
+    char message[256];
+    int currentFloor;
+    int lastFloor;
+
+    fsmFloorPair(fsm, &currentFloor, &lastFloor);
+
+    //Reuse the decoders the RX printouts already use. can_transaction has no length
+    //column, so the DLC goes into the message text.
+    snprintf(message, sizeof(message), "%s: %s (LEN %d)",
+             decodeSenderName(id), decodeMsgType(id, data), len);
+
+    db_logCanTransaction(id, data, message, currentFloor, lastFloor);
+}
+
+
+//Whenever the elevator arrives at a floor
+//EC_TO_ALL confirmaton, or from the MoVING fall back timeput
 static void fsmArrive(ElevatorFSM *fsm, int floor){
     fsm->state = (ElevatorSate)(floor - 1); //STATE FLOOR - 1 
     fsm->doorClosed  = DOOR_CLOSE; 
@@ -256,8 +326,10 @@ static void fsmProcessMessage(ElevatorFSM *fsm, int id, int data){
 }
 
 //Runs one FSM evaluation stem (door timer, request shcedueling, moving fallback )
-static void fsmStep(ElevatorFSM *fsm){
-    static time_t lastCollectingPrint = 0; 
+//Split from fsmStep() only so the position publish still happens on the several
+//early returns below.
+static void fsmStepInner(ElevatorFSM *fsm){
+    static time_t lastCollectingPrint = 0;
 
     fsmPollWebsite(fsm); //Queues accumulate even while moving - Queed for larer 
 
@@ -346,9 +418,17 @@ static void fsmStep(ElevatorFSM *fsm){
         double elapsed = difftime(time(NULL), fsm->movingTimeStart); 
         if (elapsed >= MOVING_FALLBACK_SEC){
             printf("[FSM] No EC Arrival confirmation (0x101) recieved - using fallback timeout\n");
-            fsmArrive(fsm, fsm->targetFloor); 
+            fsmArrive(fsm, fsm->targetFloor);
         }
     }
+}
+
+//One FSM step, then mirror the resulting state to the website.
+//Every transition (arrival, depart, door open/close) passes through here once per
+//loop iteration, so this single call catches them all.
+static void fsmStep(ElevatorFSM *fsm){
+    fsmStepInner(fsm);
+    fsmPublishPosition(fsm);
 }
 
 //Function to Get the Arrival in Sabbarth 
@@ -422,9 +502,11 @@ static int sabbathMove(ElevatorFSM *fsm){
     return nextfloor; 
 }
 
-///Stepping between Floors on Sabbath mode 
-static void sabbathStep(ElevatorFSM *fsm){
-    static time_t lastCollectingPrint = 0; 
+///Stepping between Floors on Sabbath mode
+//Split from sabbathStep() only so the position publish still happens on the several
+//early returns below.
+static void sabbathStepInner(ElevatorFSM *fsm){
+    static time_t lastCollectingPrint = 0;
 
    if(fsm->state != STATE_MOVING){
     //Register current Floor 
@@ -489,6 +571,12 @@ static void sabbathStep(ElevatorFSM *fsm){
             sabbathArrive(fsm, fsm->targetFloor);
         }
     }
+}
+
+//One Sabbath step, then mirror the resulting state to the website.
+static void sabbathStep(ElevatorFSM *fsm){
+    sabbathStepInner(fsm);
+    fsmPublishPosition(fsm);
 }
 
 //The FSM RUN 
