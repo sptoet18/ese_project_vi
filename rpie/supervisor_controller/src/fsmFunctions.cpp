@@ -606,16 +606,19 @@ void fsmRun(void){
     audioInit(); //Floor announcements - failure is non fatal, the FSM just runs silently
 
     fsmInit(&fsm); //Keep DB in sync with the FSM initial State
+    fsm.mode = "elevator";
     db_setFloorNum(1);
+    fsmPublishPosition(&fsm); //Record the mode the moment it is selected
     pcanFsmTx(ID_SC_TO_EC, GO_TO_FLOOR1); //Make sure the EC agree we are starting at floor 1
 
-    g_fsmStop = 0; 
-    signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop the FSM cleanly 
+    g_fsmStop = 0;
+    signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop the FSM cleanly
 
     while(!g_fsmStop){
-        int rc = pcanFsmRxPoll(&id, &data, &len); 
+        int rc = pcanFsmRxPoll(&id, &data, &len);
         if(rc == 1){
-            fsmProcessMessage(&fsm, id, data); 
+            fsmLogRxMessage(&fsm, id, data, len); //Log first - "sensed" means sensed
+            fsmProcessMessage(&fsm, id, data);
         }
 
         fsmStep(&fsm); 
@@ -657,20 +660,24 @@ void sabbathRun(void){
     audioInit(); //Floor announcements - failure is non fatal, Sabbath mode just runs silently
 
     fsmInit(&fsm); //Keep DB in sync with the FSM initial State
+    fsm.mode = "sabbath";
 
     //Due to Sabbath we need to change some states
-    fsm.doorClosed = DOOR_OPEN; 
-    fsm.doorTimeStart = time(NULL); 
+    fsm.doorClosed = DOOR_OPEN;
+    fsm.doorTimeStart = time(NULL);
 
-    db_setFloorNum(1); 
+    db_setFloorNum(1);
+    fsmPublishPosition(&fsm); //Record the mode the moment it is selected
     pcanFsmTx(ID_SC_TO_EC, GO_TO_FLOOR1); //Make sure the EC agree we are starting at floor 1
 
-    g_fsmStop = 0; 
-    signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop the FSM cleanly 
+    g_fsmStop = 0;
+    signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop the FSM cleanly
 
     while(!g_fsmStop){
         int rc = pcanFsmRxPoll(&id, &data, &len);
         if(rc == 1){
+            //Sabbath ignores every request, but the frame was still sensed - log it
+            fsmLogRxMessage(&fsm, id, data, len);
             sabbathProcessMessages(&fsm, id, data);
         }
         
@@ -759,6 +766,7 @@ void maintenanceRun(void){
     audioInit(); //Floor announcements - failure is non fatal, mode just runs silently
 
     fsmInit(&fsm);
+    fsm.mode = "maintenance";
 
     //Digital e-stop: hold in place with the door OPEN and do NOT command a move on
     //entry. With every hardware queue empty, the car stays put until a website
@@ -767,6 +775,7 @@ void maintenanceRun(void){
     fsm.doorTimeStart = time(NULL);
 
     db_setFloorNum(1); //Keep the website/DB in sync with the FSM initial state
+    fsmPublishPosition(&fsm); //Record the mode the moment it is selected
 
     g_fsmStop = 0;
     signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop cleanly
@@ -774,6 +783,8 @@ void maintenanceRun(void){
     while(!g_fsmStop){
         int rc = pcanFsmRxPoll(&id, &data, &len);
         if(rc == 1){
+            //Lockout drops every hardware button, but the frame was still sensed - log it
+            fsmLogRxMessage(&fsm, id, data, len);
             maintenanceProcessMessage(&fsm, id, data);
         }
 
