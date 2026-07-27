@@ -65,7 +65,16 @@ void fsmInit(ElevatorFSM *fsm){
     fsm->movingTimeStart = 0; 
     fsm->collectTimerStart = 0; //window for listening (elevator door is open right now )
     fsm->lockedTarget =0;
-    fsm->preMoveTimerStart = 0; 
+    fsm->preMoveTimerStart = 0;
+
+    fsm->mode = "elevator"; //Each run function overrides this straight after fsmInit()
+
+    //Sentinels - guarantee the first fsmPublishPosition() always writes a row
+    fsm->pubFloor = -1;
+    fsm->pubLast = -1;
+    fsm->pubMoving = -1;
+    fsm->pubClosed = -1;
+    fsm->pubMode = NULL;
 }
 
 //Queue Helpers 
@@ -154,12 +163,15 @@ static void fsmPollWebsite(ElevatorFSM *fsm){
     fsm->lastWebsitePoll = time(NULL); 
 
     int dbFloor = db_getFloorNum();
+    if(dbFloor < 1 || dbFloor > 3){
+        return; //Database unreachable (-1) or holding a nonsense floor - ignore it
+    }
     if(dbFloor == fsm->lastDbfloor){
         return; //No change since we last looked or is the same 
     }
     fsm->lastDbfloor = dbFloor; 
 
-    if(dbFloor >= 1 && dbFloor <= 3 && !queueContainsFloor(fsm->websiteQueue, dbFloor)){
+    if(!queueContainsFloor(fsm->websiteQueue, dbFloor)){
         fsm->websiteQueue.push(dbFloor);
         printf("[FSM] Website request queued (Priority 3): FLOOR %d\n", dbFloor); 
     }

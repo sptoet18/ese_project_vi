@@ -57,10 +57,23 @@ typedef struct {
     time_t collectTimerStart; //Time to listen for request 
     time_t movingTimeStart; //Timestamp when the elevator started moving (foor the fallback timeout)
 
-    int lockedTarget; 
-    time_t preMoveTimerStart; 
+    int lockedTarget;
+    time_t preMoveTimerStart;
 
-}ElevatorFSM; 
+    //Which mode the supervisory controller is running. Written straight into
+    //elevator_position.mode, so it MUST match that ENUM: "elevator", "sabbath"
+    //or "maintenance".
+    const char *mode;
+
+    //Snapshot of the last row published to elevator_position. The run loops tick at
+    //5 Hz, so we only insert when one of these actually changes.
+    int pubFloor;
+    int pubLast;
+    int pubMoving;
+    int pubClosed;
+    const char *pubMode;
+
+}ElevatorFSM;
 
 //Functions declarations 
 void fsmInit(ElevatorFSM *fsm); 
