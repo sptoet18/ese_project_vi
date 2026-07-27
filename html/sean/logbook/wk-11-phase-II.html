@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sean's Week 10 Logbook">
+    <meta name="robots" content="noindex nofollow"/>
+    <meta http-equiv="author" content="Sean Toet">
+    <meta http-equiv="pragma" content="no-cache"/> 
+    <title>Sean's Logbook - Week 10</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="/css/theme.css" rel="stylesheet"/>
+    <link href="/css/style.css" rel="stylesheet"/>
+    <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <header>
+        <div id="topbar"></div>
+    </header>
+
+    <main class="flex-grow-1">
+        <div class="container">
+            <section class="title">
+                <h1>Sean's Logbook</h1>
+                <h2>Week 10</h2>
+            </section>
+
+            <section class="body">
+                <h1>Tasks Completed</h1>
+
+                <article>
+                    <h1>Test Plan</h1>
+
+                    <h2>GUI and Database - Floor Controller Buttons</h2>
+
+                    <p>The Floor Controller 1 floor request button correctly updates the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 769</p>
+                    <p>data: 1</p>
+                    <p>message: "Floor Controller 1 requested floor 1"</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/GaD - AB - FCB - F1.mov"/>
+                        </video>
+                    </figure>
+
+                    <p>The Floor Controller 2 floor request button correctly updated the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 770</p>
+                    <p>data: 1</p>
+                    <p>message: "Floor Controller 2 requested floor 2"</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/GaD - AB - FCB - F2.mov"/>
+                        </video>
+                    </figure>
+
+                    <p>The Floor Controller 3 floor request button correctly updated the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 771</p>
+                    <p>data: 1</p>
+                    <p>message: "Floor Controller 3 requested floor 3"</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/GaD - AB - FCB - F3.mov"/>
+                        </video>
+                    </figure>
+
+                    <h2>GUI and Database - Car Controller Buttons</h2>
+
+                    <p>The Car Controller floor 1 request button correctly updates the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 768</p>
+                    <p>data: 1</p>
+                    <p>message: "Car Controller requested floor 1"</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/GaD - AB - CCB - F1.mov"/>
+                        </video>
+                    </figure>
+
+                    <p>The Car Controller floor 2 request button correctly updates the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 768</p>
+                    <p>data: 2</p>
+                    <p>message: "Car Controller requested floor 2"</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/GaD - AB - CCB - F2.mov"/>
+                        </video>
+                    </figure>
+
+                    <p>The Car Controller floor 3 request button correctly updates the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 768</p>
+                    <p>data: 3</p>
+                    <p>message: "Car Controller requested floor 3"</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/GaD - AB - CCB - F3.mov"/>
+                        </video>
+                    </figure>
+
+                    <h2>GUI and Database - Mode Buttons</h2>
+
+                    <p>The Elevator Mode button correctly updates the table `elevator_position`. This includes the following results in the database:</p>
+                    <p>Mode: "elevator"</p>
+
+                    <p>The Sabbath Mode button correctly updates the table `elevator_position`. This includes the following results in the database:</p>
+                    <p>Mode: "sabbath"</p>
+
+                    <p>The Maintenance Mode button correctly updates the table `elevator_position`. This includes the following results in the database:</p>
+                    <p>Mode: "maintenance"</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/GaB - MB - ESM.mov"/>
+                        </video>
+                    </figure>
+
+                    <h2>GUI and Database - Indicators</h2>
+
+                    <p>When the most recent row in `elevator_position` records that the elevator's current floor is floor 1 then the indicated floor is floor 1. (See the included image)</p>
+                    <figure>
+                        <img src="/assets/images/floor-indicators/floor1.png" height="340px" style="image-rendering: pixelated"/>
+                    </figure>
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/GaB - Indicators - F1.mov"/>
+                        </video>
+                    </figure>
+
+                    <p>When the most recent row in `elevator_position` records that the elevator's current floor is floor 2 then the indicated floor is floor 2. (See the included image)</p>
+                    <figure>
+                        <img src="/assets/images/floor-indicators/floor2.png" height="340px" style="image-rendering: pixelated"/>
+                    </figure>
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/GaB - Indicators - F2.mov"/>
+                        </video>
+                    </figure>
+
+                    <p>When the most recent row in `elevator_position` records that the elevator's current floor is floor 3 then the indicated floor is floor 3. (See the included image)</p>
+                    <figure>
+                        <img src="/assets/images/floor-indicators/floor3.png" height="340px" style="image-rendering: pixelated"/>
+                    </figure>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/GaB - Indicators - F3.mov"/>
+                        </video>
+                    </figure>
+
+                    <h2>Diagnostics Reports</h2>
+
+                    <p>The Floor Controller 1 floor request correctly updates the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 513</p>
+                    <p>data: 1</p>
+                    <p>message: "Floor Controller 1 requested floor 1"</p>
+
+                    <p>The Floor Controller 2 floor request correctly updated the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 514</p>
+                    <p>data: 1</p>
+                    <p>message: "Floor Controller 2 requested floor 2"</p>
+
+                    <p>The Floor Controller 3 floor request correctly updated the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 515</p>
+                    <p>data: 1</p>
+                    <p>message: "Floor Controller 3 requested floor 3"</p>
+
+                    <p>The Car Controller floor 1 request correctly updates the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 512</p>
+                    <p>data: 1</p>
+                    <p>message: "Car Controller requested floor 1"</p>
+
+                    <p>The Car Controller floor 2 request correctly updates the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 512</p>
+                    <p>data: 2</p>
+                    <p>message: "Car Controller requested floor 2"</p>
+
+                    <p>The Car Controller floor 3 request correctly updates the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 512</p>
+                    <p>data: 3</p>
+                    <p>message: "Car Controller requested floor 3"</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/DR - All Floor Buttons.mp4"/>
+                        </video>
+                    </figure>
+
+                    <h2>Authenticated Remote Access</h2>
+
+                    <p>A user is created by the sign up page.</p>
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/ARA - Sign up and Login.mov"/>
+                        </video>
+                    </figure>
+
+                    <p>A user that is created by the sign up page is able to login to access the elevator controls.</p>
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/ARA - Login to Access.mov"/>
+                        </video>
+                    </figure>
+
+                    <p>A user is unable to login if the username exists on the database but the password is incorrect.</p>
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/ARA - Correct username incorrect password.mov"/>
+                        </video>
+                    </figure>
+
+                    <p>A user is unable to login if the username does not exist on the database but the password matches an existing one on the database.</p>
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/ARA - incorrect username correct password.mov"/>
+                        </video>
+                    </figure>
+
+                    <p>A user is unable to press the login button with none of the fields filled out.</p>
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/ARA - Login requires all fields.mov"/>
+                        </video>
+                    </figure>
+
+                    <p>A user is unable to open the elevator controls page by copy-and-pasting the URL unless they are logged in.</p>
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/ARA - No URL Access.mov"/>
+                        </video>
+                    </figure>
+
+                    <p>A user is unable to access the elevator controls page once they have logged out.</p>
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/ARA - Logging out.mov"/>
+                        </video>
+                    </figure>
+
+                    <h2>Floor Annoucements</h2>
+
+                    <p>When the elevator reaches floor 1 an announcement is played that says: "Floor 1".</p>
+                    <p>When the elevator reaches floor 2 an announcement is played that says: "Floor 2".</p>
+                    <p>When the elevator reaches floor 3 an announcement is played that says: "Floor 3".</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/FA-All.mp4"/>
+                        </video>
+                    </figure>
+
+                    <h2>Sabbath Mode</h2>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/SM-W.mp4"/>
+                        </video>
+                    </figure>
+
+                    <h2>Sabbath Mode - Website</h2>
+
+                    <p>The Floor Controller 1 floor request button does not update the `can_transaction` table in the database.</p>
+                    <p>The Floor Controller 2 floor request button does not update the `can_transaction` table in the database.</p>
+                    <p>The Floor Controller 3 floor request button does not update the `can_transaction` table in the database.</p>
+                    <p>The Car Controller floor 1 request button does not update the `can_transaction` table in the database.</p>
+                    <p>The Car Controller floor 2 request button does not update the `can_transaction` table in the database.</p>
+                    <p>The Car Controller floor 3 request button does not update the `can_transaction` table in the database.</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/SM-Website.mp4"/>
+                        </video>
+                    </figure>
+
+                    <h2>Sabbath Mode - Physical</h2>
+
+                    <p>The Floor Controller 1 floor request does not update the `can_transaction` table in the database.</p>
+                    <p>The Floor Controller 2 floor request does not update the `can_transaction` table in the database.</p>
+                    <p>The Floor Controller 3 floor request does not update the `can_transaction` table in the database.</p>
+                    <p>The Car Controller floor 1 request does not update the `can_transaction` table in the database.</p>
+                    <p>Car Controller floor 2 request does not update the `can_transaction` table in the database.</p>
+                    <p>The Car Controller floor 3 request does not update the `can_transaction` table in the database.</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/SM-W-STM32.mp4"/>
+                        </video>
+                    </figure>
+
+                    <h2>Maintenance Mode - Website Buttons</h2>
+
+                    <p>The Floor Controller 1 floor request button correctly updates the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 769</p>
+                    <p>data: 1</p>
+                    <p>message: "Floor Controller 1 requested floor 1"</p>
+
+                    <p>The Floor Controller 2 floor request button correctly updates the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 770</p>
+                    <p>data: 1</p>
+                    <p>message: "Floor Controller 2 requested floor 2"</p>
+
+                    <p>The Floor Controller 3 floor request button correctly updates the table `can_transaction`. This includes the following results in the database:</p>
+                    <p>can_id: 771</p>
+                    <p>data: 1</p>
+                    <p>message: "Floor Controller 3 requested floor 3"</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/MLOM - Website Buttons.mov"/>
+                        </video>
+                    </figure>
+
+                    <h2>Maintenance Mode - Physical</h2>
+
+                    <p>The Floor Controller 1 floor request does not update the `can_transaction` table in the database.</p>
+                    <p>The Floor Controller 2 floor request does not update the `can_transaction` table in the database.</p>
+                    <p>The Floor Controller 3 floor request does not update the `can_transaction` table in the database.</p>
+                    <p>The Car Controller floor 1 request does not update the `can_transaction` table in the database.</p>
+                    <p>The Car Controller floor 2 request does not update the `can_transaction` table in the database.</p>
+                    <p>The Car Controller floor 3 request does not update the `can_transaction` table in the database.</p>
+
+                    <figure>
+                        <video preload controls>
+                            <source src="/assets/videos/Phase-II/MLOM-Physical-Buttons.mp4"/>
+                        </video>
+                    </figure>
+                </article>
+            </section>
+        </div>
+    </main>
+    
+    <footer>
+        <copyright-text name="Sean Toet"></copyright-text>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="/js/components/top-bar.js"></script>
+    <script src="/js/components/copyright.js" defer></script>
+</body>
+</html>
