@@ -19,14 +19,15 @@ int menu(){
 		printf("4. Demo mode - loop\n");
 		printf("5. Finite State Machine\n");
 		printf("6. Sabbath Mode\n");
-		printf("7. Exit program\n");
+		printf("7. Maintenance Lockout Mode\n");
+		printf("8. Exit program\n");
 		printf("\nYour choice: ");
 		scanf("%d", &usrchoice);
 
-		if (usrchoice >=1 && usrchoice <= 7) {	
+		if (usrchoice >=1 && usrchoice <= 8) {
 			return usrchoice;
 		} else {
-			printf("\nPLEASE SELECT FROM CHOICES 1-6 ONLY!\n\n");
+			printf("\nPLEASE SELECT FROM CHOICES 1-8 ONLY!\n\n");
 			sleep(3);
 			system("@cls||clear");
 		}

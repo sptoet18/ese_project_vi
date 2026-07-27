@@ -21,6 +21,10 @@ int main() {
 	int numRx;
 	int floorNumber = 1, prev_floorNumber = 1;
 
+	// Open the shared database connection once. Failure is only a warning - the
+	// supervisory controller still has to drive the CAN bus with the database down.
+	db_open();
+
 	while(1) {
 		system("@cls||clear");
 		choice = menu(); 
@@ -75,9 +79,14 @@ int main() {
 
 			case 6:
 				sabbathRun();
-				break; 
-			
-			case 7: 
+				break;
+
+			case 7:
+				maintenanceRun(); //Maintenance Lockout Mode - digital e-stop, website-only control
+				break;
+
+			case 8:
+				db_close();
 				return(0);
 			
 			default:

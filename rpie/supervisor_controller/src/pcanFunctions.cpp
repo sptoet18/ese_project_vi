@@ -1,4 +1,5 @@
 #include "../include/pcanFunctions.h"
+#include "../include/databaseFunctions.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -226,8 +227,14 @@ int pcanTx(int id, int data){
 
 int pcanRx(int num_msgs){
 	int i = 0;
+	int currentFloor;
+	int lastFloor;
 
-	// Open a CAN channel 
+	// This path has no FSM to ask for the car's position, so take the last known
+	// position from the database once and tag every logged frame with it.
+	db_getLatestPosition(&currentFloor, &lastFloor);
+
+	// Open a CAN channel
 	h2 = LINUX_CAN_Open("/dev/pcanusb32", O_RDWR);
 
 	// Initialize an opened CAN 2.0 channel with a 125kbps bitrate, accepting standard frames
@@ -258,8 +265,17 @@ int pcanRx(int num_msgs){
 				(int)Rxmsg.LEN,
 				(int)Rxmsg.DATA[0]);
 			
-			//RX Switch case: Print who sent it , the lenght, and the type of request it is 
+			//RX Switch case: Print who sent it , the lenght, and the type of request it is
 			printRxDecoded((int)Rxmsg.ID, (int)Rxmsg.LEN,(int)Rxmsg.DATA[0]);
+
+			// Every message sensed on the bus gets recorded, this path included
+			char message[256];
+			snprintf(message, sizeof(message), "%s: %s (LEN %d)",
+				decodeSenderName((int)Rxmsg.ID),
+				decodeMsgType((int)Rxmsg.ID, (int)Rxmsg.DATA[0]),
+				(int)Rxmsg.LEN);
+
+			db_logCanTransaction((int)Rxmsg.ID, (int)Rxmsg.DATA[0], message, currentFloor, lastFloor);
 
 		i++;
 		}
