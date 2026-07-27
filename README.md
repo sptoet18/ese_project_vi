@@ -1,4 +1,4 @@
-# ESE Project VI - SEB
+# ESE Project VI - SEB!
 This is the repository for our ESE Project VI (Week 3 - 14)
 
 ## Group Members

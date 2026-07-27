@@ -1,4 +1,8 @@
 <?php
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+
     require_once __DIR__ . '/../util.php';
 
     session_start();
@@ -19,9 +23,28 @@
         $user = $userQuery->fetch();
 
         if ($user) {
-            // Add query to get the elevator's current location
 
-            $elevatorPosition = getPositionImage(1);
+            $transactionQuery = $db->prepare('
+                select *
+                from can_transaction
+                order by id desc
+            ');
+            $transactionQuery->execute([]);
+            $transactions = $transactionQuery->fetchAll(PDO::FETCH_ASSOC);
+            
+            $positionQuery = $db->prepare('
+                select *
+                from elevator_position
+                order by id desc
+            ');
+            $positionQuery->execute([]);
+            $positions = $positionQuery->fetchAll(PDO::FETCH_ASSOC);
+
+            /*
+            * Get the most recent known elevator position 
+            * If the table is empty, return the default image for floor 1
+            */
+            $elevatorPosition = getPositionImage($positions ? $positions[0]["current_floor"] : 1);
         } else {
             echo "<script>location.href = \"/html/authorization/login.html\"</script>";
         }
@@ -60,44 +83,181 @@
             <section class="body">
                 <article class="elevator-ui">
                     <div class="elevator-grid">
-                        <div>
+                        <!-- Floor-controller requests -->
+                        <div class="col">
                             <h2>Request as Floor Controller</h2>
-                            <button class="elevator">Request Floor 3</button>
-                            <button class="elevator">Request Floor 2</button>
-                            <button class="elevator">Request Floor 1</button>
+                            <button
+                                type="button"
+                                class="elevator floor-request"
+                                data-controller="floor_controller"
+                                data-floor="3"
+                                <?php if ($positions[0]["mode"] === "sabbath") echo "disabled"; ?>
+                            >
+                                Request Floor 3
+                            </button>
+                            <button
+                                type="button"
+                                class="elevator floor-request"
+                                data-controller="floor_controller"
+                                data-floor="2"
+                                <?php if ($positions[0]["mode"] === "sabbath") echo "disabled"; ?>
+                            >
+                                Request Floor 2
+                            </button>
+                            <button
+                                type="button"
+                                class="elevator floor-request"
+                                data-controller="floor_controller"
+                                data-floor="1"
+                                <?php if ($positions[0]["mode"] === "sabbath") echo "disabled"; ?>
+                            >
+                                Request Floor 1
+                            </button>
                         </div>
-                        <div>
+
+
+                        <div class="col">
                             <h2>Request as Car Controller</h2>
-                            <button class="elevator">Request Floor 3</button>
-                            <button class="elevator">Request Floor 2</button>
-                            <button class="elevator">Request Floor 1</button>
+                            <button
+                                type="button"
+                                class="elevator floor-request"
+                                data-controller="car_controller"
+                                data-floor="3"
+                                <?php if ($positions[0]["mode"] === "sabbath") echo "disabled"; ?>
+                            >
+                                Request Floor 3
+                            </button>
+
+                            <button
+                                type="button"
+                                class="elevator floor-request"
+                                data-controller="car_controller"
+                                data-floor="2"
+                                <?php if ($positions[0]["mode"] === "sabbath") echo "disabled"; ?>
+                            >
+                                Request Floor 2
+                            </button>
+
+                            <button
+                                type="button"
+                                class="elevator floor-request"
+                                data-controller="car_controller"
+                                data-floor="1"
+                                <?php if ($positions[0]["mode"] === "sabbath") echo "disabled"; ?>
+                            >
+                                Request Floor 1
+                            </button>
                         </div>
-                        <div>
+                        
+                        <div class="col">
                             <h2>Elevator's Current Floor</h2>
                             <img src="<?php echo $elevatorPosition; ?>" height="340px" style="image-rendering: pixelated"/>
                         </div>
                     </div>
+                       <p
+                        id="request-status"
+                        role="status"
+                        aria-live="polite"
+                    ></p>
+                </article>
 
-                    <!-- <div class="container">
-                        <div class="row">
-                            <div class="col">
-                                <div class="controls">
-                                    <button class="elevator">Request Floor 3</button>
-                                    <button class="elevator">Request Floor 2</button>
-                                    <button class="elevator">Request Floor 1</button>
+                <article class="elevator-ui">
+                    <div class="elevator-grid">
+                        <div>
+                            <h2>Elevator Mode</h2>
+                            <button id="elevatorButton" class="elevator">Start Elevator Mode</button>
+                        </div>
+                        <div>
+                            <h2>Sabbath Mode</h2>
+                            <button id="sabbathButton" class="elevator">Start Sabbath Mode</button>
+                        </div>
+                        <div>
+                            <h2>Maintenance Mode</h2>
+                            <button id="maintenanceButton" class="elevator">Start Maintenance Mode</button>
+                        </div>
+                    </div>
+                </article>
+
+                <?php if (true): ?>
+                    <article>
+                        <div style="margin-top: 36px;"></div>
+
+                        <h1>Maintenance Printout</h1>
+
+                        <div class="maintenance-grid">
+                            <div>
+                                <h2>Can Transactions</h2>
+                                <div class="maintenance-card">
+                                    <table class="console">
+                                        <thead>
+                                            <tr>
+                                                <th>Sender</th>
+                                                <th>Time</th>
+                                                <th>Data</th>
+                                                <th>Floor</th>
+                                                <th>Last Floor</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <?php if (count($transactions)): ?>
+                                                <?php foreach ($transactions as $row): ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($row['sent_by']) ?></td>
+                                                        <td><?= htmlspecialchars($row['transceived_at']) ?></td>
+                                                        <td><?= htmlspecialchars($row['data']) ?></td>
+                                                        <td><?= htmlspecialchars($row['current_floor']) ?></td>
+                                                        <td><?= htmlspecialchars($row['last_floor']) ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="5">No transactions found.</td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="indicators">
-                                    <div class="indicator">Floor 3</div>
-                                    <div class="indicator">Floor 2</div>
-                                    <div class="indicator">Floor 1</div>
+                            <div>
+                                <h2>Elevator Position</h2>
+                                <div class="maintenance-card">
+                                    <table class="console">
+                                        <thead>
+                                            <tr>
+                                                <th>Current Floor</th>
+                                                <th>Time</th>
+                                                <th>Last Floor</th>
+                                                <th>Moving</th>
+                                                <th>Door Closed</th>
+                                                <th>Mode</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <?php if (count($positions) > 0): ?>
+                                                <?php foreach ($positions as $row): ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($row['current_floor']) ?></td>
+                                                        <td><?= htmlspecialchars($row['recorded_at']) ?></td>
+                                                        <td><?= htmlspecialchars($row['last_floor']) ?></td>
+                                                        <td><?= htmlspecialchars($row['is_moving']) ?></td>
+                                                        <td><?= htmlspecialchars($row['is_closed']) ?></td>
+                                                        <td><?= htmlspecialchars($row['mode']) ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="6">No transactions found.</td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>             
                                 </div>
                             </div>
                         </div>
-                        <div class="indicator">Moving</div>
-                    </div> -->
-                </article>
+                    </article> 
+                <?php endif; ?>
             </section>
         </div>
     </main>
@@ -111,9 +271,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="/js/components/top-bar.js"></script>
     <script src="/js/components/copyright.js" defer></script>
-    <script>
-        document.getElementById("date").textContent = new Date().toLocaleDateString();
-        document.getElementById("time").textContent = new Date().toLocaleTimeString();
-    </script>
+    <script src="/js/elevatorControl.js" defer></script>
+    <script src="/js/change-mode.js"></script>
 </body>
 </html>

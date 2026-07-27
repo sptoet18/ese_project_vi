@@ -18,8 +18,12 @@
 	$user = $userQuery->fetch();
 
     if ($user) {
-		isCorrectPassword($password, $user['hashed_password']);
 		echo "<script>location.href = \"/php/authorization/member.php\"</script>";
+		if (password_verify($password, $user['hashed_password'])) {
+			echo "<script>location.href = \"/php/authorization/member.php\"</script>";
+		} else {
+			echo "<script>location.href = \"/html/authorization/login.html\"</script>";
+		}
 	} else {
 		echo "<script>location.href = \"/html/authorization/login.html\"</script>";
 	}
