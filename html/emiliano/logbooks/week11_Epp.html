@@ -1,29 +1,380 @@
 <!DOCTYPE html>
 <!--AUTHOR: Emiliano Perez Pellicer
-    DATE: 22-05-2026
+    DATE: 29-07-2026
     COMMENTS: This will be my main page to control and update my personal Logbook From weeks 1 - 14
-    VERSION: 1.0 
+    VERSION: 1.0
 -->
-
-<!--==== HTML SCRIPT =====-->
-<html lang = "en">
+<html lang="en">
     <!-- === Head section === -->
     <head>
-        <!-- === Include Specia -->
         <meta charset="UTF-8">
-        <!-- === Title ==== -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- === Title === -->
         <title>Emiliano's Engineering Logbook Week 11</title>
-        <meta name="description" content="This is the logbook week 11 page for Emiliano" />
-        <meta name="robots" content="noindex nofollow"/>   <!-- Do not want page or any of its links to be indexed-->
-        <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
-        <meta http-equiv="pragma" content="no-cache"/> 
+        <meta name="description" content="This is the logbook week 11 page for Emiliano"/>
+        <meta name="robots" content="noindex nofollow"/>
+        <meta http-equiv="author" content="Emiliano Perez Pellicer"/>
+        <meta http-equiv="pragma" content="no-cache"/>
+        <!-- === Stylesheets (same set Sean uses) === -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <link href="/css/theme.css" rel="stylesheet"/>
+        <link href="/css/style.css" rel="stylesheet"/>
+        <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
     </head>
     <!-- === Body section === -->
-    <body>
-        <!-- === Send Back to Logbook Page=== -->
-        <p>During this week I finished and Signed the <b>Safety Module</b></p>
-        <!-- === Send Back to Logbook Page=== -->
-        <p>Copyright &copy Emiliano Perez Pellicer</p>
-        <a href="/logbooks/logbook_EPP.html">Back to logbooks</a>
+    <body class="d-flex flex-column min-vh-100">
+        <header>
+            <div id="topbar"></div>
+        </header>
+
+        <main class="flex-grow-1">
+            <div class="container">
+                <section class="title">
+                    <h1>Emiliano's Logbook</h1>
+                    <h2>Week 11</h2>
+                </section>
+
+                <section class="body">
+                    <article>
+                        <h1>Overview and Objectives</h1>
+                        <p>The work carried out during Week&nbsp;11 closes out the Phase&nbsp;II individual deliverables for the Supervisory Controller (SC). The SC is the Raspberry&nbsp;Pi node that bridges the local-area network and the CAN network: it receives floor requests, runs a finite-state machine, and commands the Elevator Controller (EC) over CAN&nbsp;ID&nbsp;<code>0x100</code>.</p>
+                        <p>Four topics were delivered on top of a <strong>single shared finite-state machine core</strong>, so that all three operating modes reuse the same hardware-validated movement, queueing, arrival, and audio code. The modes differ only in <em>which messages they accept</em>. The topics delivered were Sabbath Mode, Floor-Arrival Audio, Maintenance Lockout, and CAN&nbsp;&harr;&nbsp;Database communication.</p>
+                        <p>The finite-state machine runs at (a 200&nbsp;ms sleep per loop). On every iteration it polls the CAN bus for one frame, logs that frame to the database, applies it to the state machine, then advances the machine and mirrors the resulting state back to the database.</p>
+                    </article>
+
+                    <article>
+                        <h1>The Baseline ; FSM States and Priority Queues</h1>
+                        <p>The shared core of the supervisory controller consists of <strong>four states and three priority queues</strong>. Each operating mode acts upon this same structure, supplying its own inputs and its own message filter.</p>
+
+                        <h2>States</h2>
+                        <p>The four states of the machine are <code>STATE_FLOOR1&nbsp;=&nbsp;0</code>, <code>STATE_FLOOR2&nbsp;=&nbsp;1</code>, <code>STATE_FLOOR3&nbsp;=&nbsp;2</code>, and <code>STATE_MOVING&nbsp;=&nbsp;3</code>.</p>
+
+                        <div class="alert alert-info">
+                            <strong>Load-bearing convention.</strong> The zero-based numbering matters throughout the implementation: <code>floor = (int)state + 1</code> and <code>state = (ElevatorSate)(floor &minus; 1)</code>. Both conversions appear repeatedly across the source file.
+                        </div>
+
+                        <h2>Request queues ; strict priority</h2>
+                        <p>Requests are held in three queues, which the scheduler examines in a strict order of precedence.</p>
+
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Priority</th>
+                                    <th>Queue</th>
+                                    <th>Source</th>
+                                    <th>CAN ID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>1 (highest)</td><td><code>carQueue</code></td><td>In-car buttons (Car Controller)</td><td><code>0x200</code></td></tr>
+                                <tr><td>2</td><td><code>floorQueue</code></td><td>Hall-call buttons (Floor Controllers)</td><td><code>0x201&ndash;0x203</code></td></tr>
+                                <tr><td>3 (lowest)</td><td><code>websiteQueue</code></td><td>Requests from the web interface (via database)</td><td>;</td></tr>
+                            </tbody>
+                        </table>
+
+                        <p>The scheduler, <code>fsmPeekPriotity()</code>, scans the car queue, then the floor queue, then the website queue, and returns the first entry that is not the current floor. A website request therefore only wins when no physical button press is pending.</p>
+
+                        <h2>Sequence of elevator commands (normal mode)</h2>
+                        <ul>
+                            <li><strong>Door</strong> the door is reported OPEN and then CLOSED by the Car Controller.</li>
+                            <li><strong>Listen</strong>  a five-second window collects all requests while the car is stopped (<code>REQUEST_COLLECTION_SEC</code>).</li>
+                            <li><strong>Select</strong>  the collected requests are priority-sorted and a target is chosen.</li>
+                            <li><strong>Wait</strong>  a five-second pre-move delay elapses after the door is closed (<code>PRE_MOVE_DELAY_SEC</code>).</li>
+                            <li><strong>Command</strong>  the supervisory controller transmits a go-to-floor command to the Elevator Controller on ID <code>0x100</code>, and the state becomes MOVING.</li>
+                            <li><strong>Arrive</strong> the machine waits for the arrival confirmation from the Elevator Controller, or for an eight-second fallback timer, and then calls <code>fsmArrive()</code>.</li>
+                            <li><strong>Update</strong> the database is updated, the arrival audio is played, and the cycle repeats.</li>
+                        </ul>
+                    </article>
+
+                    <article>
+                        <h1>Topic 1 ; Sabbath Mode</h1>
+                        <p><span class="badge text-bg-secondary">autonomous cycle</span> <span class="badge text-bg-secondary">no user input</span> <span class="badge text-bg-secondary">parallel run loop</span> <span class="badge text-bg-secondary">~260 new lines</span></p>
+
+                        <p>Sabbath Mode moves the car autonomously through every floor, opening its doors at each stop, so that <strong>no passenger is ever required to press a button</strong>. It runs an endless shuttle cycle in a parallel loop, so the normal finite-state machine is never broken.</p>
+
+                        <h2>The cycle</h2>
+                        <p>The car follows an indefinite <code>1&nbsp;&rarr;&nbsp;2&nbsp;&rarr;&nbsp;3&nbsp;&rarr;&nbsp;2&nbsp;&rarr;&nbsp;1&nbsp;&rarr;&nbsp;&hellip;</code> shuttle, never a <code>1&nbsp;&rarr;&nbsp;2&nbsp;&rarr;&nbsp;3&nbsp;&rarr;&nbsp;1</code> wrap. The door opens at every stop for five seconds, then closes and the car departs, so that no floor is ever skipped. Floor targets are generated automatically by <code>sabbathMove()</code> according to the following rules.</p>
+                        <ul>
+                            <li>At floor 1, always travel to floor 2.</li>
+                            <li>At floor 2, travel to floor 3 if the car came from floor 1; otherwise travel to floor 1.</li>
+                            <li>At floor 3, always travel downwards (to floor 2 if the car came from floor 2, otherwise to floor 1).</li>
+                        </ul>
+
+                        <h2>Reuse of <code>fsmArrive()</code></h2>
+                        <p><code>sabbathArrive()</code> clamps an invalid floor to 1 and then calls the shared <code>fsmArrive()</code>, thereby inheriting the same database write, echo suppression, queue purge, and audio announcement. It subsequently overrides <code>doorClosed</code> back to <code>DOOR_OPEN</code>, because Sabbath Mode holds the door open at every floor. Only a minor change to the elevator structure (the door status field) was required.</p>
+
+                        <h2>The message filter</h2>
+                        <p>The filter that gives the mode its "ignores everything" behaviour is a single guard clause.</p>
+                        <pre><code class="language-cpp">
+if (id != ID_EC_TO_ALL || fsm-&gt;state != STATE_MOVING) return;
+</code></pre>
+                        <p>All requests are still <strong>logged to the database</strong> first and only then ignored: Sabbath Mode obeys no requests, following only its fixed cycle. It listens solely for the arrival confirmation issued by the Elevator Controller while the car is moving, and it never polls the website.</p>
+
+                        <div class="alert alert-info">
+                            <strong>Server-side button lock.</strong> When Sabbath Mode is selected, nothing on the website appears available ; the request controls are locked out.
+                        </div>
+                    </article>
+
+                    <article>
+                        <h1>Topic 2 ; Floor-Arrival Audio</h1>
+                        <p><span class="badge text-bg-secondary">accessibility</span> <span class="badge text-bg-secondary">every mode</span> <span class="badge text-bg-secondary">non-blocking</span> <span class="badge text-bg-secondary">~160 new lines</span></p>
+
+                        <p>On arrival at any floor, in every operating mode, the Raspberry Pi plays a two-part sound as an accessibility feature: a ding chime, a gap of 120&nbsp;ms, and then the spoken floor number.</p>
+
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h2>How it works</h2>
+                                    <ul>
+                                        <li><strong>miniaudio</strong> ; a public-domain, single-header library, vendored by means of a single <code>#define</code>. It requires no Makefile entries and no apt packages.</li>
+                                        <li>All clips are decoded into memory at initialisation, so that arrival playback incurs no file input/output and no MP3 decoding inside the real-time loop.</li>
+                                        <li>The ding and the voice clip are scheduled on the engine's PCM clock, so no <code>sleep()</code> call is required; playback occurs on a dedicated background audio thread.</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h2>Why it is designed this way</h2>
+                                    <ul>
+                                        <li>Exactly one code path produces an arrival, namely <code>fsmArrive()</code>, so the guarantee that "every arrival announces" is structurally true rather than merely observed.</li>
+                                        <li>The path is non-blocking: a blocking ding&ndash;sleep&ndash;voice sequence would stall the loop for approximately two seconds and risk dropping CAN frames.</li>
+                                        <li>Playback runs on a dedicated thread, so the main thread is never locked.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>Safeguards ; degrade, never drop.</strong> If no audio hardware is present, the elevator simply runs silently. If the ding asset is missing, the announcement downgrades to the floor number alone. The ding is optional, serving as an attention-getter, whereas the voice is mandatory, being the real indicator. The whole audio path can be tested in isolation.
+                        </div>
+                    </article>
+
+                    <article>
+                        <h1>Topic 3 ; Maintenance Lockout</h1>
+                        <p><span class="badge text-bg-secondary">digital e-stop</span> <span class="badge text-bg-secondary">filter at ingestion</span> <span class="badge text-bg-secondary">website = sole control</span> <span class="badge text-bg-secondary">~130 new lines</span></p>
+
+                        <p>Maintenance Lockout is a <strong>digital emergency stop</strong>. Every physical input is filtered out, although it is still logged, while an authenticated user retains full control from the website, which becomes the only channel capable of moving the car. The whole mode lives in one function, <code>maintenanceProcessMessage()</code>, which divides incoming frames into commands, which are dropped, and telemetry, which is honoured.</p>
+
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h2>Commands ; dropped</h2>
+                                    <ul>
+                                        <li>Physical floor buttons (F1, F2, F3 on <code>0x201&ndash;0x203</code>).</li>
+                                        <li>In-car floor buttons (<code>0x200</code> carrying a floor payload).</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h2>Telemetry ; kept</h2>
+                                    <ul>
+                                        <li>Door state (<code>0x200</code> with a floor byte of 0), so that the machine continues to know the real door state.</li>
+                                        <li>Arrival confirmations from the Elevator Controller (<code>0x101</code>), so that the model never drifts.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p>Because no hardware request can reach a queue, the <strong>only</strong> route by which anything can be queued is <code>fsmPollWebsite()</code> writing into <code>websiteQueue</code>. It follows that the elevator moves on website requests alone. Movement, queueing, arrival, and audio all reuse the identical hardware-validated code employed in normal mode, amounting to approximately 100 lines of reused core. The control channel already sits behind an authenticated user session, so every command carries a real identity.</p>
+
+                        <div class="alert alert-warning">
+                            <strong>Honest limitation.</strong> This is a software lockout that <strong>complements</strong>, and never replaces, a hardware emergency stop. On entry it deliberately does <em>not</em> command a move, unlike normal and Sabbath modes, which send a go-to-floor-1 frame on entry: a digital emergency stop must not command motion at the instant it is engaged.
+                        </div>
+                    </article>
+
+                    <article>
+                        <h1>Topic 4 ; CAN &harr; Database Communication</h1>
+                        <p><span class="badge text-bg-secondary">bidirectional bridge</span> <span class="badge text-bg-secondary">MariaDB</span> <span class="badge text-bg-secondary">prepared statements</span> <span class="badge text-bg-secondary">~700 new lines</span></p>
+
+                        <p>This topic delivers the bidirectional bridge between the real-time CAN bus and MariaDB. It unifies the firmware, the database, and the web interface into a single system, with the <strong>database acting as the integration bus</strong> between two processes, two languages, and two lifecycles.</p>
+
+                        <h2>CAN to database ; the telemetry and audit path</h2>
+                        <p>The path proceeds from sensing a frame, to decoding it, to logging it, and finally to updating the position record only when it changes. Every CAN frame present on the bus is decoded using the same decoders as the console, written to <code>can_transaction</code> in both raw and textual form, and <code>elevator_position</code> is updated only when the state actually changes, giving an append-only, publish-on-change record.</p>
+
+                        <h2>Database to CAN ; the command round trip</h2>
+                        <p>The round trip proceeds from a click on the web interface, through validation, to the polling performed by the firmware, to the transmission from the supervisory controller to the Elevator Controller, and finally to arrival. In detail, <code>member.php</code> posts JSON to <code>request-floor.php</code>, which runs six checks and produces a priority-3 entry in <code>websiteQueue</code>; the finite-state machine then emits a frame to the Elevator Controller, and the result reported by the Elevator Controller and supervisory controller is written back to the database. Floor input is validated, whitelisted to the set {1,&nbsp;2,&nbsp;3}, and bound by means of prepared statements before it reaches the database.</p>
+
+                        <div class="alert alert-info">
+                            <strong>Write on change.</strong> The supervisory controller writes to the database once the state or the position of the elevator has changed, rather than on a fixed schedule.
+                        </div>
+                    </article>
+
+                    <article>
+                        <h1>Cross-Cutting Practice ; One FSM, Three Modes, Three Filters</h1>
+                        <p>The three operating modes are distinguished not by their mechanism but by the filter applied at the point at which messages are ingested.</p>
+
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Mode</th>
+                                    <th>Message handler</th>
+                                    <th>Accepts</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Normal</td><td><code>fsmProcessMessage()</code></td><td>Everything</td></tr>
+                                <tr><td>Sabbath</td><td><code>sabbathProcessMessages()</code></td><td>Only arrivals from the Elevator Controller</td></tr>
+                                <tr><td>Maintenance</td><td><code>maintenanceProcessMessage()</code></td><td>Only website input, together with telemetry</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h2>Four recurring principles</h2>
+                        <ul>
+                            <li><strong>One chokepoint per concern</strong> ; one arrival function, one connection accessor, and one filter per mode.</li>
+                            <li><strong>Same mechanism, different filters</strong> ; the modes differ only in the messages they accept, with one shared, hardware-validated mechanism underneath.</li>
+                            <li><strong>Degrade, never drop</strong> ; no missing file, unreachable database, or dropped frame can stop the elevator, since each failure has a lesser fallback mode.</li>
+                            <li><strong>Observe everything, act selectively</strong> ; logging always precedes filtering, so that the record reflects reality and the filter decides only what is acted upon.</li>
+                        </ul>
+                    </article>
+
+                    <article>
+                        <h1>FSM Function Reference ; <code>fsmFunctions.cpp</code></h1>
+                        <p>The finite-state machine is the brain of the supervisory controller. On every 5&nbsp;Hz iteration it polls the CAN bus for one frame, logs that frame to the database, applies it to the state machine, and then advances the machine and mirrors the resulting state to the database. The three run modes ; <code>fsmRun()</code>, <code>sabbathRun()</code>, and <code>maintenanceRun()</code> ; are built from the same parts.</p>
+
+                        <h2>Initialisation and helpers</h2>
+                        <ul>
+                            <li><strong><code>fsmInit()</code></strong> ; performs the cold start: the state is set to FLOOR1, all queues are emptied, the floor fields are set to 1, and the mode is set to "elevator". It seeds the <code>pub*</code> snapshot with impossible sentinel values (&minus;1 or NULL) so that the very first call to <code>fsmPublishPosition()</code> always writes a row, allowing the website to learn the new mode immediately rather than waiting for the first floor change.</li>
+                            <li><strong><code>queueContainsFloor()</code></strong> ; walks a copy of a queue. It is used before every push, so that a held button, a repeated frame, or a repeated database value does not queue the same floor ten times.</li>
+                            <li><strong><code>purgeFloorFromQueue()</code></strong> ; rebuilds a queue without a given floor, since <code>std::queue</code> provides no random-access erase operation.</li>
+                            <li><strong><code>fsmConsumeRequestsForFloor()</code></strong> ; purges a floor from all three queues at once, expressing the rule that once a floor is served, or merely locked in, every pending request for it is satisfied.</li>
+                            <li><strong><code>fsmPeekPriotity()</code></strong> ; the scheduler. It scans the car, floor, and website queues on copies and returns the first entry that differs from the current floor, or 0. Peeking never consumes.</li>
+                        </ul>
+
+                        <h2>State and database bridge</h2>
+                        <ul>
+                            <li><strong><code>fsmFloorPair()</code></strong> ; the single source of truth for the (current, last) pair that both website tables expect. While the car is MOVING, <code>current = targetFloor</code>, that is the destination, and <code>is_moving = 1</code> informs the website that the car has not yet arrived; otherwise <code>current = state + 1</code>. Both the publisher and the CAN logger call this function, so they can never disagree.</li>
+                            <li><strong><code>fsmPublishPosition()</code> [SC&nbsp;&rarr;&nbsp;DB]</strong> ; mirrors the live state into <code>elevator_position</code>. Change detection is applied: if the floor, last floor, moving flag, door-closed flag, and mode all match the <code>pub*</code> snapshot, the function returns without touching the database, since otherwise the 5&nbsp;Hz loop would insert approximately 300 identical rows per minute. On a failed insert the snapshot is left untouched, so that the next tick retries and nothing is silently lost.</li>
+                            <li><strong><code>fsmLogRxMessage()</code> [SC&nbsp;&rarr;&nbsp;DB]</strong> ; records one received frame into <code>can_transaction</code>, and is called before the mode handler in every mode. The principle is that sensed means sensed: discarded frames nonetheless existed on the bus, so the log constitutes a bus trace rather than an action trace. A foreign-key guard skips unregistered senders instead of throwing. Only received frames are logged; the controller's own transmissions (id 256) are not.</li>
+                            <li><strong><code>fsmArrive()</code> [SC&nbsp;&rarr;&nbsp;DB]</strong> ; the single arrival hook shared by all modes. It sets the stationary state, marks the door closed, clears the served floor from all queues, calls <code>db_setFloorNum(floor)</code>, records <code>lastDbfloor = floor</code> as the anti-echo pairing, and fires <code>audioPlayFloor()</code> on its own thread. It does not publish directly; the call to <code>fsmStep()</code> at the end of the same loop performs the publication.</li>
+                        </ul>
+
+                        <h2>The step functions</h2>
+                        <p><code>fsmStepInner()</code> constitutes one evaluation tick and contains six early <code>return</code> paths, covering the cases of waiting on the door, waiting on the pre-move delay, and still collecting requests. When the car is not moving, the function proceeds as follows: if the door is open, the current floor is served; if a target is already locked, the five-second pre-move delay is awaited and the car then departs, transmitting by means of the persistent non-blocking <code>pcanFsmTx</code> rather than the blocking <code>pcanTx</code>; if the door has just closed, the five-second listening window is opened; if the window is open, requests continue to be gathered; and if the window has expired, the next target is selected by priority and locked. While the car is MOVING, an arrival normally arrives from the Elevator Controller on <code>0x101</code>, but an eight-second fallback timer calls <code>fsmArrive()</code> regardless, so that the machine can never stick in the MOVING state.</p>
+
+                        <div class="alert alert-info">
+                            <strong>Why <code>fsmStep()</code> wraps <code>fsmStepInner()</code>.</strong> <code>fsmStep()</code> is simply <code>fsmStepInner()</code> followed by <code>fsmPublishPosition()</code>. Because the inner function contains six early returns, placing the publication inside it would skip publishing on most paths. The wrapper guarantees that every transition ; arrival, departure, door opening or closing, and mode entry ; is mirrored to the database exactly once per loop.
+                        </div>
+
+                        <h2>Mode-specific run loops</h2>
+                        <p>All three loops share a common skeleton: standard output is unbuffered, the CAN channel is opened and the program aborts if it cannot be opened, audio is initialised on a non-fatal basis, <code>fsmInit()</code> is called, <code>fsm.mode</code> is set, <code>db_setFloorNum(1)</code> is issued, a single publication is performed so that the mode is recorded the instant it is selected, the SIGINT handler is installed, and the loop then runs at 5&nbsp;Hz, polling, logging, processing, and stepping. <strong>Maintenance mode differs in three respects</strong>: the mode string is "maintenance", the door is forced OPEN, and <em>no</em> go-to-floor-1 frame is transmitted on entry. The database connection is opened once by <code>main.cpp</code> through <code>db_open()</code> and thereafter reused; the run loops never open or close it.</p>
+
+                        <h2>Timing macros</h2>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Macro</th>
+                                    <th>Value</th>
+                                    <th>Meaning</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>DOOR_OPEN_TIME_SEC</code></td><td>5</td><td>How long Sabbath Mode holds the door open</td></tr>
+                                <tr><td><code>MOVING_FALLBACK_SEC</code></td><td>8</td><td>Maximum time spent in MOVING without a <code>0x101</code> confirmation</td></tr>
+                                <tr><td><code>WEBSITE_POLL_SEC</code></td><td>1</td><td>How often the database is polled for a website request</td></tr>
+                                <tr><td><code>REQUEST_COLLECTION_SEC</code></td><td>5</td><td>Listening window after the door closes</td></tr>
+                                <tr><td><code>PRE_MOVE_DELAY_SEC</code></td><td>5</td><td>Pause between locking a target and departing</td></tr>
+                            </tbody>
+                        </table>
+                    </article>
+
+                    <article>
+                        <h1>Supervisory Controller &harr; Database Communication</h1>
+                        <p>Transport is provided by MySQL Connector/C++ over <code>tcp://127.0.0.1:3306</code>, against the schema <code>elevator</code>. One shared connection is reused by every call; <code>db_conn()</code> reconnects should MariaDB have restarted, and every function catches its own <code>SQLException</code> and returns &minus;1, so that nothing throws into the finite-state machine. An uncaught exception would otherwise kill the firmware mid-run.</p>
+
+                        <div class="alert alert-info">
+                            <strong>The traffic is deliberately asymmetric.</strong> The path from the supervisory controller to the database is heavy, carrying every frame sensed, every state change, and every arrival. The path from the database to the supervisory controller is a single value, namely <code>elevatorNetwork.currentFloor</code>, read once per second by <code>fsmPollWebsite()</code>. That value is the only means by which the database can influence the controller.
+                        </div>
+
+                        <h2><code>fsmPollWebsite()</code> ; the one inbound channel [DB&nbsp;&rarr;&nbsp;SC]</h2>
+                        <ol>
+                            <li>The function is rate-limited to once per second, since the 5&nbsp;Hz loop would otherwise query MariaDB five times a second.</li>
+                            <li>It reads <code>SELECT currentFloor FROM elevatorNetwork WHERE nodeID = 1</code>.</li>
+                            <li>It rejects any value below 1 or above 3. This single check covers both the case in which the database is down, which returns &minus;1, and the case in which the database holds garbage. The machine continues to run normally with the database offline.</li>
+                            <li><strong>Echo suppression:</strong> if the value equals <code>lastDbfloor</code>, the function returns. The controller writes this same column on every arrival, so without this test it would read back its own write and re-queue the floor at which it had just arrived, indefinitely.</li>
+                            <li>Otherwise it remembers the value and pushes it onto <code>websiteQueue</code>, with deduplication applied.</li>
+                        </ol>
+
+                        <h2>Three write paths from the supervisory controller to the database</h2>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Table</th>
+                                    <th>Writer</th>
+                                    <th>Trigger</th>
+                                    <th>Purpose</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>elevator_position</code></td><td><code>fsmPublishPosition()</code></td><td>Any state change</td><td>The live display rendered by the website; the SSE stream tails this table</td></tr>
+                                <tr><td><code>can_transaction</code></td><td><code>fsmLogRxMessage()</code></td><td>Every received frame</td><td>The bus trace and activity log</td></tr>
+                                <tr><td><code>elevatorNetwork</code></td><td><code>fsmArrive()</code></td><td>Every arrival</td><td>Keeps the legacy page's floor current and the read side non-stale</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h2>Summary of effects on the supervisory controller</h2>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Direction</th>
+                                    <th>Table</th>
+                                    <th>Function</th>
+                                    <th>Effect on the controller</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>SC &rarr; DB</td><td><code>elevator_position</code></td><td><code>fsmPublishPosition()</code></td><td>None (write only)</td></tr>
+                                <tr><td>SC &rarr; DB</td><td><code>can_transaction</code></td><td><code>fsmLogRxMessage()</code></td><td>None (write only)</td></tr>
+                                <tr><td>SC &rarr; DB</td><td><code>elevatorNetwork</code></td><td><code>fsmArrive()</code></td><td>None (write only)</td></tr>
+                                <tr><td>DB &rarr; SC</td><td><code>elevatorNetwork</code></td><td><code>fsmPollWebsite()</code></td><td><strong>Queues a floor at priority 3</strong></td></tr>
+                            </tbody>
+                        </table>
+
+                        <p><strong>What the database can change:</strong> it can add a lowest-priority destination, which becomes a real target once no car or floor button is pending; and in Maintenance Mode it is the only thing that can move the car. <strong>What it cannot change:</strong> the operating mode, which is set only by the firmware menu; the door; and the queue priority. Nor can it cancel a request or crash the controller, since every read is bounds-checked and every error is caught.</p>
+                    </article>
+
+                    <article>
+                        <h1>Artefacts and Summary</h1>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Topic</th>
+                                    <th>Primary artefacts</th>
+                                    <th>Approximate new lines</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Sabbath Mode</td><td><code>fsmFunctions.cpp</code> (5 functions) &middot; <code>sabbath.php</code> &middot; <code>change-mode.js</code></td><td>~260</td></tr>
+                                <tr><td>Floor-Arrival Audio</td><td><code>audioFunctions.cpp</code> and <code>.h</code> &middot; 4 assets &middot; miniaudio vendored &middot; 1 FSM hook</td><td>~160</td></tr>
+                                <tr><td>Maintenance Lockout</td><td><code>fsmFunctions.cpp</code> (2 functions) &middot; <code>maintenance.php</code> &middot; menu entry</td><td>~130</td></tr>
+                                <tr><td>CAN &harr; Database</td><td><code>databaseFunctions.cpp</code> (8 functions) &middot; <code>request-floor.php</code> &middot; <code>member.php</code> &middot; <code>sse.php</code> &middot; schema</td><td>~700</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h2>Changed in this cycle, relative to the "Sabbath Mode implemented" baseline</h2>
+                        <p>The diff comprises <code>fsmFunctions.cpp&nbsp;+278</code> and <code>fsmFuntions.h&nbsp;+28</code>. The new functions are <code>fsmFloorPair()</code>, <code>fsmPublishPosition()</code>, <code>fsmLogRxMessage()</code>, <code>maintenanceProcessMessage()</code>, and <code>maintenanceRun()</code>. As regards refactoring, <code>fsmStep()</code> and <code>sabbathStep()</code> were each split into an inner function and a wrapper, so that publication runs on every path. The header gained the <code>mode</code> field and the five <code>pub*</code> snapshot fields, a <code>WEBSITE_POLL_SEC</code> macro, and the declaration of <code>maintenanceRun()</code>.</p>
+
+                        <h2>Conclusion</h2>
+                        <p>Four topics and three operating modes were delivered on one shared finite-state machine core over approximately two weeks, amounting to some 1,840 lines of C++ across 6 firmware modules and more than 14 changed files. The design holds to four principles throughout ; one chokepoint per concern, one mechanism with different filters, graceful degradation, and observe-everything while acting selectively ; and it is these principles that allowed three markedly different behaviours to reuse a single hardware-validated code path.</p>
+                    </article>
+
+                    <article>
+                        <h1>Next Steps</h1>
+                        <ul>
+                            <li>Reconcile the website-authored position rows with the controller's own snapshot so that the two cannot disagree while the car is idle.</li>
+                            <li>Continue integration testing of the three operating modes against the full CAN network on hardware.</li>
+                        </ul>
+                    </article>
+                </section>
+            </div>
+        </main>
+
+        <footer>
+            <!-- === Send Back to Logbook Page === -->
+            <a href="logbook_EPP.html">Back to logbooks</a>
+            <!-- === CopyRight Symbol === -->
+            <copyright-text name="Emiliano Perez Pellicer"></copyright-text>
+        </footer>
+
+        <!-- === Scripts (same set Sean uses) === -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        <script src="/js/components/top-bar.js"></script>
+        <script src="/js/components/copyright.js" defer></script>
     </body>
 </html>

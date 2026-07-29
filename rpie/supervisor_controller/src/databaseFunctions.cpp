@@ -116,7 +116,7 @@ int db_getFloorNum() {
 
 	try{
 		sql::Statement *stmt = con->createStatement();
-		sql::ResultSet *res = stmt->executeQuery("SELECT currentFloor FROM elevatorNetwork WHERE nodeID = 1");
+		sql::ResultSet *res = stmt->executeQuery("SELECT currentFloor FROM can_transaction WHERE nodeID = 1");
 
 		//Keep the last good value if the query returns no rows - returning an
 		//uninitialised local (what this used to do) makes the FSM queue garbage floors.
