@@ -62,12 +62,12 @@ class CanNode
             $statement->execute([
                 'id' => $id
             ]);
-            $currentCanNode = $statement->fetch();
+            $row = $statement->fetch();
         } catch (\PDOException $e) {
             die ("Get failed: " . $e->getMessage());
         }
 
-        return $currentCanNode ? self::fromRow($currentCanNode) : null;
+        return $row ? self::fromRow($row) : null;
     }
 
     public function getId() : int {

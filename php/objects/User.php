@@ -107,13 +107,13 @@ class User
                 'id' => $id
             ]);
             // Return the user as the correct class
-            $currentUser = $statement->fetch(\PDO::FETCH_ASSOC);
+            $row = $statement->fetch(\PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
             die("Get failed: " . $e->getMessage());
         }
 
         // If the user exists then return it, if not return null
-        return $currentUser ? self::fromRow($currentUser) : null;
+        return $row ? self::fromRow($row) : null;
     }
 
     public function getId() : int {

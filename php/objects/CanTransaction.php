@@ -4,7 +4,7 @@ namespace objects;
 
 require_once '../util.php';
 
-class canTransaction
+class CanTransaction
 {
     private int $id;
     private CanNode $sentBy;
@@ -14,21 +14,16 @@ class canTransaction
     private int $currentFloor;
     private int $lastFloor;
 
-    public function __construct(
+    private function __construct() {}
+
+    public static function create(
+        int $id,
         CanNode $sentBy,
         int $data,
         string $message,
         int $currentFloor,
         int $lastFloor
     ) {
-        $this->sentBy = $sentBy;
-        $this->data = $data;
-        $this->message = $message;
-        $this->currentFloor = $currentFloor;
-        $this->lastFloor = $lastFloor;
-    }
-
-    public function create() {
         $db = connect();
 
         try {
@@ -49,11 +44,11 @@ class canTransaction
             ';
             $statement = $db->prepare($query);
             $statement->execute([
-                'sent_by' => $this->sentBy,
-                'data' => $this->data,
-                'message' => $this->message,
-                'current_floor' => $this->currentFloor,
-                'last_floor' => $this->lastFloor
+                'sent_by' => $sentBy,
+                'data' => $data,
+                'message' => $message,
+                'current_floor' => $currentFloor,
+                'last_floor' => $lastFloor
             ]);
 
             $id = $db->lastInsertId();
@@ -61,6 +56,73 @@ class canTransaction
             die("Creation failed: " . $e->getMessage());
         }
 
-        return $id;
+        $canTransaction = self::get($id);
+
+        if ($canTransaction === null) {
+            throw new \RuntimeException("CAN Transaction {$id} was created but could not be found.");
+        }
+
+        return $canTransaction;
+    }
+
+    public static function get(int $id) {
+        $db = connect();
+
+        try {
+            $query = '
+                SELECT *
+                FROM can_transaction
+                WHERE id = :id
+                LIMIT 1;
+            ';
+            $statement = $db->prepare($query);
+            $statement->execute([
+                'id' => $id
+            ]);
+            $row = $statement->fetch();
+        } catch (\PDOException $e) {
+            die("Get failed: " . $e->getMessage());
+        }
+
+        return $row ? self::fromRow($row) : null;
+    }
+
+    public function getId() : int {
+        return $this->id;
+    }
+
+    public function getSentBy() : CanNode {
+        return $this->sentBy;
+    }
+
+    public function getTransceivedAt() : \DateTimeImmutable {
+        return $this->transceivedAt;
+    }
+
+    public function getData() : int {
+        return $this->data;
+    }
+
+    public function getMessage() : string {
+        return $this->message;
+    }
+
+    public function getCurrentFloor() : int {
+        return $this->currentFloor;
+    }
+
+    public function getLastFloor() : int {
+        return $this->lastFloor;
+    }
+    private static function fromRow(array $row) : CanTransaction {
+        $canTransaction = new CanTransaction();
+        $canTransaction->id = (int) $row['id'];
+        $canTransaction->sentBy = CanNode::get($row['sent_by']->id);
+        $canTransaction->data = (int) $row['data'];
+        $canTransaction->message = (string) $row['message'];
+        $canTransaction->currentFloor = (int) $row['current_floor'];
+        $canTransaction->lastFloor = (int) $row['last_floor'];
+
+        return $canTransaction;
     }
 }
