@@ -22,7 +22,6 @@ class User
     // All the variables (same as columns in the database)
     private int $id;
     private string $username;
-    private string $hashedPassword;
     private string $firstname;
     private string $lastname;
     private Role $role;
@@ -149,7 +148,6 @@ class User
         $user = new self();
         $user->id = (int) $row['id'];
         $user->username = (string) $row['username'];
-        $user->hashedPassword = (string) $row['hashed_password'];
         $user->firstname = (string) $row['firstname'];
         $user->lastname = (string) $row['lastname'];
         $user->role = Role::from($row['role']);
