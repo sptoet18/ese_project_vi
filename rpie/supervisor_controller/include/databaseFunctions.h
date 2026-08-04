@@ -13,7 +13,7 @@ int  db_open(void);   // connect + cache the known CAN node ids; 0 on success, -
 void db_close(void);  // tear down the shared connection
 
 // --- Legacy phase-1 elevatorNetwork table (website request channel) ---
-int db_getFloorNum();               // returns the floor, or -1 if unavailable
+int db_getPendingWebsiteRequest();               // returns the floor, or -1 if unavailable
 int db_setFloorNum(int floorNum);   // 0 on success, -1 on failure
 
 // --- Modern tables read by the website ---
