@@ -108,26 +108,30 @@ bool db_isKnownCanNode(int canId){
 }
 
 
-int db_getFloorNum() {
+int db_getPendingWebsiteRequest() {
+
+	//Test the Connection to the Database 
 	sql::Connection *con = db_conn();
 	if(con == NULL){
 		return -1;
 	}
 
+
+	///Prepare the SQL statementent 
 	try{
 		sql::Statement *stmt = con->createStatement();
-		sql::ResultSet *res = stmt->executeQuery("SELECT currentFloor FROM can_transaction WHERE nodeID = 1");
+		sql::ResultSet *res = stmt->executeQuery("SELECT current_floor FROM can_transaction` WHERE ");
 
 		//Keep the last good value if the query returns no rows - returning an
 		//uninitialised local (what this used to do) makes the FSM queue garbage floors.
 		while(res->next()){
-			g_lastFloorNum = res->getInt("currentFloor");
+			g_lastFloorNum = res->getInt("current_floor");
 		}
 
 		delete res;
 		delete stmt;
 	}catch(sql::SQLException &e){
-		fprintf(stderr, "[DB] SELECT currentFloor failed: %s\n", e.what());
+		fprintf(stderr, "[DB] SELECT current_floor failed: %s\n", e.what());
 		return -1;
 	}
 
@@ -142,14 +146,14 @@ int db_setFloorNum(int floorNum) {
 	}
 
 	try{
-		sql::PreparedStatement *pstmt = con->prepareStatement("UPDATE elevatorNetwork SET currentFloor = ? WHERE nodeID = 1");
+		sql::PreparedStatement *pstmt = con->prepareStatement("UPDATE can_transaction SET current_floor = ? WHERE nodeID = 1");
 		pstmt->setInt(1, floorNum);
 		pstmt->executeUpdate();
 		delete pstmt;
 
 		g_lastFloorNum = floorNum;
 	}catch(sql::SQLException &e){
-		fprintf(stderr, "[DB] UPDATE currentFloor failed: %s\n", e.what());
+		fprintf(stderr, "[DB] UPDATE current_floor failed: %s\n", e.what());
 		return -1;
 	}
 

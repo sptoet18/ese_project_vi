@@ -162,7 +162,7 @@ static void fsmPollWebsite(ElevatorFSM *fsm){
     }
     fsm->lastWebsitePoll = time(NULL); 
 
-    int dbFloor = db_getFloorNum();
+    int dbFloor = db_getPendingWebsiteRequest();
     if(dbFloor < 1 || dbFloor > 3){
         return; //Database unreachable (-1) or holding a nonsense floor - ignore it
     }
@@ -259,8 +259,6 @@ static void fsmArrive(ElevatorFSM *fsm, int floor){
     fsm->preMoveTimerStart = 0; 
     
     fsmConsumeRequestsForFloor(fsm, floor); 
-    
-    db_setFloorNum(floor); //Keep the website/Db in sync with the real  elevator position 
     fsm->lastDbfloor = floor; //Next website poll doesn't re que our own update 
 
     printf("[FSM] Arrived at Floor %d - door CLOSED(%ds Timer started)\n", floor, DOOR_OPEN_TIME_SEC);
@@ -607,7 +605,6 @@ void fsmRun(void){
 
     fsmInit(&fsm); //Keep DB in sync with the FSM initial State
     fsm.mode = "elevator";
-    db_setFloorNum(1);
     fsmPublishPosition(&fsm); //Record the mode the moment it is selected
     pcanFsmTx(ID_SC_TO_EC, GO_TO_FLOOR1); //Make sure the EC agree we are starting at floor 1
 
@@ -666,7 +663,6 @@ void sabbathRun(void){
     fsm.doorClosed = DOOR_OPEN;
     fsm.doorTimeStart = time(NULL);
 
-    db_setFloorNum(1);
     fsmPublishPosition(&fsm); //Record the mode the moment it is selected
     pcanFsmTx(ID_SC_TO_EC, GO_TO_FLOOR1); //Make sure the EC agree we are starting at floor 1
 
@@ -774,7 +770,6 @@ void maintenanceRun(void){
     fsm.doorClosed = DOOR_OPEN;
     fsm.doorTimeStart = time(NULL);
 
-    db_setFloorNum(1); //Keep the website/DB in sync with the FSM initial state
     fsmPublishPosition(&fsm); //Record the mode the moment it is selected
 
     g_fsmStop = 0;
