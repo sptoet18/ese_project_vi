@@ -116,6 +116,61 @@ class User
         return $row ? self::fromRow($row) : null;
     }
 
+    public function update(
+        ?string $username,
+        ?string $firstname,
+        ?string $lastname,
+        ?Role $role
+    ) : self {
+        $fields = [];
+        $parameters = ['id' => $this->id];
+
+        if (!!$username) {
+            $fields[] = 'username = :username';
+            $parameters['username'] = $username;
+        }
+        if (!!$firstname) {
+            $fields[] = 'firstname = :firstname';
+            $parameters['firstname'] = $firstname;
+        }
+        if (!!$lastname) {
+            $fields[] = 'lastname = :lastname';
+            $parameters['lastname'] = $lastname;
+        }
+        if (!!$role) {
+            $fields[] = 'role = :role';
+            $parameters['role'] = $role->value;
+        }
+
+        if (empty($fields)) {
+            return $this;
+        }
+
+        $db = connect();
+
+        try {
+            // implode strings the strings from the array together as a string
+            $query = '
+                UPDATE user
+                SET ' . implode(', ', $fields) . '
+                WHERE id = :id
+                    AND archived = false
+            ';
+            $statement = $db->prepare($query);
+            $statement->execute($parameters);
+        } catch (\PDOException $e) {
+            die("Updating failed: " . $e->getMessage());
+        }
+
+        $user = self::get($this->id);
+
+        if ($user === null) {
+            throw new \RuntimeException("User {$this->id} was updated but could not be found.");
+        }
+
+        return $user;
+    }
+
     public function getId() : int {
         return $this->id;
     }
