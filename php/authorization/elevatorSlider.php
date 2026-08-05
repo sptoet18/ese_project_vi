@@ -18,7 +18,7 @@ $db = dbConnect(
 );
 
 /*
- * Confirm the logged-in user exists.
+ * Confirm that the logged-in user exists.
  */
 $userStatement = $db->prepare(
     '
@@ -43,7 +43,7 @@ if (!$user) {
 }
 
 /*
- * Read the newest known elevator position.
+ * Retrieve the most recently recorded elevator position.
  */
 $positionStatement = $db->query(
     '
@@ -94,6 +94,11 @@ $sliderDisabled = $currentMode === 'sabbath';
         content="Besart Kalezic"
     >
 
+    <meta
+        http-equiv="pragma"
+        content="no-cache"
+    >
+
     <title>Interactive Elevator Slider</title>
 
     <link
@@ -109,17 +114,22 @@ $sliderDisabled = $currentMode === 'sabbath';
     >
 
     <link
+        href="../../css/components/top-bar-style.css"
+        rel="stylesheet"
+    >
+
+    <link
         href="../../css/style.css"
         rel="stylesheet"
     >
 
     <link
-        href="../../css/elevatorSlider.css"
+        href="../../css/elevator-slider.css"
         rel="stylesheet"
     >
 </head>
 
-<body class="d-flex flex-column min-vh-100">
+<body class="slider-body d-flex flex-column min-vh-100">
 
 <header>
     <div id="topbar"></div>
@@ -129,34 +139,50 @@ $sliderDisabled = $currentMode === 'sabbath';
 
     <div class="container slider-page">
 
-        <section class="title">
+        <section class="title slider-title">
+
             <h1>Interactive Elevator Slider</h1>
 
-            <h2>
-                Select a destination floor
-            </h2>
+            <h2>Select a destination floor</h2>
+
         </section>
 
-        <section class="slider-card">
+        <section class="slider-card elevator-shaft">
 
-            <div class="elevator-shaft">
+            <div class="floor-column">
 
-                <div class="floor-row floor-three">
-                    <span class="floor-number">3</span>
-                    <span class="floor-name">Third Floor</span>
+                <div
+                    class="floor-option"
+                    data-floor-option="3"
+                >
+                    <span>Third Floor</span>
+
+                    <strong>3</strong>
                 </div>
 
-                <div class="floor-row floor-two">
-                    <span class="floor-number">2</span>
-                    <span class="floor-name">Second Floor</span>
+                <div
+                    class="floor-option"
+                    data-floor-option="2"
+                >
+                    <span>Second Floor</span>
+
+                    <strong>2</strong>
                 </div>
 
-                <div class="floor-row floor-one">
-                    <span class="floor-number">1</span>
-                    <span class="floor-name">First Floor</span>
+                <div
+                    class="floor-option"
+                    data-floor-option="1"
+                >
+                    <span>First Floor</span>
+
+                    <strong>1</strong>
                 </div>
 
-                <div class="slider-track-container">
+            </div>
+
+            <div class="slider-column">
+
+                <div class="vertical-slider-container">
 
                     <input
                         type="range"
@@ -171,9 +197,18 @@ $sliderDisabled = $currentMode === 'sabbath';
 
                 </div>
 
+                <button
+                    type="button"
+                    id="send-floor-request"
+                    class="elevator slider-request-button"
+                    <?= $sliderDisabled ? 'disabled' : '' ?>
+                >
+                    Send Floor Request
+                </button>
+
             </div>
 
-            <div class="slider-information">
+            <div class="information-column">
 
                 <div class="floor-information-box">
 
@@ -211,14 +246,9 @@ $sliderDisabled = $currentMode === 'sabbath';
 
                 </div>
 
-                <button
-                    type="button"
-                    id="send-floor-request"
-                    class="elevator slider-request-button"
-                    <?= $sliderDisabled ? 'disabled' : '' ?>
-                >
-                    Send Floor Request
-                </button>
+            </div>
+
+            <div class="slider-feedback">
 
                 <?php if ($sliderDisabled): ?>
 
@@ -252,9 +282,11 @@ $sliderDisabled = $currentMode === 'sabbath';
 
 <footer>
     <div class="container">
+
         <copyright-text
             name="Emiliano Perez Pellicer, Besart Kalezic, Sean Toet"
         ></copyright-text>
+
     </div>
 </footer>
 
