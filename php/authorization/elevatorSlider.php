@@ -114,7 +114,7 @@ $sliderDisabled = $currentMode === 'sabbath';
     >
 
     <link
-        href="../../css/elevator-slider.css"
+        href="../../css/elevatorSlider.css"
         rel="stylesheet"
     >
 </head>

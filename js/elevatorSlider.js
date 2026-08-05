@@ -31,6 +31,27 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedFloorOutput.textContent =
             floorSlider.value;
     }
+    function wheelSlide(event)
+    {
+        //stop the page from scrolling
+        event.preventDefault();
+        if (floorSlider.disabled) {
+            return;
+        }
+        let selectedFloor = Number.parseInt(floorSlider.value, 10);
+
+        if (event.deltaY < 0) {
+            selectedFloor++;
+        } else if (event.deltaY > 0) {
+            selectedFloor--;
+        }
+
+        selectedFloor = Math.min(Number(floorSlider.max), Math.max(Number(floorSlider.min), selectedFloor));
+        floorSlider.value = selectedFloor.toString();
+        updateSelectedFloor();
+    }
+    
+
 
     async function sendFloorRequest()
     {
