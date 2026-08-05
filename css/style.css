@@ -276,3 +276,38 @@ div.maintenance-card > table.console thead {
     width: 100%;
     justify-content: space-between;
 }
+
+/*
+ * Elevator Slider Link
+ */
+a.slider-link {
+    color: var(--white);
+    background-color: var(--primary-color);
+
+    display: flex;
+
+    width: 200px;
+    height: 100px;
+
+    align-items: center;
+    justify-content: center;
+
+    border-width: 1px;
+    border-radius: 12px;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    margin-top: 12px;
+}
+
+a.slider-link:hover {
+    background-color: var(--accent-color-1);
+
+    color: var(--white);
+}
+
+a.slider-link:visited {
+    color: var(--white);
+}
