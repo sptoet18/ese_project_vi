@@ -269,10 +269,9 @@ div.maintenance-card {
 
 div.maintenance-card > table.console {
     width: 100%;
-    justify-content: space-between;
+    table-layout: fixed;
 }
 
 div.maintenance-card > table.console thead {
     width: 100%;
-    justify-content: space-between;
 }

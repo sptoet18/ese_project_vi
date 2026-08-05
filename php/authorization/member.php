@@ -46,10 +46,10 @@
             */
             $elevatorPosition = getPositionImage($positions ? $positions[0]["current_floor"] : 1);
         } else {
-            echo "<script>location.href = \"/html/authorization/login.html\"</script>";
+            header('Location: /html/authorization/login.html');
         }
     } else {
-        echo "<script>location.href = \"/html/authorization/login.html\"</script>";
+        header('Location: /html/authorization/login.html');
     }
 ?>
 
