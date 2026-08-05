@@ -47,6 +47,24 @@ const char* fsmStateName(ElevatorSate s){
     }
 }
 
+//Change the mode name 
+const char* modeName(ElevatorMode m){
+    switch (m){
+
+    case MODE_SABBATH:
+        return "sabbath"; 
+        break;
+
+    case MODE_MAINTEANCE:
+        return "maintenance"; 
+    
+    default:
+        return "elevator"; 
+        break;
+    }
+}
+
+
 //Initial Condition 
 void fsmInit(ElevatorFSM *fsm){
     fsm->state = STATE_FLOOR1; 
@@ -55,20 +73,26 @@ void fsmInit(ElevatorFSM *fsm){
     fsm->floorQueue = std::queue<int>();
     fsm->websiteQueue = std::queue<int>();
     
-
+    //Elevartor 
     fsm->doorClosed =0; //Door Starts Open
     fsm->previousFloor = 1; 
     fsm->targetFloor = 1;
-    fsm->lastDbfloor = 1;
+
+    //Website 
     fsm->lastWebsitePoll = time(NULL);  
+    fsm->modeId = MODE_ELEVATOR;
+    fsm->pendingMode = MODE_ELEVATOR; 
+    fsm->mode = modeName(MODE_ELEVATOR); 
+
+    //Timers 
     fsm->doorTimeStart = time(NULL); 
     fsm->movingTimeStart = 0; 
     fsm->collectTimerStart = 0; //window for listening (elevator door is open right now )
-    fsm->lockedTarget =0;
     fsm->preMoveTimerStart = 0;
-
-    fsm->mode = "elevator"; //Each run function overrides this straight after fsmInit()
-
+    
+    //Target 
+    fsm->lockedTarget =0;
+    
     //Sentinels - guarantee the first fsmPublishPosition() always writes a row
     fsm->pubFloor = -1;
     fsm->pubLast = -1;
@@ -162,18 +186,42 @@ static void fsmPollWebsite(ElevatorFSM *fsm){
     }
     fsm->lastWebsitePoll = time(NULL); 
 
-    int dbFloor = db_getPendingWebsiteRequest();
-    if(dbFloor < 1 || dbFloor > 3){
-        return; //Database unreachable (-1) or holding a nonsense floor - ignore it
+    WebCommand cmds[8]; 
+    int n = db_getWebsiteCommands(cmds, 8); 
+    if(n <= 0){
+        return; //Notable to connect 
     }
-    if(dbFloor == fsm->lastDbfloor){
-        return; //No change since we last looked or is the same 
-    }
-    fsm->lastDbfloor = dbFloor; 
 
-    if(!queueContainsFloor(fsm->websiteQueue, dbFloor)){
-        fsm->websiteQueue.push(dbFloor);
-        printf("[FSM] Website request queued (Priority 3): FLOOR %d\n", dbFloor); 
+    for(int i = 0; i < n; i++){
+        switch(cmds[i].kind){
+            case WEB_CMD_FLOOR_CAR:
+                if(!queueContainsFloor(fsm->carQueue, cmds[i].floor)){
+                    fsm->carQueue.push(cmds[i].floor); 
+                    printf("[FSM] Website Car Request queued (Priority 1): FLOOR %d\n", cmds[i].floor);
+                }
+            break; 
+            
+            case WEB_CMD_FLOOR_REQ:
+                if(!queueContainsFloor(fsm->floorQueue, cmds[i].floor)){
+                    fsm->floorQueue.push(cmds[i].floor);
+                    printf("[FSM] Website Floor Request queued (Priority 2): FLOOR %d\n", cmds[i].floor);
+                }
+            break; 
+
+            case WEB_CMD_MODE:
+                if(cmds[i].mode == WEB_MODE_SABBATH){
+                    fsm->pendingMode = MODE_SABBATH; 
+                }else if(cmds[i].mode == WEB_MODE_MAINTEANCE){
+                    fsm->pendingMode = MODE_MAINTEANCE; 
+                }else{
+                    fsm->pendingMode = MODE_ELEVATOR; 
+                }
+                printf("[FSM] Website requested MODE: %s\n", modeName(fsm->pendingMode));
+            break; 
+
+            default:
+                break; 
+        }
     }
 }
 
@@ -259,8 +307,6 @@ static void fsmArrive(ElevatorFSM *fsm, int floor){
     fsm->preMoveTimerStart = 0; 
     
     fsmConsumeRequestsForFloor(fsm, floor); 
-    fsm->lastDbfloor = floor; //Next website poll doesn't re que our own update 
-
     printf("[FSM] Arrived at Floor %d - door CLOSED(%ds Timer started)\n", floor, DOOR_OPEN_TIME_SEC);
 
     audioPlayFloor(floor); //Ding + floor announcement - returns immediately (own audio thread)
@@ -420,6 +466,44 @@ static void fsmStepInner(ElevatorFSM *fsm){
         }
     }
 }
+//Swicthes the running supervisor between modes without breaking the CAN or FSM Only when not Movinf 
+static void fsmApplyMode(ElevatorFSM *fsm, ElevatorMode target){
+    if(fsm->modeId == target){
+        return; 
+    }
+
+    printf("\n[MODE] %s -> %s\n", modeName(fsm->modeId), modeName(target));
+
+    //Swicth the states 
+    switch (target){
+    case MODE_SABBATH:
+        // No request at all 
+        fsm->carQueue = std::queue<int>();
+        fsm->floorQueue = std::queue<int>();
+        fsm->websiteQueue = std::queue<int>(); 
+        fsm->doorClosed = DOOR_OPEN;
+        fsm->doorTimeStart = time(NULL); 
+        break;
+
+    case MODE_MAINTEANCE:
+        //Digital e-stop purge every Hardware request. Hold in Place DOOR OPEN 
+        fsm->carQueue = std::queue<int>();
+        fsm->floorQueue = std::queue<int>();
+        fsm->doorClosed = DOOR_OPEN;
+        fsm->doorTimeStart = time(NULL); 
+        break;
+    
+    default: //MODE ELEVATOR 
+        break;
+    }
+
+    fsm->lockedTarget = 0; 
+    fsm->preMoveTimerStart = 0; 
+    fsm->collectTimerStart = 0; 
+    fsm->modeId = target;
+    fsm->pendingMode = target;
+    fsm->mode = modeName(target);  
+}
 
 //One FSM step, then mirror the resulting state to the website.
 //Every transition (arrival, depart, door open/close) passes through here once per
@@ -577,118 +661,6 @@ static void sabbathStep(ElevatorFSM *fsm){
     fsmPublishPosition(fsm);
 }
 
-//The FSM RUN 
-void fsmRun(void){
-    ElevatorFSM fsm; 
-
-    int id; 
-    int data; 
-    int len; 
-
-    // Force stdout to flush immediately on every print, regardless of whether
-    // this is running on a raw terminal, through a pipe/log/service (which
-    // would otherwise fully-buffer output and delay when prints appear on
-    // screen relative to when they actually happened).
-    setvbuf(stdout, NULL, _IONBF, 0);
-
-    //Clear the screen 
-    system("@cls||clear"); 
-    printf("\n==== Elevator FSM Mode =====\n");
-    printf("Starting on Floor 1 with the Door OPEN, press CTRL-C to Stop \n\n"); 
-
-    if(pcanFsmOpen() != 0){
-        printf("[FSM] Could not Open CAN Channel - aborting FSM mode \n");
-        return;
-    }
-
-    audioInit(); //Floor announcements - failure is non fatal, the FSM just runs silently
-
-    fsmInit(&fsm); //Keep DB in sync with the FSM initial State
-    fsm.mode = "elevator";
-    fsmPublishPosition(&fsm); //Record the mode the moment it is selected
-    pcanFsmTx(ID_SC_TO_EC, GO_TO_FLOOR1); //Make sure the EC agree we are starting at floor 1
-
-    g_fsmStop = 0;
-    signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop the FSM cleanly
-
-    while(!g_fsmStop){
-        int rc = pcanFsmRxPoll(&id, &data, &len);
-        if(rc == 1){
-            fsmLogRxMessage(&fsm, id, data, len); //Log first - "sensed" means sensed
-            fsmProcessMessage(&fsm, id, data);
-        }
-
-        fsmStep(&fsm); 
-
-        usleep(200000); //Responsive enough for 10s door timer 
-    }
-
-    printf("\n[FSM] Stopped by user. Current State: %s\n", fsmStateName(fsm.state));
-    audioUninit();
-    pcanFsmClose();
-    signal(SIGINT, SIG_DFL); //Restore default Ctrl-C behaviour for the rest of the program
-}
-
-//Sabbath Mode Run 
-void sabbathRun(void){
-    ElevatorFSM fsm; 
-
-    int id; 
-    int data; 
-    int len; 
-
-    // Force stdout to flush immediately on every print, regardless of whether
-    // this is running on a raw terminal, through a pipe/log/service (which
-    // would otherwise fully-buffer output and delay when prints appear on
-    // screen relative to when they actually happened).
-    setvbuf(stdout, NULL, _IONBF, 0);
-
-    //Clear the screen 
-    system("@cls||clear"); 
-    printf("\n==== Elevator Sabbath Mode =====\n");
-    printf("Starting on Floor 1 with the Door OPEN, press CTRL-C to Stop \n\n"); 
-
-
-    if(pcanFsmOpen() != 0){
-        printf("[FSM] Could not Open CAN Channel - aborting FSM mode \n");
-        return; 
-    }
-
-    audioInit(); //Floor announcements - failure is non fatal, Sabbath mode just runs silently
-
-    fsmInit(&fsm); //Keep DB in sync with the FSM initial State
-    fsm.mode = "sabbath";
-
-    //Due to Sabbath we need to change some states
-    fsm.doorClosed = DOOR_OPEN;
-    fsm.doorTimeStart = time(NULL);
-
-    fsmPublishPosition(&fsm); //Record the mode the moment it is selected
-    pcanFsmTx(ID_SC_TO_EC, GO_TO_FLOOR1); //Make sure the EC agree we are starting at floor 1
-
-    g_fsmStop = 0;
-    signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop the FSM cleanly
-
-    while(!g_fsmStop){
-        int rc = pcanFsmRxPoll(&id, &data, &len);
-        if(rc == 1){
-            //Sabbath ignores every request, but the frame was still sensed - log it
-            fsmLogRxMessage(&fsm, id, data, len);
-            sabbathProcessMessages(&fsm, id, data);
-        }
-        
-        //Start on Sabath Mode. It should not handle any inputs
-        sabbathStep(&fsm); 
-        usleep(200000); //Responsive enough for 10s door timer 
-    }
-
-    printf("\n[FSM] Stopped by user. Current State: %s\n", fsmStateName(fsm.state));
-    audioUninit();
-    pcanFsmClose();
-    signal(SIGINT, SIG_DFL); //Restore default Ctrl-C behaviour for the rest of the program
-
-}
-
 //Maintenance Lockout Mode - message ingestion (digital emergency stop)
 //Every request coming from HARDWARE is DROPPED: the physical floor-call buttons
 //(0x201-0x203) and the in-car car buttons (0x200, floor != 0) are ignored so no
@@ -733,26 +705,22 @@ static void maintenanceProcessMessage(ElevatorFSM *fsm, int id, int data){
     }
 }
 
-//Maintenance Lockout Mode Run - digital emergency stop.
-//Reuses the normal FSM brain (fsmStep / fsmArrive / fsmPollWebsite); the only
-//difference from fsmRun() is maintenanceProcessMessage(), which drops every
-//hardware request before it can reach a queue. The car holds in place with the
-//door OPEN and does not move until a website request arrives.
-void maintenanceRun(void){
-    ElevatorFSM fsm;
+//Single Supervisory COntroller run LOOp 
+void supervisorRun(ElevatorMode startMode){
+    ElevatorFSM fsm; 
 
     int id;
     int data;
-    int len;
+    int len; 
 
     // Force stdout to flush immediately on every print (see fsmRun for rationale).
     setvbuf(stdout, NULL, _IONBF, 0);
 
     //Clear the screen
     system("@cls||clear");
-    printf("\n==== Elevator Maintenance Lockout Mode =====\n");
-    printf("Digital EMERGENCY STOP: hardware buttons are LOCKED OUT.\n");
-    printf("The elevator only moves on WEBSITE requests. Press CTRL-C to Stop\n\n");
+    printf("\n==== Elevator Supervisory Controller =====\n");
+    printf("Starting in %s mode. Modes can also be changed from website\n", modeName(startMode));
+    printf("Press CTRL-C to Stop\n\n");
 
     if(pcanFsmOpen() != 0){
         printf("[FSM] Could not Open CAN Channel - aborting Maintenance Lockout mode \n");
@@ -762,34 +730,245 @@ void maintenanceRun(void){
     audioInit(); //Floor announcements - failure is non fatal, mode just runs silently
 
     fsmInit(&fsm);
-    fsm.mode = "maintenance";
+    fsm.modeId = MODE_ELEVATOR; ///FSMapply mode only changes in a request 
+    fsmApplyMode(&fsm, startMode); 
 
-    //Digital e-stop: hold in place with the door OPEN and do NOT command a move on
-    //entry. With every hardware queue empty, the car stays put until a website
-    //request lands in the websiteQueue.
-    fsm.doorClosed = DOOR_OPEN;
-    fsm.doorTimeStart = time(NULL);
+    fsmPublishPosition(&fsm); //Record the mode the moment is selected 
 
-    fsmPublishPosition(&fsm); //Record the mode the moment it is selected
 
-    g_fsmStop = 0;
-    signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop cleanly
+    //Maintennace is an e-stop it must not command a mode on entry 
+    if(startMode != MODE_MAINTEANCE){
+        pcanFsmTx(ID_SC_TO_EC, GO_TO_FLOOR1); 
+    }
+
+    g_fsmStop = 0; 
+    signal(SIGINT, fsmSigintHandler);
 
     while(!g_fsmStop){
         int rc = pcanFsmRxPoll(&id, &data, &len);
         if(rc == 1){
-            //Lockout drops every hardware button, but the frame was still sensed - log it
+            //LOG FIRST 
             fsmLogRxMessage(&fsm, id, data, len);
-            maintenanceProcessMessage(&fsm, id, data);
+            
+            //CHange the Way we process Messages according to the mode 
+            switch (fsm.modeId){
+            case MODE_SABBATH:
+                sabbathProcessMessages(&fsm, id, data);
+                break;
+            
+            case MODE_MAINTEANCE:
+                maintenanceProcessMessage(&fsm, id, data);
+                break; 
+            
+            default:
+                fsmProcessMessage(&fsm, id, data);
+                break;
+            }
         }
 
-        fsmStep(&fsm);
+        //Never Swicth mid Travel it could clear the target and leave the elevator between floors  
+        if(fsm.pendingMode != fsm.modeId && fsm.state != STATE_MOVING){
+            //SWICTH THE MODE 
+            fsmApplyMode(&fsm, fsm.pendingMode); 
+        }
 
-        usleep(200000); //Responsive enough for the door timer
+        if(fsm.modeId == MODE_SABBATH){
+            sabbathStep(&fsm); 
+        }else{
+            fsmStep(&fsm); 
+        }
+
+        printf("\n[FSM] Stopped by user. Mode: %s, State %s\n", fsm.mode, fsmStateName(fsm.state));
+        audioUninit();
+        pcanFsmClose();
+        signal(SIGINT, SIG_DFL); 
     }
-
-    printf("\n[FSM] Maintenance Lockout stopped by user. Current State: %s\n", fsmStateName(fsm.state));
-    audioUninit();
-    pcanFsmClose();
-    signal(SIGINT, SIG_DFL); //Restore default Ctrl-C behaviour for the rest of the program
 }
+
+void fsmRun(void){
+    supervisorRun(MODE_ELEVATOR);
+}
+
+void sabbathRun(void){
+    supervisorRun(MODE_SABBATH); 
+}
+
+void maintenanceRun(void){
+    supervisorRun(MODE_MAINTEANCE); 
+}
+
+// //The FSM RUN 
+// void fsmRun(void){
+//     ElevatorFSM fsm; 
+
+//     int id; 
+//     int data; 
+//     int len; 
+
+//     // Force stdout to flush immediately on every print, regardless of whether
+//     // this is running on a raw terminal, through a pipe/log/service (which
+//     // would otherwise fully-buffer output and delay when prints appear on
+//     // screen relative to when they actually happened).
+//     setvbuf(stdout, NULL, _IONBF, 0);
+
+//     //Clear the screen 
+//     system("@cls||clear"); 
+//     printf("\n==== Elevator FSM Mode =====\n");
+//     printf("Starting on Floor 1 with the Door OPEN, press CTRL-C to Stop \n\n"); 
+
+//     if(pcanFsmOpen() != 0){
+//         printf("[FSM] Could not Open CAN Channel - aborting FSM mode \n");
+//         return;
+//     }
+
+//     audioInit(); //Floor announcements - failure is non fatal, the FSM just runs silently
+
+//     fsmInit(&fsm); //Keep DB in sync with the FSM initial State
+//     fsm.mode = "elevator";
+//     fsmPublishPosition(&fsm); //Record the mode the moment it is selected
+//     pcanFsmTx(ID_SC_TO_EC, GO_TO_FLOOR1); //Make sure the EC agree we are starting at floor 1
+
+//     g_fsmStop = 0;
+//     signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop the FSM cleanly
+
+//     while(!g_fsmStop){
+//         int rc = pcanFsmRxPoll(&id, &data, &len);
+//         if(rc == 1){
+//             fsmLogRxMessage(&fsm, id, data, len); //Log first - "sensed" means sensed
+//             fsmProcessMessage(&fsm, id, data);
+//         }
+
+//         fsmStep(&fsm); 
+
+//         usleep(200000); //Responsive enough for 10s door timer 
+//     }
+
+//     printf("\n[FSM] Stopped by user. Current State: %s\n", fsmStateName(fsm.state));
+//     audioUninit();
+//     pcanFsmClose();
+//     signal(SIGINT, SIG_DFL); //Restore default Ctrl-C behaviour for the rest of the program
+// }
+
+// //Sabbath Mode Run 
+// void sabbathRun(void){
+//     ElevatorFSM fsm; 
+
+//     int id; 
+//     int data; 
+//     int len; 
+
+//     // Force stdout to flush immediately on every print, regardless of whether
+//     // this is running on a raw terminal, through a pipe/log/service (which
+//     // would otherwise fully-buffer output and delay when prints appear on
+//     // screen relative to when they actually happened).
+//     setvbuf(stdout, NULL, _IONBF, 0);
+
+//     //Clear the screen 
+//     system("@cls||clear"); 
+//     printf("\n==== Elevator Sabbath Mode =====\n");
+//     printf("Starting on Floor 1 with the Door OPEN, press CTRL-C to Stop \n\n"); 
+
+
+//     if(pcanFsmOpen() != 0){
+//         printf("[FSM] Could not Open CAN Channel - aborting FSM mode \n");
+//         return; 
+//     }
+
+//     audioInit(); //Floor announcements - failure is non fatal, Sabbath mode just runs silently
+
+//     fsmInit(&fsm); //Keep DB in sync with the FSM initial State
+//     fsm.mode = "sabbath";
+
+//     //Due to Sabbath we need to change some states
+//     fsm.doorClosed = DOOR_OPEN;
+//     fsm.doorTimeStart = time(NULL);
+
+//     fsmPublishPosition(&fsm); //Record the mode the moment it is selected
+//     pcanFsmTx(ID_SC_TO_EC, GO_TO_FLOOR1); //Make sure the EC agree we are starting at floor 1
+
+//     g_fsmStop = 0;
+//     signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop the FSM cleanly
+
+//     while(!g_fsmStop){
+//         int rc = pcanFsmRxPoll(&id, &data, &len);
+//         if(rc == 1){
+//             //Sabbath ignores every request, but the frame was still sensed - log it
+//             fsmLogRxMessage(&fsm, id, data, len);
+//             sabbathProcessMessages(&fsm, id, data);
+//         }
+        
+//         //Start on Sabath Mode. It should not handle any inputs
+//         sabbathStep(&fsm); 
+//         usleep(200000); //Responsive enough for 10s door timer 
+//     }
+
+//     printf("\n[FSM] Stopped by user. Current State: %s\n", fsmStateName(fsm.state));
+//     audioUninit();
+//     pcanFsmClose();
+//     signal(SIGINT, SIG_DFL); //Restore default Ctrl-C behaviour for the rest of the program
+
+// }
+
+
+
+// //Maintenance Lockout Mode Run - digital emergency stop.
+// //Reuses the normal FSM brain (fsmStep / fsmArrive / fsmPollWebsite); the only
+// //difference from fsmRun() is maintenanceProcessMessage(), which drops every
+// //hardware request before it can reach a queue. The car holds in place with the
+// //door OPEN and does not move until a website request arrives.
+// void maintenanceRun(void){
+//     ElevatorFSM fsm;
+
+//     int id;
+//     int data;
+//     int len;
+
+//     // Force stdout to flush immediately on every print (see fsmRun for rationale).
+//     setvbuf(stdout, NULL, _IONBF, 0);
+
+//     //Clear the screen
+//     system("@cls||clear");
+//     printf("\n==== Elevator Maintenance Lockout Mode =====\n");
+//     printf("Digital EMERGENCY STOP: hardware buttons are LOCKED OUT.\n");
+//     printf("The elevator only moves on WEBSITE requests. Press CTRL-C to Stop\n\n");
+
+//     if(pcanFsmOpen() != 0){
+//         printf("[FSM] Could not Open CAN Channel - aborting Maintenance Lockout mode \n");
+//         return;
+//     }
+
+//     audioInit(); //Floor announcements - failure is non fatal, mode just runs silently
+
+//     fsmInit(&fsm);
+//     fsm.mode = "maintenance";
+
+//     //Digital e-stop: hold in place with the door OPEN and do NOT command a move on
+//     //entry. With every hardware queue empty, the car stays put until a website
+//     //request lands in the websiteQueue.
+//     fsm.doorClosed = DOOR_OPEN;
+//     fsm.doorTimeStart = time(NULL);
+
+//     fsmPublishPosition(&fsm); //Record the mode the moment it is selected
+
+//     g_fsmStop = 0;
+//     signal(SIGINT, fsmSigintHandler); // allow ctrl-c to stop cleanly
+
+//     while(!g_fsmStop){
+//         int rc = pcanFsmRxPoll(&id, &data, &len);
+//         if(rc == 1){
+//             //Lockout drops every hardware button, but the frame was still sensed - log it
+//             fsmLogRxMessage(&fsm, id, data, len);
+//             maintenanceProcessMessage(&fsm, id, data);
+//         }
+
+//         fsmStep(&fsm);
+
+//         usleep(200000); //Responsive enough for the door timer
+//     }
+
+//     printf("\n[FSM] Maintenance Lockout stopped by user. Current State: %s\n", fsmStateName(fsm.state));
+//     audioUninit();
+//     pcanFsmClose();
+//     signal(SIGINT, SIG_DFL); //Restore default Ctrl-C behaviour for the rest of the program
+// }
+

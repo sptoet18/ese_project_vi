@@ -203,15 +203,22 @@ $insertStatement = $db->prepare(
     '
 );
 
-if ($sentByCanId !== 768) {
-    $data = 1;
-} else {
-    $data = 0;
-}
+/*
+ * Website -> firmware wire format inside can_transaction.
+ *
+ * The website mirrors the REAL CAN encoding so the supervisor decodes
+ * both identically:
+ *   sent_by 768 (Car Controller)     -> data = 1|2|3, the requested floor
+ *                                       (same as the CC's 0x200 payload)
+ *   sent_by 769|770|771 (Floor Ctrl) -> data = 1, "button pressed here"
+ *                                       (same as the 0x201-0x203 payload);
+ *                                       the floor is implied by sent_by.
+ */
+$data = ($controllerType === 'car_controller') ? $requestedFloor : 1;
 
 $insertStatement->execute([
     'sent_by' => $sentByCanId,
-    'data' => $data ? $data : $requestedFloor,
+    'data' => $data,
     'message' => $message,
     'current_floor' => $currentFloor,
     'last_floor' => $lastFloor

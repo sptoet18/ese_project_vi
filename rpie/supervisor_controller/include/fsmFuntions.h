@@ -38,6 +38,12 @@ typedef enum {
 #define REQUEST_COLLECTION_SEC 5
 #define PRE_MOVE_DELAY_SEC 5
 
+typedef enum{
+    MODE_ELEVATOR = 0, 
+    MODE_SABBATH = 1, 
+    MODE_MAINTEANCE = 2
+}ElevatorMode;
+
 typedef struct {
     ElevatorSate state; 
 
@@ -50,7 +56,9 @@ typedef struct {
     int previousFloor; //Las floor the elevator was AT before it started moving (1,2,3)
     int targetFloor; //Destinantion floor while state == STATE_MOVING (1,2,3)
 
-    int lastDbfloor;     ///last currentfloor read/written value to rghe DB to detect new website requests 
+    ElevatorMode modeId;  //Machine mode 
+    ElevatorMode pendingMode;  //Webiste requested mode 
+
     time_t lastWebsitePoll; //Time Stamp for last poll 
 
     time_t doorTimeStart; //Timestamp when the door was last open 
@@ -85,6 +93,10 @@ void sabbathRun(void);
 
 //Functions Declarations - Maintenance Lockout Mode (digital emergency stop)
 void maintenanceRun(void);
+
+//Functiont to tun all at once (Same process)
+void supervisorRun(ElevatorMode startMode);
+const char* modeName(ElevatorMode m);
 
 
 #endif

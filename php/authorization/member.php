@@ -45,6 +45,20 @@
             * If the table is empty, return the default image for floor 1
             */
             $elevatorPosition = getPositionImage($positions ? $positions[0]["current_floor"] : 1);
+
+            /*
+            * The mode the CONTROLLER is in, not the one somebody clicked
+            * Only the firmware writes elevator_position, so this is honest
+            */
+            $currentMode = $positions ? $positions[0]["mode"] : "elevator";
+
+            /*
+            * set-mode.php leaves a one shot message in the session and sends
+            * the browser back here. Read it once and clear it, so a refresh
+            * does not keep showing a stale confirmation
+            */
+            $modeStatus = isset($_SESSION['modeStatus']) ? $_SESSION['modeStatus'] : "";
+            unset($_SESSION['modeStatus']);
         } else {
             echo "<script>location.href = \"/html/authorization/login.html\"</script>";
         }
@@ -91,7 +105,7 @@
                                 class="elevator floor-request"
                                 data-controller="floor_controller"
                                 data-floor="3"
-                                <?php if ($positions[0]["mode"] === "sabbath") echo "disabled"; ?>
+                                <?php if ($currentMode === "sabbath") echo "disabled"; ?>
                             >
                                 Request Floor 3
                             </button>
@@ -100,7 +114,7 @@
                                 class="elevator floor-request"
                                 data-controller="floor_controller"
                                 data-floor="2"
-                                <?php if ($positions[0]["mode"] === "sabbath") echo "disabled"; ?>
+                                <?php if ($currentMode === "sabbath") echo "disabled"; ?>
                             >
                                 Request Floor 2
                             </button>
@@ -109,7 +123,7 @@
                                 class="elevator floor-request"
                                 data-controller="floor_controller"
                                 data-floor="1"
-                                <?php if ($positions[0]["mode"] === "sabbath") echo "disabled"; ?>
+                                <?php if ($currentMode === "sabbath") echo "disabled"; ?>
                             >
                                 Request Floor 1
                             </button>
@@ -123,7 +137,7 @@
                                 class="elevator floor-request"
                                 data-controller="car_controller"
                                 data-floor="3"
-                                <?php if ($positions[0]["mode"] === "sabbath") echo "disabled"; ?>
+                                <?php if ($currentMode === "sabbath") echo "disabled"; ?>
                             >
                                 Request Floor 3
                             </button>
@@ -133,7 +147,7 @@
                                 class="elevator floor-request"
                                 data-controller="car_controller"
                                 data-floor="2"
-                                <?php if ($positions[0]["mode"] === "sabbath") echo "disabled"; ?>
+                                <?php if ($currentMode === "sabbath") echo "disabled"; ?>
                             >
                                 Request Floor 2
                             </button>
@@ -143,7 +157,7 @@
                                 class="elevator floor-request"
                                 data-controller="car_controller"
                                 data-floor="1"
-                                <?php if ($positions[0]["mode"] === "sabbath") echo "disabled"; ?>
+                                <?php if ($currentMode === "sabbath") echo "disabled"; ?>
                             >
                                 Request Floor 1
                             </button>
@@ -151,7 +165,7 @@
                         
                         <div class="col">
                             <h2>Elevator's Current Floor</h2>
-                            <img src="<?php echo $elevatorPosition; ?>" height="340px" style="image-rendering: pixelated"/>
+                            <img id="floor-indicator" src="<?php echo $elevatorPosition; ?>" height="340px" style="image-rendering: pixelated"/>
                         </div>
                     </div>
                        <p
@@ -159,23 +173,42 @@
                         role="status"
                         aria-live="polite"
                     ></p>
+
+                    <p
+                        id="state-chip"
+                        role="status"
+                        aria-live="polite"
+                    >At floor <?= htmlspecialchars($positions ? $positions[0]["current_floor"] : 1) ?></p>
                 </article>
 
                 <article class="elevator-ui">
-                    <div class="elevator-grid">
-                        <div>
-                            <h2>Elevator Mode</h2>
-                            <button id="elevatorButton" class="elevator">Start Elevator Mode</button>
+                    <!--
+                        Plain form posts. set-mode.php writes the mode command
+                        to can_transaction and sends the browser straight back
+                        here, so no scripting sits between the button and the
+                        database
+                    -->
+                    <form method="post" action="/php/modes/set-mode.php">
+                        <div class="elevator-grid">
+                            <div>
+                                <h2>Elevator Mode</h2>
+                                <button type="submit" name="mode" value="elevator" class="elevator">Start Elevator Mode</button>
+                            </div>
+                            <div>
+                                <h2>Sabbath Mode</h2>
+                                <button type="submit" name="mode" value="sabbath" class="elevator">Start Sabbath Mode</button>
+                            </div>
+                            <div>
+                                <h2>Maintenance Mode</h2>
+                                <button type="submit" name="mode" value="maintenance" class="elevator">Start Maintenance Mode</button>
+                            </div>
+                            <div>
+                                <h2>Active Mode</h2>
+                                <p id="mode-chip" data-mode="<?= htmlspecialchars($currentMode) ?>"><?= htmlspecialchars($currentMode) ?></p>
+                                <p id="mode-status" role="status" aria-live="polite"><?= htmlspecialchars($modeStatus) ?></p>
+                            </div>
                         </div>
-                        <div>
-                            <h2>Sabbath Mode</h2>
-                            <button id="sabbathButton" class="elevator">Start Sabbath Mode</button>
-                        </div>
-                        <div>
-                            <h2>Maintenance Mode</h2>
-                            <button id="maintenanceButton" class="elevator">Start Maintenance Mode</button>
-                        </div>
-                    </div>
+                    </form>
                 </article>
 
                 <?php if (true): ?>
@@ -272,6 +305,6 @@
     <script src="/js/components/top-bar.js"></script>
     <script src="/js/components/copyright.js" defer></script>
     <script src="/js/elevatorControl.js" defer></script>
-    <script src="/js/change-mode.js"></script>
+    <script src="/js/components/event-source.js" defer></script>
 </body>
 </html>
