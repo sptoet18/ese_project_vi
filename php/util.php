@@ -35,7 +35,7 @@
         $result = $statement->execute($params); 
     }
 
-    //Mannually insert into user tabele 
+    //Manually insert into user table
     function insert_usr($path, $user, $password, $username, $password_db, $firstname, $lastname, $role) {
         $db = dbConnect($path, $user, $password);
         $query = 'INSERT INTO user(username, hashed_password, firstname, lastname, role) VALUES
@@ -53,11 +53,7 @@
         if($result == false){
             $error = $db->errorInfo();
             echo "ERROR: " . $error[2];
-        } else {
-            //var_dump($result);
         }
-        
-        
     }
 
 
