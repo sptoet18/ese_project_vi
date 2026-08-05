@@ -270,6 +270,7 @@ div.maintenance-card {
 div.maintenance-card > table.console {
     width: 100%;
     table-layout: fixed;
+    text-align: center;
 }
 
 div.maintenance-card > table.console thead {

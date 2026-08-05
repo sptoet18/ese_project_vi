@@ -85,31 +85,34 @@ if (isset($_SESSION['username'])) {
         <section class="body">
             <article>
                 <div style="margin-top: 36px;"></div>
+                    <h2>Can Transactions</h2>
+                    <div class="maintenance-card">
+                        <table class="console">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Sender</th>
+                                <th>Time</th>
+                                <th>Data</th>
+                                <th>Floor</th>
+                                <th>Last Floor</th>
+                                <th>Toggle Editing</th>
+                                <th>Save Edit</th>
+                            </tr>
+                            </thead>
 
-                <div class="maintenance-grid">
-                    <div>
-                        <h2>Can Transactions</h2>
-                        <div class="maintenance-card">
-                            <table class="console">
-                                <thead>
-                                <tr>
-                                    <th>Sender</th>
-                                    <th>Time</th>
-                                    <th>Data</th>
-                                    <th>Floor</th>
-                                    <th>Last Floor</th>
-                                </tr>
-                                </thead>
-
-                                <tbody>
+                            <tbody>
                                 <?php if (count($transactions)): ?>
                                     <?php foreach ($transactions as $row): ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($row['sent_by']) ?></td>
-                                            <td><?= htmlspecialchars($row['transceived_at']) ?></td>
-                                            <td><?= htmlspecialchars($row['data']) ?></td>
-                                            <td><?= htmlspecialchars($row['current_floor']) ?></td>
-                                            <td><?= htmlspecialchars($row['last_floor']) ?></td>
+                                        <tr id="<?= htmlspecialchars($row['id']) ?>">
+                                            <td><?= htmlspecialchars($row['id']) ?></td>
+                                            <td class="editable"><?= htmlspecialchars($row['sent_by']) ?></td>
+                                            <td class="editable"><?= htmlspecialchars($row['transceived_at']) ?></td>
+                                            <td class="editable"><?= htmlspecialchars($row['data']) ?></td>
+                                            <td class="editable"><?= htmlspecialchars($row['current_floor']) ?></td>
+                                            <td class="editable"><?= htmlspecialchars($row['last_floor']) ?></td>
+                                            <td><input id="editing" class="editing-toggle" type="checkbox"></td>
+                                            <td><button id="save" class="save-button" style="display: none">Save</button></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
@@ -117,45 +120,8 @@ if (isset($_SESSION['username'])) {
                                         <td colspan="5">No transactions found.</td>
                                     </tr>
                                 <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div>
-                        <h2>Elevator Position</h2>
-                        <div class="maintenance-card">
-                            <table class="console">
-                                <thead>
-                                <tr>
-                                    <th>Current Floor</th>
-                                    <th>Time</th>
-                                    <th>Last Floor</th>
-                                    <th>Moving</th>
-                                    <th>Door Closed</th>
-                                    <th>Mode</th>
-                                </tr>
-                                </thead>
-
-                                <tbody>
-                                <?php if (count($positions) > 0): ?>
-                                    <?php foreach ($positions as $row): ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($row['current_floor']) ?></td>
-                                            <td><?= htmlspecialchars($row['recorded_at']) ?></td>
-                                            <td><?= htmlspecialchars($row['last_floor']) ?></td>
-                                            <td><?= htmlspecialchars($row['is_moving']) ?></td>
-                                            <td><?= htmlspecialchars($row['is_closed']) ?></td>
-                                            <td><?= htmlspecialchars($row['mode']) ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="6">No transactions found.</td>
-                                    </tr>
-                                <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </article>
@@ -174,5 +140,6 @@ if (isset($_SESSION['username'])) {
 <script src="/js/components/copyright.js" defer></script>
 <script src="/js/elevatorControl.js" defer></script>
 <script src="/js/change-mode.js"></script>
+<script src="/js/databaseControls.js"></script>
 </body>
 </html>
