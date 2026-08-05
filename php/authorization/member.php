@@ -28,6 +28,7 @@
                 select *
                 from can_transaction
                 order by id desc
+                limit 25
             ');
             $transactionQuery->execute([]);
             $transactions = $transactionQuery->fetchAll(PDO::FETCH_ASSOC);
@@ -36,6 +37,7 @@
                 select *
                 from elevator_position
                 order by id desc
+                limit 25
             ');
             $positionQuery->execute([]);
             $positions = $positionQuery->fetchAll(PDO::FETCH_ASSOC);
@@ -228,8 +230,8 @@
                                                 <th>Current Floor</th>
                                                 <th>Time</th>
                                                 <th>Last Floor</th>
-                                                <th>Moving</th>
-                                                <th>Door Closed</th>
+                                                <th>Is Moving</th>
+                                                <th>Is Closed</th>
                                                 <th>Mode</th>
                                             </tr>
                                         </thead>
