@@ -70,6 +70,29 @@ class CanNode
         return $row ? self::fromRow($row) : null;
     }
 
+    public static function getByCanId(int $canId) : ?self {
+        $db = connect();
+
+        try {
+            $query = '
+                SELECT *
+                FROM can_node
+                WHERE can_id = :can_id
+                    AND archived = false
+                LIMIT 1
+            ';
+            $statement = $db->prepare($query);
+            $statement->execute([
+                'can_id' => $canId
+            ]);
+            $row = $statement->fetch();
+        } catch (\PDOException $e) {
+            die ("Get failed: " . $e->getMessage());
+        }
+
+        return $row ? self::fromRow($row) : null;
+    }
+
     public function getId() : int {
         return $this->id;
     }

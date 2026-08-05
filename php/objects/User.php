@@ -7,7 +7,7 @@ namespace objects;
 
 require_once '../util.php';
 
-// an enum to keep track of valid roles
+// An enum to keep track of valid roles
 enum Role: string {
     case admin = 'admin';
     case projectManager = 'project_member';
