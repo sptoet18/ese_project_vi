@@ -12,10 +12,29 @@
     $db = dbConnect('mysql:host=127.0.0.1; dbname=elevator', 'Emiliano', 'ESE');
 
     // 3. Trak the last ID sent to aoid repeating historical data
-    $lastId = 0;
-
     if (isset($_SERVER["HTTP_LAST_EVENT_ID"])) {
+        // A reconnect. Pick up exactly where the dropped stream left off
         $lastId = intval($_SERVER["HTTP_LAST_EVENT_ID"]);
+    } else {
+        /*
+        * A FRESH connection carries no Last-Event-ID, so starting at 0 used to
+        * replay the whole elevator_position table - hundreds of rows in one
+        * burst. The door diagram animated through every state the elevator has
+        * ever been in before settling, and the oldest rows predate the mode
+        * column being filled in, so the mode chip blanked on the way past
+        *
+        * Seed one BELOW the newest id instead. "id > max - 1" matches the newest
+        * row and nothing else whatever the ids are, so the client still gets a
+        * state to sync to immediately rather than waiting for the next change
+        */
+        $newestQuery = $db->prepare('
+            select coalesce(max(id), 0) - 1 as start_id
+            from elevator_position
+        ');
+        $newestQuery->execute([]);
+        $newest = $newestQuery->fetch();
+
+        $lastId = intval($newest['start_id']);
     }
 
     // 4. Start the server stream loop

@@ -177,7 +177,10 @@ static int fsmPeekPriotity(ElevatorFSM *fsm, int currentFloor){
 
 }
 
-//Polls the DB for a website requedted floor at most once every Macro preivously define 
+//Polls the DB for a website requedted floor at most once every Macro preivously define
+//NOTE: this is only reached from fsmStepInner(), and supervisorRun() calls sabbathStep()
+//instead of fsmStep() while in Sabbath - so Sabbath never polls the website at all and
+//needs no per-command mode guard below.
 static void fsmPollWebsite(ElevatorFSM *fsm){
     double sinceLastPoll = difftime(time(NULL), fsm->lastWebsitePoll); 
 
@@ -217,10 +220,42 @@ static void fsmPollWebsite(ElevatorFSM *fsm){
                     fsm->pendingMode = MODE_ELEVATOR; 
                 }
                 printf("[FSM] Website requested MODE: %s\n", modeName(fsm->pendingMode));
-            break; 
+            break;
+
+            case WEB_CMD_DOOR:
+                //The supervisor does not COMMAND the door on the bus (there is no
+                //ID_SC_TO_CC and the EC protocol has no door opcode) - it owns the
+                //door state, exactly as it does for the 0x08/0x09 telemetry the car
+                //controller sends. Updating doorClosed here is what actually changes
+                //behaviour: fsmStepInner() refuses to depart while the door is open,
+                //and re-opens the listening window once it closes.
+                if(fsm->state == STATE_MOVING){
+                    //Never touch the door mid-travel
+                    printf("[FSM] Website DOOR command IGNORED - car is MOVING to FLOOR %d\n", fsm->targetFloor);
+                    break;
+                }
+
+                fsm->doorClosed = cmds[i].door;
+                fsm->doorTimeStart = time(NULL);
+
+                if(cmds[i].door == WEB_DOOR_OPEN){
+                    //Drop anything already locked in so the car cannot pull away with
+                    //a door the website just opened
+                    fsm->lockedTarget = 0;
+                    fsm->preMoveTimerStart = 0;
+                }
+
+                //Zero either way: on OPEN the window is meaningless, on CLOSE this is
+                //what makes fsmStepInner() start a fresh REQUEST_COLLECTION_SEC window
+                fsm->collectTimerStart = 0;
+
+                printf("[FSM] Website DOOR %s at FLOOR %d\n",
+                       (cmds[i].door == WEB_DOOR_OPEN) ? "OPEN" : "CLOSE",
+                       (int)fsm->state + 1);
+            break;
 
             default:
-                break; 
+                break;
         }
     }
 }

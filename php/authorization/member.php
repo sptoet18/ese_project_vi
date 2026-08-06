@@ -24,18 +24,31 @@
 
         if ($user) {
 
+            /*
+            * Both printouts are capped at the 100 newest rows. Unbounded these
+            * return every row the rig has ever logged - thousands after a few
+            * sessions - and every one of them was rendered into the page, which
+            * is what made this page take seconds to load and run for tens of
+            * thousands of pixels. The newest rows are the only ones anybody
+            * reads while standing at the elevator
+            *
+            * Row [0] is still the newest either way, so the current floor, mode
+            * and door state read off it below are unaffected
+            */
             $transactionQuery = $db->prepare('
                 select *
                 from can_transaction
                 order by id desc
+                limit 100
             ');
             $transactionQuery->execute([]);
             $transactions = $transactionQuery->fetchAll(PDO::FETCH_ASSOC);
-            
+
             $positionQuery = $db->prepare('
                 select *
                 from elevator_position
                 order by id desc
+                limit 100
             ');
             $positionQuery->execute([]);
             $positions = $positionQuery->fetchAll(PDO::FETCH_ASSOC);
@@ -51,12 +64,29 @@
             if ($positions) {
                 $currentFloor = $positions[0]["current_floor"];
                 $currentMode = $positions[0]["mode"];
+                $isMoving = $positions[0]["is_moving"];
+                $isClosed = $positions[0]["is_closed"];
             } else {
                 $currentFloor = 1;
                 $currentMode = "elevator";
+                $isMoving = 0;
+                $isClosed = 1;
             }
 
             $elevatorPosition = getPositionImage($currentFloor);
+
+            /*
+            *send the door diagram from the same row, so it renders in the right
+            * position on load instead of waiting a second for the first SSE tick.
+            * event-source.js writes exactly these three values afterwards
+            */
+            if ($isMoving) {
+                $currentDoor = "moving";
+            } else if ($isClosed) {
+                $currentDoor = "closed";
+            } else {
+                $currentDoor = "open";
+            }
 
             /*
             * set-mode.php leaves a one shot message in the session and sends
@@ -177,19 +207,81 @@
                         <div class="col">
                             <h2>Elevator's Current Floor</h2>
                             <img id="floor-indicator" src="<?php echo $elevatorPosition; ?>" height="340px" style="image-rendering: pixelated"/>
+
+                            <!--
+                                Sits INSIDE this column rather than after the grid.
+                                Loose at the bottom of the article it rendered hard
+                                against the left margin, reading as a stray message
+                                instead of the caption for the indicator above it
+                            -->
+                            <p
+                                id="state-chip"
+                                role="status"
+                                aria-live="polite"
+                            >At floor <?= htmlspecialchars($currentFloor) ?></p>
                         </div>
                     </div>
-                       <p
+
+                    <p
                         id="request-status"
                         role="status"
                         aria-live="polite"
+                        data-state=""
                     ></p>
+                </article>
+
+                <!--
+                    Door control. Its own article rather than a fourth cell in the
+                    3 column elevator-grid above, which is what keeps it centred.
+                -->
+                <article class="elevator-ui door-ui">
+                    <h2>Elevator Door</h2>
+
+                    <div id="door-diagram" data-door="<?= htmlspecialchars($currentDoor) ?>" role="img"
+                         aria-label="Elevator door position">
+                        <div class="door-cab"></div>
+                        <div class="door-panel left"></div>
+                        <div class="door-panel right"></div>
+                    </div>
+
+                    <p id="door-state-label" data-door="<?= htmlspecialchars($currentDoor) ?>">
+                        <?php
+                            if ($currentDoor === "moving") {
+                                echo "Car moving";
+                            } else if ($currentDoor === "closed") {
+                                echo "Door closed";
+                            } else {
+                                echo "Door open";
+                            }
+                        ?>
+                    </p>
+
+                    <div class="door-controls">
+                        <button
+                            type="button"
+                            class="elevator door-request"
+                            data-door="open"
+                            <?php if ($currentMode === "sabbath" || $isMoving) echo "disabled"; ?>
+                        >
+                            Open Door
+                        </button>
+
+                        <button
+                            type="button"
+                            class="elevator door-request"
+                            data-door="close"
+                            <?php if ($currentMode === "sabbath" || $isMoving) echo "disabled"; ?>
+                        >
+                            Close Door
+                        </button>
+                    </div>
 
                     <p
-                        id="state-chip"
+                        id="door-status"
                         role="status"
                         aria-live="polite"
-                    >At floor <?= htmlspecialchars($currentFloor) ?></p>
+                        data-state=""
+                    ></p>
                 </article>
 
                 <article class="elevator-ui">
@@ -213,7 +305,13 @@
                                 <h2>Maintenance Mode</h2>
                                 <button type="submit" name="mode" value="maintenance" class="elevator">Start Maintenance Mode</button>
                             </div>
-                            <div>
+                            <!--
+                                Spans the full row. As a plain 4th cell in a 3
+                                column grid it wrapped onto its own line but kept
+                                column 1's width, so the readout sat off to the
+                                left under "Elevator Mode" as if it belonged to it
+                            -->
+                            <div class="mode-active">
                                 <h2>Active Mode</h2>
                                 <p id="mode-chip" data-mode="<?= htmlspecialchars($currentMode) ?>"><?= htmlspecialchars($currentMode) ?></p>
                                 <p id="mode-status" role="status" aria-live="polite"><?= htmlspecialchars($modeStatus) ?></p>
@@ -316,6 +414,7 @@
     <script src="/js/components/top-bar.js"></script>
     <script src="/js/components/copyright.js" defer></script>
     <script src="/js/elevatorControl.js" defer></script>
+    <script src="/js/doorControl.js" defer></script>
     <script src="/js/components/event-source.js" defer></script>
 </body>
 </html>
