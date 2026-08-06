@@ -4,11 +4,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const floorSlider =
         document.getElementById("floor-slider");
 
+    const sliderPanel =
+        document.querySelector(".slider-card");
+
     const selectedFloorOutput =
         document.getElementById("selected-floor");
-    
-    const sliderPanel =
-        document.getElementById("slider-panel");
 
     const sendFloorButton =
         document.getElementById("send-floor-request");
@@ -18,8 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (
         !floorSlider ||
-        !selectedFloorOutput ||
         !sliderPanel ||
+        !selectedFloorOutput ||
         !sendFloorButton ||
         !statusOutput
     ) {
@@ -35,27 +35,45 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedFloorOutput.textContent =
             floorSlider.value;
     }
-    function wheelSlide(event)
+
+    function moveSliderWithMouseWheel(event)
     {
-        //stop the page from scrolling
-        event.preventDefault();
         if (floorSlider.disabled) {
             return;
         }
-        let selectedFloor = Number.parseInt(floorSlider.value, 10);
 
+        /*
+         * Prevent the page from scrolling while the mouse
+         * is positioned over the elevator slider panel.
+         */
+        event.preventDefault();
+
+        let selectedFloor =
+            Number.parseInt(floorSlider.value, 10);
+
+        /*
+         * Scroll upward moves toward Floor 3.
+         * Scroll downward moves toward Floor 1.
+         */
         if (event.deltaY < 0) {
-            selectedFloor+=1;
+            selectedFloor += 1;
         } else if (event.deltaY > 0) {
-            selectedFloor-=1;
+            selectedFloor -= 1;
         }
 
-        selectedFloor = Math.min(Number(floorSlider.max), Math.max(Number(floorSlider.min), selectedFloor));
-        floorSlider.value = selectedFloor.toString();
+        selectedFloor = Math.max(
+            Number(floorSlider.min),
+            Math.min(
+                Number(floorSlider.max),
+                selectedFloor
+            )
+        );
+
+        floorSlider.value =
+            selectedFloor.toString();
+
         updateSelectedFloor();
     }
-    
-
 
     async function sendFloorRequest()
     {
@@ -142,13 +160,14 @@ document.addEventListener("DOMContentLoaded", () => {
         updateSelectedFloor
     );
 
- sliderPanel.addEventListener(
-    "wheel",
-    wheelSlide,
-    {
-        passive: false
-    }
-);
+    sliderPanel.addEventListener(
+        "wheel",
+        moveSliderWithMouseWheel,
+        {
+            passive: false
+        }
+    );
+
     sendFloorButton.addEventListener(
         "click",
         sendFloorRequest
