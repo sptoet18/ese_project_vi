@@ -53,13 +53,22 @@ try {
         JSON_THROW_ON_ERROR
     );
 
+    $submittedFloor = null;
+
+    if (isset($requestData['requested_floor'])) {
+        $submittedFloor = $requestData['requested_floor'];
+    }
+
     $requestedFloor = filter_var(
-        $requestData['requested_floor'] ?? null,
+        $submittedFloor,
         FILTER_VALIDATE_INT
     );
 
-    $controllerType =
-        $requestData['controller_type'] ?? null;
+    $controllerType = null;
+
+    if (isset($requestData['controller_type'])) {
+        $controllerType = $requestData['controller_type'];
+    }
 
     /*
      * Only the three valid floors are accepted.
@@ -159,13 +168,13 @@ if (!$user) {
      * Use floor 1 only as an initial fallback when the
      * elevator_position table has not been initialized.
      */
-    $currentFloor = $position
-        ? (int) $position['current_floor']
-        : 1;
+    $currentFloor = 1;
+    $lastFloor = 1;
 
-    $lastFloor = $position
-        ? (int) $position['last_floor']
-        : 1;
+    if ($position) {
+        $currentFloor = (int) $position['current_floor'];
+        $lastFloor = (int) $position['last_floor'];
+    }
 
     $controllerLabel =
         $controllerLabels[$controllerType];
@@ -214,7 +223,11 @@ $insertStatement = $db->prepare(
  *                                       (same as the 0x201-0x203 payload);
  *                                       the floor is implied by sent_by.
  */
-$data = ($controllerType === 'car_controller') ? $requestedFloor : 1;
+if ($controllerType === 'car_controller') {
+    $data = $requestedFloor;
+} else {
+    $data = 1;
+}
 
 $insertStatement->execute([
     'sent_by' => $sentByCanId,

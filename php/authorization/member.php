@@ -41,23 +41,34 @@
             $positions = $positionQuery->fetchAll(PDO::FETCH_ASSOC);
 
             /*
-            * Get the most recent known elevator position 
-            * If the table is empty, return the default image for floor 1
+            * Get the most recent known elevator position and mode
+            * If the table is empty, fall back to floor 1 in elevator mode
+            *
+            * The mode is the one the CONTROLLER is in, not the one somebody
+            * clicked. Only the firmware writes elevator_position, so this is
+            * honest
             */
-            $elevatorPosition = getPositionImage($positions ? $positions[0]["current_floor"] : 1);
+            if ($positions) {
+                $currentFloor = $positions[0]["current_floor"];
+                $currentMode = $positions[0]["mode"];
+            } else {
+                $currentFloor = 1;
+                $currentMode = "elevator";
+            }
 
-            /*
-            * The mode the CONTROLLER is in, not the one somebody clicked
-            * Only the firmware writes elevator_position, so this is honest
-            */
-            $currentMode = $positions ? $positions[0]["mode"] : "elevator";
+            $elevatorPosition = getPositionImage($currentFloor);
 
             /*
             * set-mode.php leaves a one shot message in the session and sends
             * the browser back here. Read it once and clear it, so a refresh
             * does not keep showing a stale confirmation
             */
-            $modeStatus = isset($_SESSION['modeStatus']) ? $_SESSION['modeStatus'] : "";
+            $modeStatus = "";
+
+            if (isset($_SESSION['modeStatus'])) {
+                $modeStatus = $_SESSION['modeStatus'];
+            }
+
             unset($_SESSION['modeStatus']);
         } else {
             echo "<script>location.href = \"/html/authorization/login.html\"</script>";
@@ -178,7 +189,7 @@
                         id="state-chip"
                         role="status"
                         aria-live="polite"
-                    >At floor <?= htmlspecialchars($positions ? $positions[0]["current_floor"] : 1) ?></p>
+                    >At floor <?= htmlspecialchars($currentFloor) ?></p>
                 </article>
 
                 <article class="elevator-ui">

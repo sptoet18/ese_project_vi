@@ -12,7 +12,11 @@
     $db = dbConnect('mysql:host=127.0.0.1; dbname=elevator', 'Emiliano', 'ESE');
 
     // 3. Trak the last ID sent to aoid repeating historical data
-    $lastId = isset($_SERVER["HTTP_LAST_EVENT_ID"]) ? intval($_SERVER["HTTP_LAST_EVENT_ID"]) : 0;
+    $lastId = 0;
+
+    if (isset($_SERVER["HTTP_LAST_EVENT_ID"])) {
+        $lastId = intval($_SERVER["HTTP_LAST_EVENT_ID"]);
+    }
 
     // 4. Start the server stream loop
     while (true) {

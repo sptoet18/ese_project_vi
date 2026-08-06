@@ -36,7 +36,11 @@
             ];
 
             // The mode comes from the plain HTML form on member.php
-            $mode = isset($_POST['mode']) ? $_POST['mode'] : '';
+            $mode = '';
+
+            if (isset($_POST['mode'])) {
+                $mode = $_POST['mode'];
+            }
 
             if (array_key_exists($mode, $modeCodes)) {
 
@@ -54,8 +58,13 @@
                 $positionQuery->execute([]);
                 $position = $positionQuery->fetch();
 
-                $currentFloor = $position ? $position['current_floor'] : 1;
-                $lastFloor = $position ? $position['last_floor'] : 1;
+                $currentFloor = 1;
+                $lastFloor = 1;
+
+                if ($position) {
+                    $currentFloor = $position['current_floor'];
+                    $lastFloor = $position['last_floor'];
+                }
 
                 /*
                 * The supervisor polls can_transaction for rows sent by 768 to
