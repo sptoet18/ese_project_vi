@@ -19,8 +19,7 @@ int main() {
 	int ID; 
 	int data; 
 	int numRx;
-	int floorNumber = 1, prev_floorNumber = 1;
-
+	
 	// Open the shared database connection once. Failure is only a warning - the
 	// supervisory controller still has to drive the CAN bus with the database down.
 	db_open();
