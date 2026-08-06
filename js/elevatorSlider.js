@@ -6,6 +6,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const selectedFloorOutput =
         document.getElementById("selected-floor");
+    
+    const sliderPanel =
+        document.getElementById("slider-panel");
 
     const sendFloorButton =
         document.getElementById("send-floor-request");
@@ -16,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (
         !floorSlider ||
         !selectedFloorOutput ||
+        !sliderPanel ||
         !sendFloorButton ||
         !statusOutput
     ) {
@@ -138,6 +142,13 @@ document.addEventListener("DOMContentLoaded", () => {
         updateSelectedFloor
     );
 
+ sliderPanel.addEventListener(
+    "wheel",
+    wheelSlide,
+    {
+        passive: false
+    }
+);
     sendFloorButton.addEventListener(
         "click",
         sendFloorRequest
