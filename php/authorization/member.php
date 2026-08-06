@@ -26,12 +26,6 @@
 
             /*
             * Both printouts are capped at the 100 newest rows. Unbounded these
-            * return every row the rig has ever logged - thousands after a few
-            * sessions - and every one of them was rendered into the page, which
-            * is what made this page take seconds to load and run for tens of
-            * thousands of pixels. The newest rows are the only ones anybody
-            * reads while standing at the elevator
-            *
             * Row [0] is still the newest either way, so the current floor, mode
             * and door state read off it below are unaffected
             */
