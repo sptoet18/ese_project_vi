@@ -41,9 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
         let selectedFloor = Number.parseInt(floorSlider.value, 10);
 
         if (event.deltaY < 0) {
-            selectedFloor++;
+            selectedFloor+=1;
         } else if (event.deltaY > 0) {
-            selectedFloor--;
+            selectedFloor-=1;
         }
 
         selectedFloor = Math.min(Number(floorSlider.max), Math.max(Number(floorSlider.min), selectedFloor));
