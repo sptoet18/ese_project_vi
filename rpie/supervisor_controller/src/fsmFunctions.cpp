@@ -374,6 +374,7 @@ static void fsmProcessMessage(ElevatorFSM *fsm, int id, int data){
 //early returns below.
 static void fsmStepInner(ElevatorFSM *fsm){
     static time_t lastCollectingPrint = 0;
+    static time_t lastDoorOpenPrint = 0;
 
     fsmPollWebsite(fsm); //Queues accumulate even while moving - Queed for larer 
 
@@ -388,7 +389,11 @@ static void fsmStepInner(ElevatorFSM *fsm){
             fsm->collectTimerStart =0; //re start listening window 
             fsm->lockedTarget =0;
 
-            printf("[FSM] Door OPEN at Floor %d\n", currentFloor);
+            time_t nowSec = time(NULL);
+            if(nowSec != lastDoorOpenPrint){ //once/sec - the door can stay open for a while
+                lastDoorOpenPrint = nowSec;
+                printf("[FSM] Door OPEN at Floor %d\n", currentFloor);
+            }
 
         }else if(fsm->doorClosed == DOOR_CLOSE && fsm->lockedTarget != 0){
             double waited = difftime(time(NULL), fsm->preMoveTimerStart); 
@@ -773,16 +778,18 @@ void supervisorRun(ElevatorMode startMode){
         }
 
         if(fsm.modeId == MODE_SABBATH){
-            sabbathStep(&fsm); 
+            sabbathStep(&fsm);
         }else{
-            fsmStep(&fsm); 
+            fsmStep(&fsm);
         }
 
-        printf("\n[FSM] Stopped by user. Mode: %s, State %s\n", fsm.mode, fsmStateName(fsm.state));
-        audioUninit();
-        pcanFsmClose();
-        signal(SIGINT, SIG_DFL); 
+        usleep(200000); //Responsive enough for the door timer (5 Hz)
     }
+
+    printf("\n[FSM] Stopped by user. Mode: %s, State %s\n", fsm.mode, fsmStateName(fsm.state));
+    audioUninit();
+    pcanFsmClose();
+    signal(SIGINT, SIG_DFL);
 }
 
 void fsmRun(void){

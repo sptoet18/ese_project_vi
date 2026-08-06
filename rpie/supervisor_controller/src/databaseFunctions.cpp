@@ -119,8 +119,8 @@ int db_initWebsiteCursor(void){
 	try{
 		sql::Statement *stmt = con->createStatement(); 
 		sql::ResultSet *res = stmt->executeQuery(
-			"SELECT COALESCE(MAX(id), 0) AS maxid FROM can_transaction"
-			"WHERE sent_by BETWEEN 768 AND 762");
+			"SELECT COALESCE(MAX(id), 0) AS maxid FROM can_transaction "
+			"WHERE sent_by BETWEEN 768 AND 772");
 			
 		if(res->next()){
 			g_lastWebCmdId = res->getInt64("maxid");
@@ -148,8 +148,8 @@ int db_getWebsiteCommands(WebCommand *out, int maxOut){
 
 	try{
 		sql::PreparedStatement *pstmt = con->prepareStatement(
-			"SELECT id, sent_by, data FROM can_transaction"
-			"WHERE sent_by BETWEEN 768 AND 762 AND id > ?"
+			"SELECT id, sent_by, data FROM can_transaction "
+			"WHERE sent_by BETWEEN 768 AND 772 AND id > ? "
 			"ORDER BY id ASC LIMIT ?");
 
 		pstmt->setInt64(1, g_lastWebCmdId);
