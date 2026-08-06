@@ -86,6 +86,39 @@
         $statement->execute();                      // Execute prepared statement
     }
 
+    // --------- Static assets ---------
+
+    /*
+    * Appends a stylesheet or script's last modified time to its URL:
+    *
+    *   /css/style.css  ->  /css/style.css?v=1786100542
+    *
+    * Apache serves these files with an ETag and a Last-Modified but NO
+    * Cache-Control and no Expires, and mod_expires/mod_headers are not enabled.
+    * With no explicit directive the browser falls back to heuristic freshness
+    * and reuses its cached copy without asking the server whether it changed
+    *
+    * The PHP pages themselves are always refetched, because session_start()
+    * sends "Cache-Control: no-store, no-cache, must-revalidate" - which is why
+    * edits to the markup appeared straight away while edits to the stylesheet
+    * did not, and why a hard reload was the only way to see them
+    *
+    * The stamp changes only when the file does, so the browser refetches once
+    * after an edit and caches normally the rest of the time
+    */
+    function assetUrl(string $webPath) : string {
+        //util.php lives in <docroot>/php, so its parent IS the document root
+        $filePath = dirname(__DIR__) . $webPath;
+
+        $stamp = @filemtime($filePath);
+
+        if ($stamp === false) {
+            return $webPath; //Unknown file - hand back the URL untouched
+        }
+
+        return $webPath . '?v=' . $stamp;
+    }
+
     // --------- Elevator Position ---------
 
     function getPositionImage(int $position) {

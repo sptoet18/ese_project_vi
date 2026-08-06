@@ -119,9 +119,11 @@
     <meta http-equiv="pragma" content="no-cache"/> 
     <title>Elevator Controller</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link href="/css/theme.css" rel="stylesheet"/>
-    <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
-    <link href="/css/style.css" rel="stylesheet"/>
+    <!-- assetUrl() stamps each file with its mtime so an edited stylesheet is
+         refetched instead of being served from the browser's cache -->
+    <link href="<?= assetUrl('/css/theme.css') ?>" rel="stylesheet"/>
+    <link href="<?= assetUrl('/css/components/top-bar-style.css') ?>" rel="stylesheet"/>
+    <link href="<?= assetUrl('/css/style.css') ?>" rel="stylesheet"/>
 </head>
 <body class="d-flex flex-column min-vh-100">
     <header>
@@ -411,10 +413,10 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <script src="/js/components/top-bar.js"></script>
-    <script src="/js/components/copyright.js" defer></script>
-    <script src="/js/elevatorControl.js" defer></script>
-    <script src="/js/doorControl.js" defer></script>
-    <script src="/js/components/event-source.js" defer></script>
+    <script src="<?= assetUrl('/js/components/top-bar.js') ?>"></script>
+    <script src="<?= assetUrl('/js/components/copyright.js') ?>" defer></script>
+    <script src="<?= assetUrl('/js/elevatorControl.js') ?>" defer></script>
+    <script src="<?= assetUrl('/js/doorControl.js') ?>" defer></script>
+    <script src="<?= assetUrl('/js/components/event-source.js') ?>" defer></script>
 </body>
 </html>
