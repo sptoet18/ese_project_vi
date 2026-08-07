@@ -22,7 +22,7 @@ static const char *DB_SCHEMA = "elevator";
 
 static sql::Connection *g_con = NULL;  // shared, reused across every call
 static std::set<int> g_canNodes;       // can_node.can_id cache - guards the FK on can_transaction.sent_by
-static int g_lastFloorNum = 1;         // last good elevatorNetwork read, returned if a later read fails
+static long g_lastWebCmdId = 0; //Track can_transction,.id
 
 
 //Returns the shared connection, opening (or re-opening) it if needed.
@@ -84,6 +84,7 @@ int db_open(void){
 	}
 
 	db_loadCanNodes();
+	db_initWebsiteCursor(); //Don't replay the history backlog 
 	return 0;
 }
 
@@ -107,53 +108,109 @@ bool db_isKnownCanNode(int canId){
 	return g_canNodes.find(canId) != g_canNodes.end();
 }
 
-
-int db_getFloorNum() {
+int db_initWebsiteCursor(void){
 	sql::Connection *con = db_conn();
+	
+	//Check connection 
 	if(con == NULL){
-		return -1;
+		return -1; 
 	}
 
 	try{
-		sql::Statement *stmt = con->createStatement();
-		sql::ResultSet *res = stmt->executeQuery("SELECT currentFloor FROM can_transaction WHERE nodeID = 1");
-
-		//Keep the last good value if the query returns no rows - returning an
-		//uninitialised local (what this used to do) makes the FSM queue garbage floors.
-		while(res->next()){
-			g_lastFloorNum = res->getInt("currentFloor");
+		sql::Statement *stmt = con->createStatement(); 
+		sql::ResultSet *res = stmt->executeQuery(
+			"SELECT COALESCE(MAX(id), 0) AS maxid FROM can_transaction"
+			"WHERE sent_by BETWEEN 768 AND 762");
+			
+		if(res->next()){
+			g_lastWebCmdId = res->getInt64("maxid");
 		}
 
+		//Delete the query and statement ]
 		delete res;
-		delete stmt;
+		delete stmt; 
 	}catch(sql::SQLException &e){
-		fprintf(stderr, "[DB] SELECT currentFloor failed: %s\n", e.what());
-		return -1;
+		fprintf(stderr, "[DB] Could not set website cursor: %s\n", e.what());
+		return -1; 
 	}
 
-	return g_lastFloorNum;
+	return 0; 
 }
 
+//Include the get website commands 
+int db_getWebsiteCommands(WebCommand *out, int maxOut){
+	int count = 0; 
 
-int db_setFloorNum(int floorNum) {
-	sql::Connection *con = db_conn();
-	if(con == NULL){
-		return -1;
+	sql::Connection *con = db_conn(); 
+	if(con == NULL || out == NULL || maxOut <= 0){
+		return -1; 
 	}
 
 	try{
-		sql::PreparedStatement *pstmt = con->prepareStatement("UPDATE elevatorNetwork SET currentFloor = ? WHERE nodeID = 1");
-		pstmt->setInt(1, floorNum);
-		pstmt->executeUpdate();
-		delete pstmt;
+		sql::PreparedStatement *pstmt = con->prepareStatement(
+			"SELECT id, sent_by, data FROM can_transaction"
+			"WHERE sent_by BETWEEN 768 AND 762 AND id > ?"
+			"ORDER BY id ASC LIMIT ?");
 
-		g_lastFloorNum = floorNum;
+		pstmt->setInt64(1, g_lastWebCmdId);
+		pstmt->setInt(2, maxOut);
+
+		//Read rge result of executing the query 
+		sql::ResultSet *res = pstmt->executeQuery(); 
+
+		long highestId = g_lastWebCmdId; 
+
+		//Start Pointing the webcommands into the correct data format as the messages are being recieved 
+		while(res->next()){
+			long rowId = res->getInt64("id"); 
+			int sentBy = res->getInt("sent_by");
+			int data = res->getInt("data"); 
+
+			//Check if we are at the newest row 
+			if(rowId > highestId){
+				highestId = rowId; 
+			}
+
+			//Dtermine the type of commamnd 
+			WebCommand cmd; 
+			cmd.kind = WEB_CMD_NONE;
+			cmd.floor = 0; 
+			cmd.mode = 0; 
+			
+			//Start Filtering per ID 
+			if(sentBy == 768){  //Web CC
+				if(data >= 1 && data <= 3){
+					cmd.kind = WEB_CMD_FLOOR_CAR; 
+					cmd.floor = data; 
+				}
+			}else if(sentBy >= 769 && sentBy <= 771 ){ //Web FC
+				cmd.kind = WEB_CMD_FLOOR_REQ;
+				cmd.floor = sentBy - 768; 
+			}else if(sentBy == 772){ //Website Changing mode 
+				if(data == WEB_MODE_ELEVATOR || data == WEB_MODE_SABBATH || data == WEB_MODE_MAINTEANCE){
+					cmd.kind = WEB_CMD_MODE;
+					cmd.mode = data; 
+				}
+			}
+
+			//Skip anything that doesn't fit the formart 
+			if(cmd.kind != WEB_CMD_NONE && count < maxOut){
+				out[count] = cmd; 
+				count++;
+			}
+		}
+
+		//delete the result and statement 
+		delete res; 
+		delete pstmt; 
+
+		g_lastWebCmdId = highestId; //Only advance after a clean read 
 	}catch(sql::SQLException &e){
-		fprintf(stderr, "[DB] UPDATE currentFloor failed: %s\n", e.what());
-		return -1;
+		fprintf(stderr, "[DB] SELECT website commands Failed: %s\n", e.what());
+		return -1; 
 	}
 
-	return 0;
+	return count; 
 }
 
 

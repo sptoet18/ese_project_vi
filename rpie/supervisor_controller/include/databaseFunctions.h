@@ -13,8 +13,31 @@ int  db_open(void);   // connect + cache the known CAN node ids; 0 on success, -
 void db_close(void);  // tear down the shared connection
 
 // --- Legacy phase-1 elevatorNetwork table (website request channel) ---
-int db_getFloorNum();               // returns the floor, or -1 if unavailable
-int db_setFloorNum(int floorNum);   // 0 on success, -1 on failure
+//Website Command Channels 
+typedef enum{
+    WEB_CMD_NONE = 0, 
+    WEB_CMD_FLOOR_CAR,  //CarController 
+    WEB_CMD_FLOOR_REQ,  //FloorController 
+    WEB_CMD_MODE //Mode of operation 
+} WebCmdKind; 
+
+typedef enum{
+    WEB_MODE_ELEVATOR = 0x10,
+    WEB_MODE_SABBATH = 0x11, 
+    WEB_MODE_MAINTEANCE = 0x12
+} WebModeCode; 
+
+typedef struct {
+    WebCmdKind kind;
+    int floor; //1,2,3 for the floor_* kinds  
+    int mode; //WebmodeCode
+} WebCommand; 
+
+//Will set the cursor at the newest command 
+int db_initWebsiteCursor(void); 
+
+//Drains the cursos but returns how many commands were written 
+int db_getWebsiteCommands(WebCommand *out, int maxOut);               // returns the floor, or -1 if unavailable
 
 // --- Modern tables read by the website ---
 

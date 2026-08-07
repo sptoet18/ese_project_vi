@@ -19,8 +19,7 @@ int main() {
 	int ID; 
 	int data; 
 	int numRx;
-	int floorNumber = 1, prev_floorNumber = 1;
-
+	
 	// Open the shared database connection once. Failure is only a warning - the
 	// supervisory controller still has to drive the CAN bus with the database down.
 	db_open();
@@ -33,7 +32,6 @@ int main() {
 				ID = chooseID();		// user to select ID depending on intended recipient
 				data = chooseMsg();		// user to select message data
 				pcanTx(ID, data);		// transmit ID and data 
-				db_setFloorNum(FloorFromHex(data)); 		// change floor number in database ** NEW **
 				break; 
 				
 			case 2:
@@ -45,17 +43,7 @@ int main() {
 			case 3:
 				printf("\nNow listening to commands from the website - press ctrl-z to cancel\n");
 				// Synchronize elevator db and CAN (start at 1st floor)
-				pcanTx(ID_SC_TO_EC, GO_TO_FLOOR1);
-				db_setFloorNum(1);
-				
-				while(1){			
-					floorNumber = db_getFloorNum();
-					if (prev_floorNumber != floorNumber) {								// If floor number changes in database
-						pcanTx(ID_SC_TO_EC, HexFromFloor(floorNumber));					// change floor number in elevator - send command over CAN
-					}
-					prev_floorNumber = floorNumber; 
-					sleep(1);															// poll database once every second to check for change in floor number
-				}
+				supervisorRun(MODE_ELEVATOR); 
 				break;
 				
 			case 4:
@@ -63,13 +51,10 @@ int main() {
 				printf("\nDemo Mode - loop from floor to floor - press ctrl-z to cancel\n");
 				while(1) {
 					pcanTx(ID_SC_TO_EC, GO_TO_FLOOR1);
-					db_setFloorNum(1);
 					sleep(20);
 					pcanTx(ID_SC_TO_EC, GO_TO_FLOOR2);
-					db_setFloorNum(2);
 					sleep(20);
 					pcanTx(ID_SC_TO_EC, GO_TO_FLOOR3);
-					db_setFloorNum(3);
 					sleep(20);
 				}
 				break;
