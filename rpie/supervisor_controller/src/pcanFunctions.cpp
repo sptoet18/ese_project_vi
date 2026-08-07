@@ -11,6 +11,7 @@
 #include <fcntl.h>    					// O_RDWR
 #include <unistd.h>
 #include <ctype.h>
+#include <time.h>						// RX print throttle
 #include <libpcan.h>   					// PCAN library
 
 
@@ -149,11 +150,11 @@ const char* decodeMsgType(int id, int  data){
 
 
 //Print a full readable decode of a RECIEVED CAN MESSAGE
-//Sender, lenght, and type 
+//Sender, lenght, and type
 static void printRxDecoded(int id, int len, int data){
 	switch (id){
 	case ID_EC_TO_ALL: //0x101: EC -> ALL (Position/Status report)
-		printf(" [RX] Sender: %-30s LEN: %d Type: EC Status/Position Report -> %s\n", decodeSenderName(id), len, decodeMsgType(id,data)); 
+		printf(" [RX] Sender: %-30s LEN: %d Type: EC Status/Position Report -> %s\n", decodeSenderName(id), len, decodeMsgType(id,data));
 		break;
 	
 	case ID_CC_TO_SC: //0x200: CC -> SC (Request from inside the car)
@@ -346,10 +347,38 @@ int pcanFsmRxPoll(int *outId, int *outData, int *outLen){
 	}
 
 	*outId = (int)RxmsgFsm.ID;
-	*outData = (int)RxmsgFsm.DATA[0]; 
-	*outLen = (int)RxmsgFsm.LEN; 
+	*outData = (int)RxmsgFsm.DATA[0];
+	*outLen = (int)RxmsgFsm.LEN;
 
-	printRxDecoded(*outId, *outLen, *outData); //Same Rx Switch case
-	
-	return 1; 
+	//Throttle ONLY the printing - the frame itself is always returned to the FSM.
+	//A frame that differs from the previous one prints at once; an identical repeat
+	//is counted and reported as a summary, so a suppressed flood is still visible.
+	{
+		static int lastRxId = -1;
+		static int lastRxData = -1;
+		static time_t lastRxPrint = 0;
+		static int rxSuppressed = 0;
+
+		time_t now = time(NULL);
+		int changed = (*outId != lastRxId || *outData != lastRxData);
+
+		if(changed || difftime(now, lastRxPrint) >= RX_REPEAT_SEC){
+			if(rxSuppressed > 0){
+				//Same decoders the [RX] lines use, so the summary reads like them
+				printf("      ... %d identical frames suppressed (%s -> %s)\n",
+					rxSuppressed, decodeSenderName(lastRxId), decodeMsgType(lastRxId, lastRxData));
+				rxSuppressed = 0;
+			}
+
+			printRxDecoded(*outId, *outLen, *outData);
+
+			lastRxId = *outId;
+			lastRxData = *outData;
+			lastRxPrint = now;
+		}else{
+			rxSuppressed++;
+		}
+	}
+
+	return 1;
 }

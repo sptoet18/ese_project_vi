@@ -19,8 +19,33 @@
 static volatile sig_atomic_t g_fsmStop = 0; 
 
 static void fsmSigintHandler(int sig){
-    (void)sig; 
-    g_fsmStop  = 1; //let the main loop exit cleanly and close CAN handler 
+    (void)sig;
+    g_fsmStop  = 1; //let the main loop exit cleanly and close CAN handler
+}
+
+//Monotonic milliseconds. time_t/difftime() only counts whole seconds, which is too
+//coarse to poll the website faster than once a second - and made the real interval
+//drift between 1s and 2s. CLOCK_MONOTONIC also cannot jump if the clock is adjusted.
+static long long fsmNowMs(void){
+    struct timespec ts;
+
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+
+    return (long long)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+}
+
+//Throttles a debug line for a phase still in progress: true on the FIRST tick
+//(*last == 0), then once every periodSec, so the 5Hz loop cannot repeat itself.
+//Callers MUST zero *last when the phase ends so the next entry prints at once.
+static bool fsmShouldPrint(time_t *last, int periodSec){
+    time_t now = time(NULL);
+
+    if(*last != 0 && difftime(now, *last) < periodSec){
+        return false;
+    }
+
+    *last = now;
+    return true;
 }
 
 const char* fsmStateName(ElevatorSate s){
@@ -79,7 +104,7 @@ void fsmInit(ElevatorFSM *fsm){
     fsm->targetFloor = 1;
 
     //Website 
-    fsm->lastWebsitePoll = time(NULL);  
+    fsm->lastWebsitePollMs = fsmNowMs();
     fsm->modeId = MODE_ELEVATOR;
     fsm->pendingMode = MODE_ELEVATOR; 
     fsm->mode = modeName(MODE_ELEVATOR); 
@@ -178,16 +203,16 @@ static int fsmPeekPriotity(ElevatorFSM *fsm, int currentFloor){
 }
 
 //Polls the DB for a website requedted floor at most once every Macro preivously define
-//NOTE: this is only reached from fsmStepInner(), and supervisorRun() calls sabbathStep()
-//instead of fsmStep() while in Sabbath - so Sabbath never polls the website at all and
-//needs no per-command mode guard below.
+//Called once per supervisorRun() iteration in EVERY mode, including Sabbath - that is
+//the only way a mode change can reach the FSM and get the car back out of Sabbath.
+//The per-command guard below is what keeps Sabbath ignoring everything else.
 static void fsmPollWebsite(ElevatorFSM *fsm){
-    double sinceLastPoll = difftime(time(NULL), fsm->lastWebsitePoll); 
+    long long now = fsmNowMs();
 
-    if(sinceLastPoll < WEBSITE_POLL_SEC){
-        return; 
+    if(now - fsm->lastWebsitePollMs < WEBSITE_POLL_MS){
+        return;
     }
-    fsm->lastWebsitePoll = time(NULL); 
+    fsm->lastWebsitePollMs = now;
 
     WebCommand cmds[8]; 
     int n = db_getWebsiteCommands(cmds, 8); 
@@ -196,6 +221,13 @@ static void fsmPollWebsite(ElevatorFSM *fsm){
     }
 
     for(int i = 0; i < n; i++){
+        //Sabbath ignores every REQUEST - car, floor and door alike; only a mode change
+        //is honoured, otherwise there is no way back out from the website. The command
+        //is still consumed from the cursor and already logged by the website.
+        if(fsm->modeId == MODE_SABBATH && cmds[i].kind != WEB_CMD_MODE){
+            continue;
+        }
+
         switch(cmds[i].kind){
             case WEB_CMD_FLOOR_CAR:
                 if(!queueContainsFloor(fsm->carQueue, cmds[i].floor)){
@@ -410,9 +442,10 @@ static void fsmProcessMessage(ElevatorFSM *fsm, int id, int data){
 static void fsmStepInner(ElevatorFSM *fsm){
     static time_t lastCollectingPrint = 0;
     static time_t lastDoorOpenPrint = 0;
+    static time_t lastPreMovePrint = 0;
 
-    fsmPollWebsite(fsm); //Queues accumulate even while moving - Queed for larer 
-
+    //The website poll moved to supervisorRun() so Sabbath - which never calls this
+    //function - can see mode changes too.
 
     if(fsm->state != STATE_MOVING){
         //Register the current floor 
@@ -421,25 +454,29 @@ static void fsmStepInner(ElevatorFSM *fsm){
         //DOOR IS OPEN 
         if(fsm->doorClosed != DOOR_CLOSE){
             fsmConsumeRequestsForFloor(fsm, currentFloor); //Requesrts at this floor are now beind done 
-            fsm->collectTimerStart =0; //re start listening window 
+            fsm->collectTimerStart =0; //re start listening window
             fsm->lockedTarget =0;
 
-            time_t nowSec = time(NULL);
-            if(nowSec != lastDoorOpenPrint){ //once/sec - the door can stay open for a while
-                lastDoorOpenPrint = nowSec;
+            //Closed-door phases are not running - zero them so they print on entry
+            lastCollectingPrint = 0;
+            lastPreMovePrint = 0;
+
+            if(fsmShouldPrint(&lastDoorOpenPrint, FSM_DEBUG_PERIOD_SEC)){
                 printf("[FSM] Door OPEN at Floor %d\n", currentFloor);
             }
 
         }else if(fsm->doorClosed == DOOR_CLOSE && fsm->lockedTarget != 0){
-            double waited = difftime(time(NULL), fsm->preMoveTimerStart); 
+            lastDoorOpenPrint = 0; //Door phase is over
+
+            double waited = difftime(time(NULL), fsm->preMoveTimerStart);
             if(waited < PRE_MOVE_DELAY_SEC){
-                time_t nowSec = time(NULL); 
-                if(nowSec != lastCollectingPrint ){ //resuse the same once/sec
-                    lastCollectingPrint = nowSec; 
+                if(fsmShouldPrint(&lastPreMovePrint, FSM_DEBUG_PERIOD_SEC)){
                     printf("[FSM] DEBUG: Wasiting to move to FLOOR %d (%.0f/%d) elapsed\n", fsm->lockedTarget, waited, PRE_MOVE_DELAY_SEC);
                 }
-                return; //Still waiting 
+                return; //Still waiting
             }
+
+            lastPreMovePrint = 0; //Wait is over - next one starts fresh
 
             int target = fsm->lockedTarget;
             fsm->lockedTarget = 0;
@@ -459,18 +496,17 @@ static void fsmStepInner(ElevatorFSM *fsm){
         //DOOR IS CLOSED && LISTENING FOR REQUEST 
         if(fsm->doorClosed == DOOR_CLOSE && fsm->collectTimerStart == 0){
             fsm->collectTimerStart = time(NULL);
-            lastCollectingPrint = 0; 
+            lastCollectingPrint = 0;
+            lastDoorOpenPrint = 0;
             printf("[FSM] Listening for requests for %d seconds before choosing Next Stop\n",REQUEST_COLLECTION_SEC);
-            return; 
+            return;
         }
 
-        //NOW COLLECTING REQUEST 
-        double collecting = difftime(time(NULL), fsm->collectTimerStart); 
+        //NOW COLLECTING REQUEST
+        double collecting = difftime(time(NULL), fsm->collectTimerStart);
         if(collecting < REQUEST_COLLECTION_SEC){
-            time_t nowSec = time(NULL); 
-            if(nowSec != lastCollectingPrint ){ //resuse the same once/sec
-                lastCollectingPrint = nowSec; 
-                printf("[FSM] DEBUG: still collecting\n");
+            if(fsmShouldPrint(&lastCollectingPrint, FSM_DEBUG_PERIOD_SEC)){
+                printf("[FSM] DEBUG: still collecting (%.0f/%d)\n", collecting, REQUEST_COLLECTION_SEC);
             }
             return; //Still on the collecting window - keep collecting
         }
@@ -482,9 +518,11 @@ static void fsmStepInner(ElevatorFSM *fsm){
             int target = fsmPeekPriotity(fsm, currentFloor); 
             if(target != 0 && target != currentFloor){
                 fsmConsumeRequestsForFloor(fsm, target); //locked in now - remove from queues 
-                fsm->lockedTarget = target; 
-                fsm->preMoveTimerStart = time(NULL); 
-                fsm->collectTimerStart =0; //reset for next stop 
+                fsm->lockedTarget = target;
+                fsm->preMoveTimerStart = time(NULL);
+                fsm->collectTimerStart =0; //reset for next stop
+                lastCollectingPrint = 0; //Collection phase is over
+                lastPreMovePrint = 0;    //Pre-move wait starts now - print its first tick
 
                 //Print what got locked in - actual move happens after Phase B (see top of this function)
                 printf("[FSM] Locked FLOOR %d - waiting %d seconds before moving\n", target, PRE_MOVE_DELAY_SEC); 
@@ -628,7 +666,7 @@ static int sabbathMove(ElevatorFSM *fsm){
 //Split from sabbathStep() only so the position publish still happens on the several
 //early returns below.
 static void sabbathStepInner(ElevatorFSM *fsm){
-    static time_t lastCollectingPrint = 0;
+    static time_t lastPreMovePrint = 0;
 
    if(fsm->state != STATE_MOVING){
     //Register current Floor 
@@ -640,9 +678,13 @@ static void sabbathStepInner(ElevatorFSM *fsm){
         double elapsed =difftime(time(NULL), fsm->doorTimeStart); 
         if(elapsed >= DOOR_OPEN_TIME_SEC){
             //Close the door after the time passes 
-            fsm->doorClosed = DOOR_CLOSE; 
-            fsm->lockedTarget = sabbathMove(fsm); 
-            lastCollectingPrint = 0; 
+            fsm->doorClosed = DOOR_CLOSE;
+            fsm->lockedTarget = sabbathMove(fsm);
+            //MUST start the pre-move clock here: fsmArrive() zeroes preMoveTimerStart,
+            //so without it difftime() measures against the epoch and Sabbath departs
+            //the instant the door shuts, skipping the wait entirely.
+            fsm->preMoveTimerStart = time(NULL);
+            lastPreMovePrint = 0;
             printf("[SBTH] DOOR Closed at Floor %d\n", currentFloor);
         }else{
             return; //Still wating for the door timer 
@@ -661,13 +703,13 @@ static void sabbathStepInner(ElevatorFSM *fsm){
         //Check the time Before moving 
         double waited = difftime(time(NULL), fsm->preMoveTimerStart);
         if(waited < PRE_MOVE_DELAY_SEC){
-            time_t nowSec = time(NULL); 
-            if(nowSec != lastCollectingPrint){
-                lastCollectingPrint = nowSec; 
+            if(fsmShouldPrint(&lastPreMovePrint, FSM_DEBUG_PERIOD_SEC)){
                 printf("[SBTH] Time to Move to Floor %d (%.0f/%d) elapsed\n", fsm->lockedTarget, waited, PRE_MOVE_DELAY_SEC);
             }
-            return; 
+            return;
         }
+
+        lastPreMovePrint = 0; //Wait is over - next one starts fresh
     }
 
     //Declare the current state (DEPART)
@@ -785,28 +827,36 @@ void supervisorRun(ElevatorMode startMode){
     signal(SIGINT, fsmSigintHandler);
 
     while(!g_fsmStop){
+        //ONE frame per iteration. Draining the whole queue here meant up to 32
+        //blocking MariaDB inserts inside a single 200ms tick, which stalled the loop
+        //and delayed everything behind it - including the website poll.
         int rc = pcanFsmRxPoll(&id, &data, &len);
         if(rc == 1){
-            //LOG FIRST 
+            //LOG FIRST
             fsmLogRxMessage(&fsm, id, data, len);
-            
-            //CHange the Way we process Messages according to the mode 
+
+            //CHange the Way we process Messages according to the mode
             switch (fsm.modeId){
             case MODE_SABBATH:
                 sabbathProcessMessages(&fsm, id, data);
                 break;
-            
+
             case MODE_MAINTEANCE:
                 maintenanceProcessMessage(&fsm, id, data);
-                break; 
-            
+                break;
+
             default:
                 fsmProcessMessage(&fsm, id, data);
                 break;
             }
         }
 
-        //Never Swicth mid Travel it could clear the target and leave the elevator between floors  
+        //Poll the website in EVERY mode. This lived inside fsmStepInner(), which
+        //Sabbath never calls, so Sabbath could only be ended with Ctrl-C. Polling
+        //before the mode switch means a command read now takes effect this iteration.
+        fsmPollWebsite(&fsm);
+
+        //Never Swicth mid Travel it could clear the target and leave the elevator between floors
         if(fsm.pendingMode != fsm.modeId && fsm.state != STATE_MOVING){
             //SWICTH THE MODE 
             fsmApplyMode(&fsm, fsm.pendingMode); 
