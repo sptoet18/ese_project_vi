@@ -166,6 +166,17 @@
                 <article class="elevator-ui">
                     <div class="elevator-grid">
                         <div>
+                            <h2>Interactive Elevator Slider</h2>
+
+                            <a href="elevatorSlider.php" class="slider-link"> Open Elevator Slider </a>
+
+                        </div>
+                    </div>
+                </article>
+
+                <article class="elevator-ui">
+                    <div class="elevator-grid">
+                        <div>
                             <h2>Elevator Mode</h2>
                             <button id="elevatorButton" class="elevator">Start Elevator Mode</button>
                         </div>
