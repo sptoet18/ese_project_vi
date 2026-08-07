@@ -107,7 +107,7 @@ if (isset($_SESSION['username'])) {
                                         <tr>
                                             <td><p class="id" data-field="id"><?= htmlspecialchars($row['id']) ?> </p></td>
                                             <td><p class="editable" data-field="sent_by"> <?= htmlspecialchars($row['sent_by']) ?> </p></td>
-                                            <td><p class="editable" data-field="transceived_at"><?= htmlspecialchars($row['transceived_at']) ?> </p></td>
+                                            <td><p data-field="transceived_at"><?= htmlspecialchars($row['transceived_at']) ?> </p></td>
                                             <td><p class="editable" data-field="data"><?= htmlspecialchars($row['data']) ?> </p></td>
                                             <td><p class="editable" data-field="current_floor"><?= htmlspecialchars($row['current_floor']) ?> </p></td>
                                             <td><p class="editable" data-field="last_floor"><?= htmlspecialchars($row['last_floor']) ?> </p></td>
