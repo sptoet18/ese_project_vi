@@ -43,7 +43,7 @@ const topbarHTML = `
                                 <a class="nav-link active" aria-current="page" href="/php/authorization/member.php">Elevator Controls</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="/php/authorization/databaseControls.php">Database Controls</a>
+                                <a class="nav-link active" aria-current="page" href="/php/authorization/database-controls.php">Database Controls</a>
                             </li>
                         </ul>
                     </div>

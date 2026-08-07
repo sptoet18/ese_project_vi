@@ -104,13 +104,13 @@ if (isset($_SESSION['username'])) {
                             <tbody>
                                 <?php if (count($transactions)): ?>
                                     <?php foreach ($transactions as $row): ?>
-                                        <tr id="<?= htmlspecialchars($row['id']) ?>">
-                                            <td><?= htmlspecialchars($row['id']) ?></td>
-                                            <td class="editable"><?= htmlspecialchars($row['sent_by']) ?></td>
-                                            <td class="editable"><?= htmlspecialchars($row['transceived_at']) ?></td>
-                                            <td class="editable"><?= htmlspecialchars($row['data']) ?></td>
-                                            <td class="editable"><?= htmlspecialchars($row['current_floor']) ?></td>
-                                            <td class="editable"><?= htmlspecialchars($row['last_floor']) ?></td>
+                                        <tr>
+                                            <td><p class="id" data-field="id"><?= htmlspecialchars($row['id']) ?> </p></td>
+                                            <td><p class="editable" data-field="sent_by"> <?= htmlspecialchars($row['sent_by']) ?> </p></td>
+                                            <td><p class="editable" data-field="transceived_at"><?= htmlspecialchars($row['transceived_at']) ?> </p></td>
+                                            <td><p class="editable" data-field="data"><?= htmlspecialchars($row['data']) ?> </p></td>
+                                            <td><p class="editable" data-field="current_floor"><?= htmlspecialchars($row['current_floor']) ?> </p></td>
+                                            <td><p class="editable" data-field="last_floor"><?= htmlspecialchars($row['last_floor']) ?> </p></td>
                                             <td><input id="editing" class="editing-toggle" type="checkbox"></td>
                                             <td><button id="save" class="save-button" style="display: none">Save</button></td>
                                         </tr>
@@ -138,8 +138,6 @@ if (isset($_SESSION['username'])) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 <script src="/js/components/top-bar.js"></script>
 <script src="/js/components/copyright.js" defer></script>
-<script src="/js/elevatorControl.js" defer></script>
-<script src="/js/change-mode.js"></script>
-<script src="/js/databaseControls.js"></script>
+<script src="/js/database-controls.js"></script>
 </body>
 </html>

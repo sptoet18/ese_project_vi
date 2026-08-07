@@ -62,7 +62,7 @@ class CanNode
             $statement->execute([
                 'id' => $id
             ]);
-            $row = $statement->fetch();
+            $row = $statement->fetch(\PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
             die ("Get failed: " . $e->getMessage());
         }

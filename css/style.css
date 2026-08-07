@@ -276,3 +276,24 @@ div.maintenance-card > table.console {
 div.maintenance-card > table.console thead {
     width: 100%;
 }
+
+input.editable {
+    background: var(--background-color);
+    color: black;
+
+    border-color: var(--primary-color);
+    border-width: 1px;
+    border-radius: 12px;
+
+    text-align: center;
+}
+
+button.save-button {
+    background: var(--primary-color);
+    color: var(--background-color);
+
+    border-color: var(--primary-color);
+    border-width: 1px;
+    border-radius: 12px;
+}
+
