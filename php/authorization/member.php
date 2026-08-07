@@ -167,9 +167,7 @@
                     <div class="elevator-grid">
                         <div>
                             <h2>Interactive Elevator Slider</h2>
-
-                            <a href="elevatorSlider.php" class="slider-link"> Open Elevator Slider </a>
-
+                            <button id="elevator-slider" class="elevator">Elevator Slider</button>
                         </div>
                     </div>
                 </article>
@@ -286,5 +284,10 @@
     <script src="/js/components/copyright.js" defer></script>
     <script src="/js/elevatorControl.js" defer></script>
     <script src="/js/change-mode.js"></script>
+    <script>
+        document.querySelector("#elevator-slider").onclick = function () {
+            window.location.href = "elevator-slider.php";
+        };
+    </script>
 </body>
 </html>
