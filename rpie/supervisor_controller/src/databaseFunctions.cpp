@@ -119,8 +119,8 @@ int db_initWebsiteCursor(void){
 	try{
 		sql::Statement *stmt = con->createStatement(); 
 		sql::ResultSet *res = stmt->executeQuery(
-			"SELECT COALESCE(MAX(id), 0) AS maxid FROM can_transaction"
-			"WHERE sent_by BETWEEN 768 AND 762");
+			"SELECT COALESCE(MAX(id), 0) AS maxid FROM can_transaction "
+			"WHERE sent_by BETWEEN 768 AND 772");
 			
 		if(res->next()){
 			g_lastWebCmdId = res->getInt64("maxid");
@@ -148,8 +148,8 @@ int db_getWebsiteCommands(WebCommand *out, int maxOut){
 
 	try{
 		sql::PreparedStatement *pstmt = con->prepareStatement(
-			"SELECT id, sent_by, data FROM can_transaction"
-			"WHERE sent_by BETWEEN 768 AND 762 AND id > ?"
+			"SELECT id, sent_by, data FROM can_transaction "
+			"WHERE sent_by BETWEEN 768 AND 772 AND id > ? "
 			"ORDER BY id ASC LIMIT ?");
 
 		pstmt->setInt64(1, g_lastWebCmdId);
@@ -172,16 +172,22 @@ int db_getWebsiteCommands(WebCommand *out, int maxOut){
 			}
 
 			//Dtermine the type of commamnd 
-			WebCommand cmd; 
+			WebCommand cmd;
 			cmd.kind = WEB_CMD_NONE;
-			cmd.floor = 0; 
-			cmd.mode = 0; 
-			
-			//Start Filtering per ID 
+			cmd.floor = 0;
+			cmd.mode = 0;
+			cmd.door = 0;
+
+			//Start Filtering per ID
 			if(sentBy == 768){  //Web CC
 				if(data >= 1 && data <= 3){
-					cmd.kind = WEB_CMD_FLOOR_CAR; 
-					cmd.floor = data; 
+					cmd.kind = WEB_CMD_FLOOR_CAR;
+					cmd.floor = data;
+				}else if(data == WEB_DOOR_CLOSE || data == WEB_DOOR_OPEN){
+					//Same node as the car floor buttons - the payload is what
+					//tells the two apart (1..3 = floor, 0x08/0x09 = door)
+					cmd.kind = WEB_CMD_DOOR;
+					cmd.door = data;
 				}
 			}else if(sentBy >= 769 && sentBy <= 771 ){ //Web FC
 				cmd.kind = WEB_CMD_FLOOR_REQ;

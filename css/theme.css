@@ -31,5 +31,24 @@
     /* Card Component */
     --card-color: var(--primary-color-text);
     --card-background-color: var(--primary-color);
-    
+
+    /* Status Messages - the palette had no success/failure colours of its own,
+       so a saved request and a rejected one used to look identical */
+    --status-ok: #3f7d54;
+    --status-error: var(--accent-color-1);
+    --status-pending: var(--primary-color);
+    --status-text: var(--white);
+
+    /* Door Diagram
+
+       The frame used to be the same slate as the cab interior, so an open door
+       read as a dark box with no border - nothing said "elevator". The frame is
+       now a step darker than everything it surrounds, and the cab carries two
+       values: unlit while the door is shut, warm while it is open, because a
+       real car spills light onto the landing the moment the panels part */
+    --door-panel-color: var(--primary-color);
+    --door-cab-color: var(--accent-color-4);
+    --door-cab-lit: #e8c48f;
+    --door-frame-color: #262c33;
+    --door-seam-color: #262c33;
 }

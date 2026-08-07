@@ -26,6 +26,11 @@
 #define DOOR_CLOSE 0x08
 #define DOOR_OPEN 0x09
 
+// An identical back-to-back RX frame is only re-printed this often. A frame that
+// DIFFERS always prints at once - this only collapses the EC's in-transit status
+// stream, which repeats the same payload many times per second while the car moves.
+#define RX_REPEAT_SEC 2
+
 
 
 // Function declarations
