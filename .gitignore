@@ -1,3 +1,7 @@
 /.vscode/
-/.claude/superpowers/
-/.idea/
+
+handenv/
+
+# 7.8 MB model bundle, re-downloadable via setup.sh — don't commit it.
+hand_landmarker.task
+hand_landmarker.task.*

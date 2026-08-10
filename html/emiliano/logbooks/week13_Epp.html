@@ -2,28 +2,309 @@
 <!--AUTHOR: Emiliano Perez Pellicer
     DATE: 22-05-2026
     COMMENTS: This will be my main page to control and update my personal Logbook From weeks 1 - 14
-    VERSION: 1.0 
+    VERSION: 1.0
 -->
-
-<!--==== HTML SCRIPT =====-->
-<html lang = "en">
+<html lang="en">
     <!-- === Head section === -->
     <head>
-        <!-- === Include Specia -->
         <meta charset="UTF-8">
-        <!-- === Title ==== -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- === Title === -->
         <title>Emiliano's Engineering Logbook Week 13</title>
         <meta name="description" content="This is the logbook week 13 page for Emiliano" />
-        <meta name="robots" content="noindex nofollow"/>   <!-- Do not want page or any of its links to be indexed-->
-        <meta http-equiv="author" content="Emiliano Perez Pellicer"/> <!-- Want browser to reload this page every time -->
-        <meta http-equiv="pragma" content="no-cache"/> 
+        <meta name="robots" content="noindex nofollow"/>
+        <meta http-equiv="author" content="Emiliano Perez Pellicer"/>
+        <meta http-equiv="pragma" content="no-cache"/>
+        <!-- === Stylesheets (same set Sean uses) === -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <link href="/css/theme.css" rel="stylesheet"/>
+        <link href="/css/style.css" rel="stylesheet"/>
+        <link href="/css/components/top-bar-style.css" rel="stylesheet"/>
     </head>
     <!-- === Body section === -->
-    <body>
-        <!-- === Send Back to Logbook Page=== -->
-        <p>During this week I finished and Signed the <b>Safety Module</b></p>
-        <!-- === Send Back to Logbook Page=== -->
-        <p>Copyright &copy Emiliano Perez Pellicer</p>
-        <a href="/logbooks/logbook_EPP.html">Back to logbooks</a>
+    <body class="d-flex flex-column min-vh-100">
+        <header>
+            <div id="topbar"></div>
+        </header>
+
+        <main class="flex-grow-1">
+            <div class="container">
+                <section class="title">
+                    <h1>Emiliano's Logbook</h1>
+                    <h2>Week 13</h2>
+                </section>
+
+                <section class="body">
+                    <article>
+                        <h1>Overview</h1>
+                        <p>The main effort this week was the unique feature for the final
+                           deliverable: <b>camera based hand gesture control</b> of the elevator.
+                           Holding up 1, 2 or 3 fingers in front of the Raspberry Pi Camera now
+                           sends a floor request to that floor. The detection pipeline was brought
+                           up from scratch, four separate bugs were found and fixed, and the
+                           feature was tested end to end on the real elevator.</p>
+                    </article>
+
+                    <article>
+                        <h1>Tasks Completed</h1>
+                        <ol>
+                            <li>Brought up the MediaPipe Hand Landmarker detector on the Pi:
+                                <ul>
+                                    <li>Patched the Google sample so it no longer imports the
+                                        removed <code>mediapipe.solutions</code> module. Landmarks
+                                        are now drawn manually with OpenCV using
+                                        <code>HandLandmarksConnections</code>.</li>
+                                    <li>Replaced <code>cv2.VideoCapture()</code> with
+                                        <code>Picamera2</code>, because the Camera Module 3 is
+                                        libcamera only and OpenCV cannot see it.</li>
+                                    <li>Validated the pipeline end to end: 21 landmarks tracking
+                                        correctly at <b>22.8 fps</b> inference on 1280x960.</li>
+                                </ul>
+                            </li>
+                            <li>Evaluated the <b>Hailo-8L</b> AI accelerator and decided
+                                <b>not</b> to use it:
+                                <ul>
+                                    <li>Measured the real CPU cost of the detector: the system
+                                        goes from 0.13 to 1.04 busy cores, so the detector uses
+                                        about <b>0.9 of the 4 available cores</b>. Three cores stay
+                                        free and the supervisor loop is a 5 Hz poll that is
+                                        essentially idle, so there is no CPU shortage to fix.</li>
+                                    <li>The Hailo Dataflow Compiler only runs on x86_64 Ubuntu, so
+                                        the model cannot be compiled on the Pi at all.</li>
+                                    <li>MediaPipe Hands is a two stage graph (palm detection, then
+                                        crop and rotate, then landmark regression). Only the
+                                        landmark half exists as a prebuilt HEF, so the rest would
+                                        have to be reimplemented by hand.</li>
+                                    <li>Conclusion: days of work to free 0.9 cores that are not
+                                        needed. Documented as a measured engineering decision.</li>
+                                </ul>
+                            </li>
+                            <li>Wrote <code>python/gestureRecognition.py</code> - finger counting
+                                and debouncing:
+                                <ul>
+                                    <li>Counts extended fingers from the 21 landmarks. The thumb is
+                                        deliberately ignored, which also removes any dependence on
+                                        handedness.</li>
+                                    <li>Uses a rotation invariant test (distance from the wrist to
+                                        the tip against wrist to the PIP joint) instead of the
+                                        common <code>tip.y &lt; pip.y</code> comparison.</li>
+                                    <li>A <code>GestureLatch</code> debounces the per frame count
+                                        down to one request per gesture, using the same idea as the
+                                        STM32 pushbutton flag: hold steady for 15 frames to fire
+                                        once, then the hand must be withdrawn plus a 3 second
+                                        cooldown before it can fire again. A drift check rejects a
+                                        hand that is only sweeping past the camera.</li>
+                                </ul>
+                            </li>
+                            <li>Wrote <code>python/elevatorRequest.py</code> - the link to the
+                                elevator:
+                                <ul>
+                                    <li>Inserts the request into <code>can_transaction</code> as
+                                        <code>sent_by = 768, data = floor</code>, which is exactly
+                                        what the website car controller button already writes. This
+                                        means the supervisor picks it up within 300 ms with
+                                        <b>zero firmware changes and no rebuild</b>.</li>
+                                    <li>The <code>message</code> column is tagged
+                                        "Gesture control requested floor N" so gesture requests are
+                                        still distinguishable in the logs.</li>
+                                    <li>The insert runs on a background worker thread, because a
+                                        blocking database call inside a 22 fps loop would stall the
+                                        video. Measured at 0.0007 ms per call from the loop's side.</li>
+                                    <li>Added <code>PyMySQL</code> to <code>requirements.txt</code>.
+                                        It is pure Python, so unlike a compiled driver it cannot be
+                                        shadowed by a binary incompatible system copy.</li>
+                                </ul>
+                            </li>
+                            <li>Integrated both modules into <code>detect.py</code> with a small
+                                on screen display showing the live finger count, the armed or
+                                latched state, and the last request sent.</li>
+                            <li>Tested the feature at every level:
+                                <ul>
+                                    <li>Rotation invariance proved with synthetic hands rotated
+                                        through 0, 30, 45, 90, 180 and 270 degrees.</li>
+                                    <li>Six debounce cases checked, including a single fire on a
+                                        long hold and no fire while waving.</li>
+                                    <li>Database write verified against the real table.</li>
+                                    <li>Full end to end run on the elevator - <b>working</b>.</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </article>
+
+                    <article>
+                        <h1>Challenges</h1>
+                        <ol>
+                            <li><b>Picamera2 would not import inside the virtual environment.</b>
+                                It failed with "numpy.dtype size changed, may indicate binary
+                                incompatibility". The cause was that the venv uses
+                                <code>--system-site-packages</code> so that picamera2 is visible,
+                                but MediaPipe pulls numpy 2.x into the venv while the system
+                                <code>simplejpeg</code> was compiled against numpy 1.24. Fixed by
+                                pinning <code>simplejpeg&gt;=1.9.0</code> so a numpy 2 compatible
+                                copy is installed inside the venv. Reinstalling picamera2 through
+                                apt does not help, because the system package was never the
+                                problem.</li>
+                            <li><b>The camera colour format names are misleading.</b> Skin tones
+                                looked wrong and hand detection was unreliable. Picamera2's format
+                                names are byte reversed: asking for <code>'BGR888'</code> actually
+                                returns an RGB array. The original code was therefore feeding
+                                MediaPipe images with red and blue swapped. Confirmed by measuring
+                                against an <code>rpicam-jpeg</code> reference on saturated pixels,
+                                since a low colour scene makes a channel swap almost invisible by
+                                eye. Fixed by using <code>'RGB888'</code>.</li>
+                            <li><b>The Left and Right hand labels were reversed.</b> MediaPipe
+                                assumes the input image is already mirrored, and the preview is
+                                mirrored with <code>cv2.flip</code> so the operator's hand moves
+                                the right way on screen. Fixed by swapping the label in code rather
+                                than removing the flip, which would have made the preview
+                                unusable.</li>
+                            <li><b>The debounce could latch up.</b> Re-arming originally required
+                                the hand to be withdrawn and the cooldown to expire at the same
+                                moment, so lowering and raising the hand during the cooldown left
+                                it stuck until the hand was lowered a second time. Fixed by
+                                remembering that a release happened, so a release during the
+                                cooldown still counts.</li>
+                            <li><b>Sabbath mode silently swallows gesture requests.</b> Not a bug,
+                                but it cost time during testing. The mode has to be set back to
+                                elevator before any gesture will move the car.</li>
+                        </ol>
+                    </article>
+
+                    <article>
+                        <h1>Debugging the Elevator Limit Sensor</h1>
+                        <p>During one of the testing sessions the elevator Overshoot itself all the way to the top of the Elevator messing  up the <b>"limit Switch" IR light detectors</b>
+                            These detectors need to be fully inline with each other to not be triggered. However, since they were out of position. The Servo controler of the elevator was always in a fault state. 
+                            Not allowing the elevator to move.  
+                        </p>
+                        <ol>The Debugging Steps where the following:</ol>
+                        <li>Identify the Fault State on the <b>A12A100</b> Servo motor Contoller</li>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                     <figure>
+                                        <img src="/assets/images/emiliano/Servo_Controller.jpg" alt="Servo_Controller"/>
+                                        <figcaption>Servco Controller to Identify Part Number </figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                        <li>Compare Configuration Against other controllers</li>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-4">
+                                     <figure>
+                                        <img src="/assets/images/emiliano/Servo_Controller_Switch.jpg" alt="Servo_Controller"/>
+                                        <figcaption>Image to Find Servo Contoller Switch Config</figcaption>
+                                    </figure>
+                                </div>
+
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/Servo_Controller_Switch2.jpg" alt="Servo_Controller"/>
+                                        <figcaption>Image to Find Servo Contoller Switch Config 2</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                        <li>Trace Back the "Limit" Switches wireing</li>
+                        <li>Indetify if the elevator moves if we <b>Disconnect</b> The Limit Swicth from the Servo Controller</li>
+                        <li>Find the Offset From the IR Light Detectors</li>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <video preload controls>
+                                        <source src="/assets/videos/emiliano/Elevator_Debug.mp4" type="video/mp4"/>
+                                    </video>
+                                    <figcaption>Elevator Debugging</figcaption>
+                                </div>
+                            </div>
+                        </div>
+                        <li>Sync them in Place to exit the <b>Fault State</b></li>
+                        <li>Finally, Test the elevator with the fixed Elevator</li>
+                    </article>
+
+                    <article>
+                        <h1>Unique feature &dash; videos </h1>
+                        <p>The following videos show the Unique Featre Working</p>
+
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-6">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Unique_Feature_Pt1.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption>Elevator Unique &dash; part 1</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-6">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Unique_Feature _Pt2.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption>Elevator Unique &dash; part 2</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-12">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Unique_Feature _Pt3.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption>Elevator Uique &dash; part 3</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article>
+                        <h1>Website Controller &dash; videos </h1>
+                        <p>The following videos show the Elevator Being Controller by the Website Working</p>
+
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-6">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Website_Controll _Pt1.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption>Elevator Website Controller &dash; part 1</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-6">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Website_Controll_pt2.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption> Elevator Website Controller &dash; part 2</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-12">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Website_Controll_pt3.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption> Elevator Website Controller &dash; part 3</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                </section>
+            </div>
+        </main>
+
+        <footer>
+            <!-- === Send Back to Logbook Page === -->
+            <a href="logbook_EPP.html">Back to logbooks</a>
+            <!-- === CopyRight Symbol === -->
+            <copyright-text name="Emiliano Perez Pellicer"></copyright-text>
+        </footer>
+
+        <!-- === Scripts (same set Sean uses) === -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        <script src="/js/components/top-bar.js"></script>
+        <script src="/js/components/copyright.js" defer></script>
     </body>
 </html>

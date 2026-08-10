@@ -1,0 +1,15 @@
+mediapipe
+
+# The venv is created with --system-site-packages so that picamera2 (an apt
+# package, tied to libcamera) is importable. That has one sharp edge:
+# mediapipe pulls numpy 2.x into the venv, but Bookworm's system simplejpeg
+# 1.8.1 is compiled against the system numpy 1.24. The venv's numpy shadows
+# the system one, so importing picamera2 fails with:
+#   ValueError: numpy.dtype size changed, may indicate binary incompatibility
+# Pinning >=1.9.0 forces a numpy-2-compatible simplejpeg wheel into the venv,
+# where it shadows the system copy. Without the version floor, pip considers
+# the system 1.8.1 as already satisfying the requirement and skips it.
+simplejpeg>=1.9.0
+
+# Now we need to get the hand gestures to talk to the database 
+PyMySQL>=1.1.0
