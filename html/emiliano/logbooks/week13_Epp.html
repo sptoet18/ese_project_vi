@@ -37,7 +37,6 @@
                 <section class="body">
                     <article>
                         <h1>Overview</h1>
-                        <p>Finished and signed the <b>Safety Module</b>.</p>
                         <p>The main effort this week was the unique feature for the final
                            deliverable: <b>camera based hand gesture control</b> of the elevator.
                            Holding up 1, 2 or 3 fingers in front of the Raspberry Pi Camera now
@@ -173,8 +172,125 @@
 
                     <article>
                         <h1>Debugging the Elevator Limit Sensor</h1>
-                        <!-- TODO: fill in once the limit sensor debugging is done. -->
+                        <p>During one of the testing sessions the elevator Overshoot itself all the way to the top of the Elevator messing  up the <b>"limit Switch" IR light detectors</b>
+                            These detectors need to be fully inline with each other to not be triggered. However, since they were out of position. The Servo controler of the elevator was always in a fault state. 
+                            Not allowing the elevator to move.  
+                        </p>
+                        <ol>The Debugging Steps where the following:</ol>
+                        <li>Identify the Fault State on the <b>A12A100</b> Servo motor Contoller</li>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                     <figure>
+                                        <img src="/assets/images/emiliano/Servo_Controller.jpg" alt="Servo_Controller"/>
+                                        <figcaption>Servco Controller to Identify Part Number </figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                        <li>Compare Configuration Against other controllers</li>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-4">
+                                     <figure>
+                                        <img src="/assets/images/emiliano/Servo_Controller_Switch.jpg" alt="Servo_Controller"/>
+                                        <figcaption>Image to Find Servo Contoller Switch Config</figcaption>
+                                    </figure>
+                                </div>
+
+                                <div class="col-4">
+                                    <figure>
+                                        <img src="/assets/images/emiliano/Servo_Controller_Switch2.jpg" alt="Servo_Controller"/>
+                                        <figcaption>Image to Find Servo Contoller Switch Config 2</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                        <li>Trace Back the "Limit" Switches wireing</li>
+                        <li>Indetify if the elevator moves if we <b>Disconnect</b> The Limit Swicth from the Servo Controller</li>
+                        <li>Find the Offset From the IR Light Detectors</li>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <video preload controls>
+                                        <source src="/assets/videos/emiliano/Elevator_Debug.mp4" type="video/mp4"/>
+                                    </video>
+                                    <figcaption>Elevator Debugging</figcaption>
+                                </div>
+                            </div>
+                        </div>
+                        <li>Sync them in Place to exit the <b>Fault State</b></li>
+                        <li>Finally, Test the elevator with the fixed Elevator</li>
                     </article>
+
+                    <article>
+                        <h1>Unique feature &dash; videos </h1>
+                        <p>The following videos show the Unique Featre Working</p>
+
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-6">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Unique_Feature_Pt1.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption>Elevator Unique &dash; part 1</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-6">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Unique_Feature _Pt2.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption>Elevator Unique &dash; part 2</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-12">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Unique_Feature _Pt3.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption>Elevator Uique &dash; part 3</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article>
+                        <h1>Website Controller &dash; videos </h1>
+                        <p>The following videos show the Elevator Being Controller by the Website Working</p>
+
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-6">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Website_Controll _Pt1.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption>Elevator Website Controller &dash; part 1</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-6">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Website_Controll_pt2.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption> Elevator Website Controller &dash; part 2</figcaption>
+                                    </figure>
+                                </div>
+                                <div class="col-12">
+                                    <figure>
+                                        <video preload controls>
+                                            <source src="/assets/videos/emiliano/Website_Controll_pt3.mp4" type="video/mp4"/>
+                                        </video>
+                                        <figcaption> Elevator Website Controller &dash; part 3</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
                 </section>
             </div>
         </main>
