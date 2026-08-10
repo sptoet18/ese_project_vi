@@ -53,13 +53,22 @@ try {
         JSON_THROW_ON_ERROR
     );
 
+    $submittedFloor = null;
+
+    if (isset($requestData['requested_floor'])) {
+        $submittedFloor = $requestData['requested_floor'];
+    }
+
     $requestedFloor = filter_var(
-        $requestData['requested_floor'] ?? null,
+        $submittedFloor,
         FILTER_VALIDATE_INT
     );
 
-    $controllerType =
-        $requestData['controller_type'] ?? null;
+    $controllerType = null;
+
+    if (isset($requestData['controller_type'])) {
+        $controllerType = $requestData['controller_type'];
+    }
 
     /*
      * Only the three valid floors are accepted.
@@ -159,13 +168,13 @@ if (!$user) {
      * Use floor 1 only as an initial fallback when the
      * elevator_position table has not been initialized.
      */
-    $currentFloor = $position
-        ? (int) $position['current_floor']
-        : 1;
+    $currentFloor = 1;
+    $lastFloor = 1;
 
-    $lastFloor = $position
-        ? (int) $position['last_floor']
-        : 1;
+    if ($position) {
+        $currentFloor = (int) $position['current_floor'];
+        $lastFloor = (int) $position['last_floor'];
+    }
 
     $controllerLabel =
         $controllerLabels[$controllerType];
@@ -203,15 +212,26 @@ $insertStatement = $db->prepare(
     '
 );
 
-if ($sentByCanId !== 768) {
-    $data = 1;
+/*
+ * Website -> firmware wire format inside can_transaction.
+ *
+ * The website mirrors the REAL CAN encoding so the supervisor decodes
+ * both identically:
+ *   sent_by 768 (Car Controller)     -> data = 1|2|3, the requested floor
+ *                                       (same as the CC's 0x200 payload)
+ *   sent_by 769|770|771 (Floor Ctrl) -> data = 1, "button pressed here"
+ *                                       (same as the 0x201-0x203 payload);
+ *                                       the floor is implied by sent_by.
+ */
+if ($controllerType === 'car_controller') {
+    $data = $requestedFloor;
 } else {
-    $data = 0;
+    $data = 1;
 }
 
 $insertStatement->execute([
     'sent_by' => $sentByCanId,
-    'data' => $data ? $data : $requestedFloor,
+    'data' => $data,
     'message' => $message,
     'current_floor' => $currentFloor,
     'last_floor' => $lastFloor

@@ -7,6 +7,19 @@
             const statusOutput =
                 document.getElementById("request-status");
 
+            /*
+             * Writes the message AND the state the CSS colours it by, so a
+             * saved request and a failed one no longer look identical.
+             */
+            const showStatus = (state, message) => {
+                if (!statusOutput) {
+                    return;
+                }
+
+                statusOutput.textContent = message;
+                statusOutput.dataset.state = state;
+            };
+
             requestButtons.forEach((button) => {
                 button.addEventListener("click", async () => {
                     const requestedFloor =
@@ -20,8 +33,10 @@
                         currentButton.disabled = true;
                     });
 
-                    statusOutput.textContent =
-                        `Sending floor ${requestedFloor} request...`;
+                    showStatus(
+                        "pending",
+                        `Sending floor ${requestedFloor} request...`
+                    );
 
                     try {
                         
@@ -65,16 +80,17 @@
                             );
                         }
 
-                        statusOutput.textContent =
+                        showStatus(
+                            "ok",
                             `${result.controller_label} request for ` +
-                            `floor ${result.requested_floor} was saved.`;
+                            `floor ${result.requested_floor} was saved.`
+                        );
 
                         console.log("Saved transaction:", result);
                     } catch (error) {
                         console.error(error);
 
-                        statusOutput.textContent =
-                            `Request failed: ${error.message}`;
+                        showStatus("error", `Request failed: ${error.message}`);
                     } finally {
                         requestButtons.forEach((currentButton) => {
                             currentButton.disabled = false;

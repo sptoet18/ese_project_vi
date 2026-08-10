@@ -32,11 +32,27 @@ typedef enum {
     STATE_MOVING = 3
 } ElevatorSate; 
 
-#define DOOR_OPEN_TIME_SEC 5///Door stayys open for 10 sec before closing 
-#define MOVING_FALLBACK_SEC 8 ///
-#define WEBSITE_POLL_SEC 1 //How often to poll the DB for a new websirte requested floor 
+#define DOOR_OPEN_TIME_SEC 5///Door stayys open for 10 sec before closing
+//Last-resort recovery for a LOST 0x101 arrival frame, NOT a measure of travel time.
+//If it fires before the real arrival, fsmArrive() fabricates one and the FSM desyncs.
+#define MOVING_FALLBACK_SEC 8
+//How often to poll the DB for website commands. In MILLISECONDS on a monotonic
+//clock: the old time_t/difftime() version could only count whole seconds, so the
+//real interval drifted between 1s and 2s depending on when the row was inserted.
+#define WEBSITE_POLL_MS 300
 #define REQUEST_COLLECTION_SEC 5
 #define PRE_MOVE_DELAY_SEC 5
+
+//How often an in-progress phase repeats its debug line. The first tick always
+//prints; this only throttles repeats, so demo timers stay visible without flooding.
+//2s gives ~3 lines per 5s window - 3s read as a dead terminal, 1s was the flood.
+#define FSM_DEBUG_PERIOD_SEC 2
+
+typedef enum{
+    MODE_ELEVATOR = 0, 
+    MODE_SABBATH = 1, 
+    MODE_MAINTEANCE = 2
+}ElevatorMode;
 
 typedef struct {
     ElevatorSate state; 
@@ -50,8 +66,10 @@ typedef struct {
     int previousFloor; //Las floor the elevator was AT before it started moving (1,2,3)
     int targetFloor; //Destinantion floor while state == STATE_MOVING (1,2,3)
 
-    int lastDbfloor;     ///last currentfloor read/written value to rghe DB to detect new website requests 
-    time_t lastWebsitePoll; //Time Stamp for last poll 
+    ElevatorMode modeId;  //Machine mode 
+    ElevatorMode pendingMode;  //Webiste requested mode 
+
+    long long lastWebsitePollMs; //Monotonic ms timestamp of the last website poll
 
     time_t doorTimeStart; //Timestamp when the door was last open 
     time_t collectTimerStart; //Time to listen for request 
@@ -85,6 +103,10 @@ void sabbathRun(void);
 
 //Functions Declarations - Maintenance Lockout Mode (digital emergency stop)
 void maintenanceRun(void);
+
+//Functiont to tun all at once (Same process)
+void supervisorRun(ElevatorMode startMode);
+const char* modeName(ElevatorMode m);
 
 
 #endif

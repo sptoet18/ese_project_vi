@@ -13,8 +13,43 @@ int  db_open(void);   // connect + cache the known CAN node ids; 0 on success, -
 void db_close(void);  // tear down the shared connection
 
 // --- Legacy phase-1 elevatorNetwork table (website request channel) ---
-int db_getPendingWebsiteRequest();               // returns the floor, or -1 if unavailable
-int db_setFloorNum(int floorNum);   // 0 on success, -1 on failure
+//Website Command Channels 
+typedef enum{
+    WEB_CMD_NONE = 0,
+    WEB_CMD_FLOOR_CAR,  //CarController
+    WEB_CMD_FLOOR_REQ,  //FloorController
+    WEB_CMD_MODE, //Mode of operation
+    WEB_CMD_DOOR //Open/Close the door from the website
+} WebCmdKind;
+
+typedef enum{
+    WEB_MODE_ELEVATOR = 0x10,
+    WEB_MODE_SABBATH = 0x11,
+    WEB_MODE_MAINTEANCE = 0x12
+} WebModeCode;
+
+//Door commands ride node 768 ("Website - Car Controller") because the REAL car
+//controller is what publishes 0x08/0x09 on ID_CC_TO_SC - the website is just
+//standing in for its door buttons. These values MUST match DOOR_CLOSE/DOOR_OPEN
+//in pcanFunctions.h, which this file cannot include, and $doorCodes in
+//php/authorization/door-control.php.
+typedef enum{
+    WEB_DOOR_CLOSE = 0x08,
+    WEB_DOOR_OPEN = 0x09
+} WebDoorCode;
+
+typedef struct {
+    WebCmdKind kind;
+    int floor; //1,2,3 for the floor_* kinds
+    int mode; //WebmodeCode
+    int door; //WebDoorCode - raw 0x08/0x09, same encoding as ElevatorFSM.doorClosed
+} WebCommand;
+
+//Will set the cursor at the newest command 
+int db_initWebsiteCursor(void); 
+
+//Drains the cursos but returns how many commands were written 
+int db_getWebsiteCommands(WebCommand *out, int maxOut);               // returns the floor, or -1 if unavailable
 
 // --- Modern tables read by the website ---
 
