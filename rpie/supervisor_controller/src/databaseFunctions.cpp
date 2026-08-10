@@ -116,6 +116,8 @@ int db_initWebsiteCursor(void){
 		return -1; 
 	}
 
+
+	///Prepare the SQL statementent 
 	try{
 		sql::Statement *stmt = con->createStatement(); 
 		sql::ResultSet *res = stmt->executeQuery(
