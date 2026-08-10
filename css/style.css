@@ -157,8 +157,10 @@ footer div.container {
     padding-top: 12px;
 }
 
+/* 60px here stacked on top of the ~50px each empty status line already holds
+   open, which left a band of dead space between every section */
 article.elevator-ui {
-    margin-top: 60px;
+    margin-top: 32px;
 }
 
 article.elevator-ui div.col {
@@ -186,6 +188,10 @@ button.elevator {
     width: 200px;
     height: 100px;
 
+    /* "Start Maintenance Mode" is the longest label and wraps to two lines -
+       the padding keeps it off the rounded corners when it does */
+    padding: 0 14px;
+
     border-width: 1px;
     border-radius: 12px;
 
@@ -200,6 +206,291 @@ button.elevator:hover{
 
 button.elevator:disabled{
     background-color: var(--accent-color-4);
+
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+/* ---------------------------------------------------------------------------
+   Door control
+
+   Its own centred article rather than a fourth cell in div.elevator-grid, which
+   is only 3 columns wide
+   --------------------------------------------------------------------------- */
+
+article.elevator-ui.door-ui {
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    text-align: center;
+}
+
+div.door-controls {
+    display: flex;
+    flex-direction: row;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 12px;
+}
+
+/* ---------------------------------------------------------------------------
+   Door diagram
+
+   Pure CSS, no images and no scripted animation. event-source.js sets ONE
+   attribute - data-door="open" | "closed" | "moving" - and the transitions
+   below do the rest, so the diagram always shows the state the firmware
+   published rather than the button somebody pressed
+   --------------------------------------------------------------------------- */
+
+#door-diagram {
+    position: relative;
+    overflow: hidden;
+
+    width: 220px;
+    height: 300px;
+
+    margin-top: 12px;
+
+    border-color: var(--door-frame-color);
+    border-style: solid;
+    border-width: 4px;
+    border-radius: 12px;
+
+    background-color: var(--door-cab-color);
+}
+
+/* Seats the panels inside the frame instead of letting them sit flat against
+   it - without this the doorway has no depth and the lit interior looks
+   painted on rather than recessed.
+
+   It has to be an overlay rather than an inset box-shadow on #door-diagram
+   itself: the cab and both panels are absolutely positioned children, so they
+   would paint straight over a shadow drawn on the parent's background. This
+   pseudo element is the LAST child, so it lands on top of all three - and it
+   is transparent to the mouse so the buttons underneath still take clicks */
+#door-diagram::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+
+    box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.5);
+}
+
+/* The car interior, revealed once the panels slide apart.
+
+   Unlit by default. The lit state is driven from the diagram's data-door below
+   rather than set here, so the interior brightens on exactly the same attribute
+   flip that slides the panels - one state change, one transition */
+#door-diagram div.door-cab {
+    position: absolute;
+    inset: 0;
+
+    background-color: var(--door-cab-color);
+
+    /* Faint floor line so the open car does not read as an empty box */
+    background-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        transparent 82%,
+        rgba(255, 255, 255, 0.18) 82%,
+        rgba(255, 255, 255, 0.18) 100%
+    );
+
+    transition: background-color 0.6s ease;
+}
+
+/* An open car is a lit car. This is the one thing that makes the diagram read
+   as an elevator at a glance instead of a box with a gap in it, and it is
+   legible from across the lab, which is where this page is actually used */
+#door-diagram[data-door="open"] div.door-cab {
+    background-color: var(--door-cab-lit);
+}
+
+#door-diagram div.door-panel {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+
+    width: 50%;
+
+    background-color: var(--door-panel-color);
+
+    transition: transform 0.6s ease;
+}
+
+/* The two inner borders meet in the centre to form the seam, so a shut door
+   reads as two panels rather than one flat slab */
+#door-diagram div.door-panel.left {
+    left: 0;
+    border-right: 2px solid var(--door-seam-color);
+}
+
+#door-diagram div.door-panel.right {
+    right: 0;
+    border-left: 2px solid var(--door-seam-color);
+}
+
+/* CLOSED - both panels meet in the middle */
+#door-diagram[data-door="closed"] div.door-panel.left,
+#door-diagram[data-door="closed"] div.door-panel.right {
+    transform: translateX(0);
+}
+
+/* OPEN - each panel slides fully out of the frame */
+#door-diagram[data-door="open"] div.door-panel.left {
+    transform: translateX(-100%);
+}
+
+#door-diagram[data-door="open"] div.door-panel.right {
+    transform: translateX(100%);
+}
+
+/* MOVING - doors shut and the frame pulses, so a travelling car cannot be
+   mistaken for a car simply sitting with its door closed */
+#door-diagram[data-door="moving"] div.door-panel.left,
+#door-diagram[data-door="moving"] div.door-panel.right {
+    transform: translateX(0);
+}
+
+#door-diagram[data-door="moving"] {
+    animation: doorMoving 1.2s ease-in-out infinite;
+}
+
+@keyframes doorMoving {
+    0% {
+        border-color: var(--door-frame-color);
+    }
+
+    50% {
+        border-color: var(--accent-color-1);
+    }
+
+    100% {
+        border-color: var(--door-frame-color);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #door-diagram div.door-panel {
+        transition: none;
+    }
+
+    #door-diagram[data-door="moving"] {
+        animation: none;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Status output
+
+   These four elements used to be bare <p> tags with no rule at all, so a saved
+   request, a pending one and a hard failure all rendered as identical grey
+   text. doorControl.js and elevatorControl.js set data-state, which is what
+   picks the colour below
+   --------------------------------------------------------------------------- */
+
+#request-status,
+#door-status,
+#mode-status {
+    display: block;
+
+    width: fit-content;
+    min-width: 220px;
+    min-height: 24px; /* Reserve the space so nothing jumps on the first message */
+
+    margin: 12px auto 0 auto;
+    padding: 8px 16px;
+
+    border-radius: 8px;
+
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Idle - empty and invisible, but still holding its space */
+#request-status[data-state=""],
+#door-status[data-state=""] {
+    background-color: transparent;
+}
+
+#request-status[data-state="pending"],
+#door-status[data-state="pending"],
+#mode-status {
+    color: var(--status-text);
+    background-color: var(--status-pending);
+}
+
+#request-status[data-state="ok"],
+#door-status[data-state="ok"] {
+    color: var(--status-text);
+    background-color: var(--status-ok);
+}
+
+#request-status[data-state="error"],
+#door-status[data-state="error"] {
+    color: var(--status-text);
+    background-color: var(--status-error);
+}
+
+/* mode-status is server rendered by set-mode.php and is empty most of the time */
+#mode-status:empty {
+    background-color: transparent;
+    min-height: 0;
+    padding: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   State badges
+   --------------------------------------------------------------------------- */
+
+#mode-chip,
+#state-chip,
+#door-state-label {
+    display: inline-block;
+
+    margin-top: 12px;
+    padding: 6px 18px;
+
+    border-radius: 999px;
+
+    color: var(--status-text);
+    background-color: var(--primary-color);
+
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* event-source.js has always written this attribute - nothing used to read it */
+#mode-chip[data-mode="elevator"] {
+    background-color: var(--status-ok);
+}
+
+#mode-chip[data-mode="sabbath"] {
+    background-color: var(--accent-color-1);
+}
+
+#mode-chip[data-mode="maintenance"] {
+    background-color: var(--accent-color-4);
+}
+
+#door-state-label[data-door="open"] {
+    background-color: var(--status-ok);
+}
+
+#door-state-label[data-door="closed"] {
+    background-color: var(--primary-color);
+}
+
+#door-state-label[data-door="moving"] {
+    background-color: var(--accent-color-1);
 }
 
 article.elevator-ui div.col div.indicators {
@@ -241,6 +532,15 @@ div.elevator-grid > div {
     text-align: center;
 }
 
+/* The active-mode readout is a summary of the three buttons beside it, not a
+   fourth button, so it takes the whole row underneath them instead of
+   inheriting column 1's width and sitting off to the left */
+div.elevator-grid > div.mode-active {
+    grid-column: 1 / -1;
+
+    margin-top: 12px;
+}
+
 div.maintenance-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -254,12 +554,26 @@ div.maintenance-grid > div {
     text-align: center;
 }
 
+/* ---------------------------------------------------------------------------
+   Maintenance printout
+
+   This is a CAN bus log, so it is allowed to look like one: tabular figures,
+   ruled rows and a header that stays put while you scroll
+
+   It used to be a bare table with no border-collapse and no cell padding, and
+   the card had a min-height but no maximum - so a hundred rows ran thousands of
+   pixels down the page and the timestamps folded into three lines each
+   --------------------------------------------------------------------------- */
+
 div.maintenance-card {
     color: var(--primary-color);
-    background-color: var(--background-color);
+    background-color: var(--off-background-color);
 
     width: 100%;
-    min-height: 300px;
+
+    /* A fixed window onto the log rather than a floor it can grow through */
+    height: 360px;
+    overflow-y: auto;
 
     border-radius: 6px;
     border-style: solid;
@@ -267,12 +581,106 @@ div.maintenance-card {
     border-color: var(--primary-color);
 }
 
-div.maintenance-card > table.console {
+div.maintenance-card table.console {
     width: 100%;
-    justify-content: space-between;
+    table-layout: fixed;
+    text-align: center;
+    border-collapse: collapse;
+
+    /* Tabular figures keep node ids, floors and timestamps aligned column-wise
+       down the log, which is the whole point of reading it */
+    font-family: ui-monospace, "DejaVu Sans Mono", "Courier New", monospace;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+div.maintenance-card table.console thead th {
+    /* Stays visible while the card scrolls - a column of bare numbers is
+       unreadable once its heading has scrolled away */
+    position: sticky;
+    top: 0;
+
+    color: var(--white);
+    background-color: var(--primary-color);
+
+    padding: 8px 10px;
+
+    text-align: center;
+    white-space: nowrap;
+}
+
+div.maintenance-card table.console tbody td {
+    padding: 5px 10px;
+
+    text-align: center;
+
+    /* Without this the date and time wrapped onto separate lines in a column
+       that was wide enough for neither */
+    white-space: nowrap;
+
+    border-bottom: 1px solid rgba(90, 132, 172, 0.18);
+}
+
+div.maintenance-card table.console tbody tr:nth-child(even) {
+    background-color: rgba(90, 132, 172, 0.07);
+}
+
+/* The empty-table message spans every column, so centre it rather than letting
+   it sit under the first heading looking like a value */
+div.maintenance-card table.console tbody td[colspan] {
+    text-align: center;
+    font-style: italic;
+}
+
+/* ---------------------------------------------------------------------------
+   Narrow screens
+
+   Both grids were fixed at three and two columns with 200px buttons inside
+   them, so on a phone the third column - the floor indicator and its readout -
+   was pushed clean off the side of the screen with no way to scroll to it
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+    div.elevator-grid,
+    div.maintenance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* An 80px display face is about 9 characters wide on a phone */
+    section.title h1 {
+        font-size: clamp(36px, 11vw, 80px);
+    }
+
+    /* Keeps a 200px button from forcing the page wider than the viewport */
+    button.elevator {
+        width: min(200px, 100%);
+    }
+
+    #door-diagram {
+        width: min(220px, 80vw);
+    }
 }
 
 div.maintenance-card > table.console thead {
     width: 100%;
-    justify-content: space-between;
+}
+
+input.editable {
+    background: var(--background-color);
+    color: black;
+
+    border-color: var(--primary-color);
+    border-width: 1px;
+    border-radius: 12px;
+
+    text-align: center;
+}
+
+button.save-button {
+    background: var(--primary-color);
+    color: var(--background-color);
+
+    border-color: var(--primary-color);
+    border-width: 1px;
+    border-radius: 12px;
 }
