@@ -25,7 +25,7 @@
         if ($user) {
 
             /*
-            * Both printouts are capped at the 100 newest rows. Unbounded these
+            * Both printouts are capped at the 25 newest rows. Unbounded these
             * Row [0] is still the newest either way, so the current floor, mode
             * and door state read off it below are unaffected
             */
@@ -33,7 +33,7 @@
                 select *
                 from can_transaction
                 order by id desc
-                limit 100
+                limit 25
             ');
             $transactionQuery->execute([]);
             $transactions = $transactionQuery->fetchAll(PDO::FETCH_ASSOC);
@@ -42,7 +42,7 @@
                 select *
                 from elevator_position
                 order by id desc
-                limit 100
+                limit 25
             ');
             $positionQuery->execute([]);
             $positions = $positionQuery->fetchAll(PDO::FETCH_ASSOC);
@@ -95,10 +95,10 @@
 
             unset($_SESSION['modeStatus']);
         } else {
-            echo "<script>location.href = \"/html/authorization/login.html\"</script>";
+            header('Location: /html/authorization/login.html');
         }
     } else {
-        echo "<script>location.href = \"/html/authorization/login.html\"</script>";
+        header('Location: /html/authorization/login.html');
     }
 ?>
 
@@ -281,6 +281,15 @@
                 </article>
 
                 <article class="elevator-ui">
+                    <div class="elevator-grid">
+                        <div>
+                            <h2>Interactive Elevator Slider</h2>
+                            <button id="elevator-slider" class="elevator">Elevator Slider</button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="elevator-ui">
                     <!--
                         Plain form posts. set-mode.php writes the mode command
                         to can_transaction and sends the browser straight back
@@ -366,8 +375,8 @@
                                                 <th>Current Floor</th>
                                                 <th>Time</th>
                                                 <th>Last Floor</th>
-                                                <th>Moving</th>
-                                                <th>Door Closed</th>
+                                                <th>Is Moving</th>
+                                                <th>Is Closed</th>
                                                 <th>Mode</th>
                                             </tr>
                                         </thead>
@@ -412,5 +421,10 @@
     <script src="<?= assetUrl('/js/elevatorControl.js') ?>" defer></script>
     <script src="<?= assetUrl('/js/doorControl.js') ?>" defer></script>
     <script src="<?= assetUrl('/js/components/event-source.js') ?>" defer></script>
+    <script>
+        document.querySelector("#elevator-slider").onclick = function () {
+            window.location.href = "elevator-slider.php";
+        };
+    </script>
 </body>
 </html>

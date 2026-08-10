@@ -7,6 +7,17 @@
         return $db;
     }
 
+    function connect() : PDO {
+        try {
+            $db = new PDO('mysql:host=127.0.0.1; dbname=elevator', 'Emiliano', 'ESE');
+            $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            die("Connection failed: " . $e->getMessage());
+        }
+
+        return $db;
+    }
+
     // Create
     function insert($path, $user, $password, $current_date, $current_time, $status, $currentFloor, $requestedFloor, $otherInfo) {
         $db = dbConnect($path, $user, $password);
@@ -24,7 +35,7 @@
         $result = $statement->execute($params); 
     }
 
-    //Mannually insert into user tabele 
+    //Manually insert into user table
     function insert_usr($path, $user, $password, $username, $password_db, $firstname, $lastname, $role) {
         $db = dbConnect($path, $user, $password);
         $query = 'INSERT INTO user(username, hashed_password, firstname, lastname, role) VALUES
@@ -42,11 +53,7 @@
         if($result == false){
             $error = $db->errorInfo();
             echo "ERROR: " . $error[2];
-        } else {
-            //var_dump($result);
         }
-        
-        
     }
 
 
