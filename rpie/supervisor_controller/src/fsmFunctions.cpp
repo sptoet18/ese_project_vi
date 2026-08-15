@@ -198,8 +198,18 @@ static int fsmPeekPriotity(ElevatorFSM *fsm, int currentFloor){
         }
     }
 
-    return 0; 
+    return 0;
 
+}
+
+//Changes the door state AND announces it - the CC drives its door LEDs off this frame.
+//Every writer of doorClosed goes through here EXCEPT telemetry coming back from the CC.
+static void fsmSetDoor(ElevatorFSM *fsm, int doorState){
+    fsm->doorClosed = doorState;
+    fsm->doorTimeStart = time(NULL);
+    fsm->collectTimerStart = 0;
+
+    pcanFsmTx(ID_SC_TO_EC, doorState);
 }
 
 //Polls the DB for a website requedted floor at most once every Macro preivously define
@@ -255,20 +265,14 @@ static void fsmPollWebsite(ElevatorFSM *fsm){
             break;
 
             case WEB_CMD_DOOR:
-                //The supervisor does not COMMAND the door on the bus (there is no
-                //ID_SC_TO_CC and the EC protocol has no door opcode) - it owns the
-                //door state, exactly as it does for the 0x08/0x09 telemetry the car
-                //controller sends. Updating doorClosed here is what actually changes
-                //behaviour: fsmStepInner() refuses to depart while the door is open,
-                //and re-opens the listening window once it closes.
+                //Updating doorClosed is what changes behaviour: fsmStepInner() refuses
+                //to depart while the door is open, and re-opens the listening window
+                //once it closes.
                 if(fsm->state == STATE_MOVING){
                     //Never touch the door mid-travel
                     printf("[FSM] Website DOOR command IGNORED - car is MOVING to FLOOR %d\n", fsm->targetFloor);
                     break;
                 }
-
-                fsm->doorClosed = cmds[i].door;
-                fsm->doorTimeStart = time(NULL);
 
                 if(cmds[i].door == WEB_DOOR_OPEN){
                     //Drop anything already locked in so the car cannot pull away with
@@ -277,9 +281,9 @@ static void fsmPollWebsite(ElevatorFSM *fsm){
                     fsm->preMoveTimerStart = 0;
                 }
 
-                //Zero either way: on OPEN the window is meaningless, on CLOSE this is
-                //what makes fsmStepInner() start a fresh REQUEST_COLLECTION_SEC window
-                fsm->collectTimerStart = 0;
+                //Also zeroes collectTimerStart, which on CLOSE starts a fresh
+                //REQUEST_COLLECTION_SEC window
+                fsmSetDoor(fsm, cmds[i].door);
 
                 printf("[FSM] Website DOOR %s at FLOOR %d\n",
                        (cmds[i].door == WEB_DOOR_OPEN) ? "OPEN" : "CLOSE",
@@ -365,18 +369,25 @@ static void fsmLogRxMessage(const ElevatorFSM *fsm, int id, int data, int len){
 
 //Whenever the elevator arrives at a floor
 //EC_TO_ALL confirmaton, or from the MoVING fall back timeput
-static void fsmArrive(ElevatorFSM *fsm, int floor){
-    fsm->state = (ElevatorSate)(floor - 1); //STATE FLOOR - 1 
-    fsm->doorClosed  = DOOR_CLOSE; 
-    fsm->doorTimeStart = time(NULL);
-    fsm->collectTimerStart = 0; // No listening window until the door closes again 
-    fsm->lockedTarget = 0; 
-    fsm->preMoveTimerStart = 0; 
-    
-    fsmConsumeRequestsForFloor(fsm, floor); 
-    printf("[FSM] Arrived at Floor %d - door CLOSED(%ds Timer started)\n", floor, DOOR_OPEN_TIME_SEC);
+//doorState is a parameter so Sabbath - which parks OPEN - does not arrive CLOSED and
+//then reopen, which would put two contradictory frames on the bus and flicker the LEDs.
+static void fsmArriveAt(ElevatorFSM *fsm, int floor, int doorState){
+    fsm->state = (ElevatorSate)(floor - 1); //STATE FLOOR - 1
+    fsm->lockedTarget = 0;
+    fsm->preMoveTimerStart = 0;
+
+    //Zeroes collectTimerStart too - no listening window until the door closes again
+    fsmSetDoor(fsm, doorState);
+
+    fsmConsumeRequestsForFloor(fsm, floor);
+    printf("[FSM] Arrived at Floor %d - door %s(%ds Timer started)\n",
+           floor, (doorState == DOOR_CLOSE) ? "CLOSED" : "OPEN", DOOR_OPEN_TIME_SEC);
 
     audioPlayFloor(floor); //Ding + floor announcement - returns immediately (own audio thread)
+}
+
+static void fsmArrive(ElevatorFSM *fsm, int floor){
+    fsmArriveAt(fsm, floor, DOOR_CLOSE);
 }
 
 //Applies one incoming CAN message to the FSM's request flags / arrival detection 
@@ -413,6 +424,7 @@ static void fsmProcessMessage(ElevatorFSM *fsm, int id, int data){
         if(floor == 0){
             //Indicate if te door is oopen or closed
             fsm->doorClosed = data; 
+
         }else{
             if(!queueContainsFloor(fsm->carQueue, floor)){
                 fsm->carQueue.push(floor);
@@ -558,17 +570,15 @@ static void fsmApplyMode(ElevatorFSM *fsm, ElevatorMode target){
         // No request at all 
         fsm->carQueue = std::queue<int>();
         fsm->floorQueue = std::queue<int>();
-        fsm->websiteQueue = std::queue<int>(); 
-        fsm->doorClosed = DOOR_OPEN;
-        fsm->doorTimeStart = time(NULL); 
+        fsm->websiteQueue = std::queue<int>();
+        fsmSetDoor(fsm, DOOR_OPEN);
         break;
 
     case MODE_MAINTEANCE:
         //Digital e-stop purge every Hardware request. Hold in Place DOOR OPEN 
         fsm->carQueue = std::queue<int>();
         fsm->floorQueue = std::queue<int>();
-        fsm->doorClosed = DOOR_OPEN;
-        fsm->doorTimeStart = time(NULL); 
+        fsmSetDoor(fsm, DOOR_OPEN);
         break;
     
     default: //MODE ELEVATOR 
@@ -598,10 +608,9 @@ static void sabbathArrive(ElevatorFSM *fsm, int floor){
         floor = 1; //Never let a bad target corrupt the state 
     }
 
-    fsmArrive(fsm, floor); 
-    fsm->doorClosed = DOOR_OPEN; 
-    fsm->doorTimeStart = time(NULL); 
-    printf("[SBTH] Arrived at Floor %d - door OPEN (%ds)\n", floor, DOOR_OPEN_TIME_SEC); 
+    //Arrive straight into OPEN so only one door frame reaches the CC
+    fsmArriveAt(fsm, floor, DOOR_OPEN);
+    printf("[SBTH] Arrived at Floor %d - door OPEN (%ds)\n", floor, DOOR_OPEN_TIME_SEC);
 }
 
 //Function for Sabbath mode counting on the EC for arrival confirmation 
@@ -677,8 +686,8 @@ static void sabbathStepInner(ElevatorFSM *fsm){
         //Check the time passed 
         double elapsed =difftime(time(NULL), fsm->doorTimeStart); 
         if(elapsed >= DOOR_OPEN_TIME_SEC){
-            //Close the door after the time passes 
-            fsm->doorClosed = DOOR_CLOSE;
+            //Announced so the CC LEDs follow the Sabbath cycle, not just website clicks
+            fsmSetDoor(fsm, DOOR_CLOSE);
             fsm->lockedTarget = sabbathMove(fsm);
             //MUST start the pre-move clock here: fsmArrive() zeroes preMoveTimerStart,
             //so without it difftime() measures against the epoch and Sabbath departs
